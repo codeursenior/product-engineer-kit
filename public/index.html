@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Visualizer</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <a class="brand" href="#"
+          ><img src="/favicon.svg" alt="" width="36" height="36" /><span
+            >boyscout<span class="brand-sub">AGENT VISUALIZER</span></span
+          ></a
+        >
+        <div class="workspace">
+          <span class="eyebrow">YOUR WORKSPACE</span
+          ><strong id="project-name">Loading workspace</strong
+          ><span id="project-path" class="mono"></span
+          ><span class="local-label"><i></i> Local session</span>
+        </div>
+        <div class="nav-label">EXPLORE YOUR AGENT</div>
+        <nav aria-label="Views">
+          <button class="nav-item active" data-tab="context">
+            <span class="nav-icon">⌘</span>Context<span
+              id="count-context"
+              class="count"
+              >0</span
+            >
+          </button>
+          <button class="nav-item" data-tab="skills">
+            <span class="nav-icon">✧</span>Skills<span
+              id="count-skills"
+              class="count"
+              >0</span
+            >
+          </button>
+          <button class="nav-item" data-tab="mcp">
+            <span class="nav-icon">⎇</span>MCP servers<span
+              id="count-mcp"
+              class="count"
+              >0</span
+            >
+          </button>
+        </nav>
+        <div class="sidebar-note">
+          <div class="orbit-mark">✳</div>
+          <strong>A little clarity<br />for your agent.</strong>
+          <p>See what it knows.<br />Understand where it comes from.</p>
+        </div>
+        <div class="sidebar-footer">
+          <span class="safe-dot"></span> Read-only exploration<span
+            class="version"
+            >v0.1</span
+          >
+        </div>
+      </aside>
+      <main>
+        <header>
+          <div class="breadcrumb">
+            Workspace <span>/</span> <strong id="breadcrumb">Context</strong>
+          </div>
+          <div class="header-end">
+            <span class="privacy">◉ &nbsp; Stays on your machine</span
+            ><button id="refresh" class="small-button">
+              ↻ <span>Rescan</span>
+            </button>
+          </div>
+        </header>
+        <section class="page-heading">
+          <div>
+            <div class="eyebrow" id="page-eyebrow">THE BIG PICTURE</div>
+            <h1 id="page-title">Your agent’s context.</h1>
+            <p id="page-description">
+              Follow the connections. Find the source of every instruction.
+            </p>
+          </div>
+          <div class="view-switch" id="view-switch">
+            <button id="graph-view" class="selected">⌘ Graph</button
+            ><button id="list-view">☷ Files</button>
+          </div>
+        </section>
+        <div class="toolbar">
+          <div class="scope-tabs" role="group" aria-label="Asset scope">
+            <button data-scope="all" class="selected">All assets</button
+            ><button data-scope="project">
+              <i class="dot project"></i>Project</button
+            ><button data-scope="user"><i class="dot user"></i>User</button>
+          </div>
+          <div class="filters">
+            <select id="client-filter" aria-label="Filter by client">
+              <option value="all">All clients</option>
+              <option value="cursor">Cursor</option>
+              <option value="claude">Claude Code</option>
+              <option value="codex">Codex</option></select
+            ><label class="search"
+              >⌕<input
+                id="search"
+                placeholder="Find a file…"
+                aria-label="Search assets"
+              /><kbd>/</kbd></label
+            >
+          </div>
+        </div>
+        <div id="notice" class="notice" hidden></div>
+        <section id="canvas" aria-label="Context graph">
+          <div class="loading">Mapping your agent’s world…</div>
+        </section>
+        <footer class="main-footer">
+          <span id="summary" aria-live="polite">Reading local assets</span
+          ><span id="updated"></span>
+        </footer>
+      </main>
+      <aside id="detail" class="detail" hidden aria-label="Asset details">
+        <button
+          id="close-detail"
+          class="close-button"
+          aria-label="Close details"
+        >
+          ×
+        </button>
+        <div id="detail-body"></div>
+      </aside>
+    </div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

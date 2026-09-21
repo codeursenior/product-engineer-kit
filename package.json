@@ -1,0 +1,57 @@
+{
+  "name": "@codeursenior/boyscout",
+  "version": "0.1.0",
+  "description": "Agent Visualizer: explore your AI context, skills and MCP configuration in a local dashboard.",
+  "type": "module",
+  "bin": {
+    "boyscout": "src/cli.js"
+  },
+  "files": [
+    "src",
+    "public",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "esbuild ui/app.js --bundle --minify --format=esm --outfile=public/app.js",
+    "start": "node src/cli.js ui",
+    "test": "node --test test/*.test.js",
+    "check": "npm run build && npm test",
+    "prepack": "npm run build",
+    "format": "prettier --write src ui test public/index.html public/style.css package.json docs README.md .github"
+  },
+  "keywords": [
+    "agents",
+    "codex",
+    "claude",
+    "cursor",
+    "mcp",
+    "skills",
+    "visualizer"
+  ],
+  "author": "Simon Dieny",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codeursenior/agent-visualizer.git"
+  },
+  "homepage": "https://github.com/codeursenior/agent-visualizer#readme",
+  "bugs": "https://github.com/codeursenior/agent-visualizer/issues",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1",
+    "smol-toml": "^1.4.2",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "d3": "^7.9.0",
+    "esbuild": "^0.25.10",
+    "prettier": "^3.9.8"
+  }
+}
