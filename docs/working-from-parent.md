@@ -2,21 +2,21 @@
 
 This kit can live inside another repository as a Git submodule. Its code, history and public remote remain independent. The parent records the exact kit commit it uses.
 
-In the original local workspace, the submodule path is `agent-visualizer/`. That folder contains the entire kit; the visualizer package lives at `agent-visualizer/packages/agent-visualizer/`.
+In the original local workspace, the submodule path is `product-engineer-kit/`. That folder contains the entire kit; the visualizer package lives at `product-engineer-kit/packages/agent-visualizer/`.
 
 ## Edit and publish the kit
 
 From the parent repository:
 
 ```bash
-cd agent-visualizer
+cd product-engineer-kit
 npm run check
 git add packages/agent-visualizer
 # Include any related root README, lockfile or workflow changes explicitly.
 git commit -m "fix: describe the change"
 git push origin main
 cd ..
-git add agent-visualizer
+git add product-engineer-kit
 git commit -m "chore: update product engineer kit"
 ```
 
@@ -37,7 +37,7 @@ git submodule update --init --recursive
 Git checks out the recorded commit in detached HEAD mode when initializing a submodule. Before editing, enter the kit, ensure the working tree is clean and switch to its existing `main` branch:
 
 ```bash
-cd agent-visualizer
+cd product-engineer-kit
 git switch main
 git pull --ff-only origin main
 ```
