@@ -1,33 +1,35 @@
 # Releasing
 
-The source repository is `codeursenior/agent-visualizer`. The npm package is `@codeursenior/boyscout`, with the `boyscout` executable. The unscoped `boyscout` package belongs to another publisher.
+The public source repository is `codeursenior/product-engineer-kit`. Each tool is an independent npm workspace. The root package is private to prevent accidentally publishing the entire kit.
 
-## Validate
+Agent Visualizer lives in `packages/agent-visualizer`. Its npm package is `@codeursenior/boyscout`, with the `boyscout` executable.
+
+## Validate from the repository root
 
 ```bash
 npm ci
 npm run check
-npm pack --dry-run
+npm pack --workspace @codeursenior/boyscout --dry-run
 ```
 
-Review the tarball file list. Only `src/`, `public/`, package metadata, README and licenses belong in the npm package. Private test repositories, screenshots and temporary credentials belong in ignored `.local/` and must never be committed or published.
+Review the package file list. Only the selected tool's source, prebuilt browser assets, package metadata, documentation and licenses belong in the archive. Private test repositories and temporary credentials belong in ignored `.local/` and must never be committed or published.
 
-## Publish
+## Publish from the repository root
 
-Sign in with an npm account allowed to publish in the `@codeursenior` scope. To keep authentication files local to this checkout:
+Sign in with an npm account allowed to publish in the `@codeursenior` scope. Keep authentication files local to this checkout:
 
 ```bash
-npm login --userconfig .local/npmrc --cache .local/npm-cache
-npm whoami --userconfig .local/npmrc --cache .local/npm-cache
-npm publish --access public --userconfig .local/npmrc --cache .local/npm-cache
+npm login --userconfig "$PWD/.local/npmrc" --cache "$PWD/.local/npm-cache"
+npm whoami --userconfig "$PWD/.local/npmrc" --cache "$PWD/.local/npm-cache"
+npm publish --workspace @codeursenior/boyscout --access public --userconfig "$PWD/.local/npmrc" --cache "$PWD/.local/npm-cache"
 ```
 
-Complete any browser authentication or 2FA yourself. If the scope does not belong to your account, create the organization or choose an owned scope before publishing.
+Complete any browser authentication or 2FA yourself. The scope must belong to your account or an organization in which you have publishing rights.
 
-Then verify from a different folder:
+Verify from another folder:
 
 ```bash
 npx @codeursenior/boyscout@0.1.0 ui
 ```
 
-For later releases, update the package version and lockfile, run checks, commit, push, and publish the new version. Published versions cannot be overwritten.
+For later releases, update that workspace's version and the root lockfile, run checks, commit, push, and publish. Each package has its own version. Published versions cannot be overwritten.

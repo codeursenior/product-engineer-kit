@@ -1,69 +1,48 @@
-# Agent Visualizer
+# Le kit du Product Engineer
 
-**See the context behind your coding agent.**
+**Des outils et des skills pour comprendre ton code et mieux travailler avec tes agents IA.**
 
-Agent Visualizer, distributed as Boyscout, opens a local dashboard for the instructions, knowledge, skills, and MCP configurations inside a folder. Inspired by the clarity of an Obsidian graph, with separate views for project and user assets.
+Les instructions, les skills et la configuration de tes agents se dispersent dans ton projet et sur ta machine. Ce kit rassemble des utilitaires pour y voir plus clair, avec une commande de démarrage et une documentation par outil.
+
+## Lancer un outil
+
+### Agent Visualizer
+
+Explore les fichiers de contexte de ton projet sous forme de graphe. Retrouve tes skills et tes serveurs MCP, et distingue les ressources du projet de celles de ton compte utilisateur.
 
 ```bash
 npx @codeursenior/boyscout ui
 ```
 
-Requires Node.js 20 or newer. Run the command in the folder you want to explore. Your default browser opens automatically. Press Ctrl+C in the terminal to stop the server.
+Lance cette commande dans le dossier à explorer. Ton navigateur ouvre un tableau de bord local. Node.js 20 ou plus récent est nécessaire.
 
-## Explore
+- Graphe des instructions et de leurs références, avec aperçu des fichiers.
+- Inventaire des skills et de leur découverte par Cursor, Claude Code et Codex.
+- Inventaire des configurations MCP. Les connexions actives ne sont pas vérifiées.
+- Lecture seule, sans télémétrie ni envoi du contenu de tes fichiers.
 
-- **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for an accessible table.
-- **Skills:** names, descriptions, invocation policy, source paths, and discovery indicators for Cursor, Claude Code, and Codex. Identical copies in the same scope are grouped, retaining their paths.
-- **MCP servers:** names, configuration sources, transport, and client indicators. The tool reads configuration without launching servers or transmitting credentials.
-- **Project and User:** green and purple distinguish assets in the selected folder from assets in supported home-directory locations. Scope filters work in all views.
+[Documentation et limites d’Agent Visualizer](packages/agent-visualizer/README.md)
 
-Search with `/`, close the preview with Escape, and use Rescan after changing files.
+## Installer un skill
 
-```bash
-npx @codeursenior/boyscout ui /path/to/project
-npx @codeursenior/boyscout ui --project-only
-npx @codeursenior/boyscout ui --port 4317 --no-open
-```
+Aucun skill distribué pour le moment. Cette section accueillera les premiers skills avec leurs instructions d’installation.
 
-A random available loopback port is used by default. The terminal URL includes a session token. Keep that URL private while the viewer is running.
+## Explorer la suite
 
-## What is discovered
+Retrouve les explications et les démonstrations sur la chaîne [CodeurSenior](https://www.youtube.com/@CodeurSenior).
 
-| Asset               | Project                                                                                                                  | User                                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Instructions        | `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, `.cursorrules`, including nested folders | `~/.codex/AGENTS.md`, override, `~/.claude/CLAUDE.md`, `~/.cursor/AGENTS.md`                                |
-| Knowledge and rules | Markdown under `.agents`, `.claude`, `.codex`, `.cursor` knowledge/rules folders; local documents linked from context    | Supported agent knowledge/rules directories                                                                 |
-| Skills              | `SKILL.md` files; client discovery depends on the containing agent directory                                             | `~/.agents/skills`, `~/.claude/skills`, `~/.cursor/skills`, legacy `~/.codex/skills`                        |
-| MCP                 | `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`, including nested folders                      | `~/.cursor/mcp.json`, `~/.codex/config.toml`, global and matching project-local entries in `~/.claude.json` |
+## Contribuer
 
-`CODEX_HOME` is respected. Markdown links, Obsidian wikilinks, backtick file paths and `@file.md` references connect context nodes. Unrelated Markdown stays out of the graph. Symlinks within the selected folder and supported agent home directories are resolved and deduplicated. External symlinks are excluded.
-
-Client icons show **file-based discovery**, not whether an application is installed, whether a skill's dependencies are available, or whether an asset is active in a particular conversation. Nested skills may only load when that client works in their folder. A skill outside recognized directories is listed with inactive client icons.
-
-Claude/Cursor `disable-model-invocation` and Claude `user-invocable` frontmatter are read. Codex `agents/openai.yaml` policy `allow_implicit_invocation` is read separately. Hover an icon or open a skill to inspect per-client invocation. Legacy `.codex/skills` paths are identified in details.
-
-## Honest limits
-
-MCP status is **Not verified** for a configured server, or **Disabled** if its configuration disables it. A config file cannot establish whether another application's live MCP session is connected. Check that client's MCP panel for live status. No MCP commands, probes, hooks, or skill scripts are executed.
-
-This is an inventory of the selected subtree and supported user locations, not a reconstruction of a live agent prompt. It does not yet model parent-folder inheritance above the selected root, managed enterprise rules, remote account assets, plugin caches, client settings overrides, or effective precedence. It does not interpret every Markdown construct; ambiguous wikilinks remain unconnected. Dependency/build folders and arbitrary hidden folders are skipped. Scans are limited to 20,000 files, 35 folder levels and 512 KiB per context document, with warnings when limits are reached. JSON/TOML configs are limited to 2 MiB.
-
-## Privacy
-
-The application binds to `127.0.0.1` only, checks Host and Origin, and requires a random session token for data requests. Everything stays in memory; the scanner does not modify the scanned folder or save inventories. There is no telemetry, CDN, external font, AI API, or network request during scanning. npm may access its registry when installing the tool.
-
-MCP commands, arguments, URLs, environment values, and headers are excluded from the API and UI. Context and skill previews display their actual text locally. Treat the open dashboard like your editor: documents may contain private information.
-
-## Development
+Chaque utilitaire possède son dossier dans `packages/`, sa version et sa publication npm. Le dépôt utilise les workspaces npm ; installer un outil ne nécessite pas d’installer les autres.
 
 ```bash
 npm ci
 npm run check
-npm start -- /path/to/project
+npm start -- /chemin/du/projet
 ```
 
-The Node server and scanner use ordinary ES modules. D3 powers the graph; esbuild bundles browser code. The published package contains prebuilt assets, so end users need no build step. Source lives in `src/` and `ui/`; browser assets live in `public/`; integration tests live in `test/`.
+- [Architecture d’Agent Visualizer](packages/agent-visualizer/docs/architecture.md)
+- [Publication des packages](docs/releasing.md)
+- [Travail depuis un dépôt parent](docs/working-from-parent.md)
 
-See [architecture and discovery notes](docs/architecture.md) and [release instructions](docs/releasing.md).
-
-MIT © Simon Dieny. Independent project, not affiliated with Cursor, Anthropic, or OpenAI.
+MIT © Simon Dieny. Projet indépendant, sans affiliation avec OpenAI, Anthropic ou Cursor.

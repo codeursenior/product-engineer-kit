@@ -20,4 +20,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm pack --dry-run
+      - run: npm pack --workspace @codeursenior/boyscout --dry-run
