@@ -1,46 +1,23 @@
-# Working inside another repository
+# Source of truth and public mirror
 
-This kit can be cloned inside another repository while remaining completely independent. The enclosing repository must ignore the `product-engineer-kit/` directory instead of tracking it as a Git submodule.
+The Product Engineer Kit is developed in the private Elrond monorepo. The `product-engineer-kit/` directory is tracked directly by Elrond, so it has no nested `.git` directory and no independent local branch.
 
-In the original local workspace, the repository lives at `product-engineer-kit/`. That folder contains the entire kit; the visualizer package lives at `product-engineer-kit/packages/agent-visualizer/`.
+This public repository is a read-only release mirror. Issues are welcome, but changes and pull requests must be applied in Elrond before the next synchronization.
 
-## Edit and publish the kit
+## Daily development
 
-From the parent repository:
-
-```bash
-cd product-engineer-kit
-npm run check
-git add packages/agent-visualizer
-# Include any related root README, lockfile or workflow changes explicitly.
-git commit -m "fix: describe the change"
-git push origin main
-```
-
-This commit versions the tool directly in its public repository. The enclosing repository does not record the kit's revision. Publishing npm remains a separate step, documented in [releasing.md](releasing.md).
-
-## Clone or restore the kit
-
-First, ensure the enclosing repository ignores the directory from its root `.gitignore`:
-
-```gitignore
-/product-engineer-kit/
-```
-
-Then clone the kit at that path:
+Work from the Elrond repository and create dedicated commits for kit changes:
 
 ```bash
-cd /path/to/enclosing-repository
-git clone https://github.com/codeursenior/product-engineer-kit.git product-engineer-kit
+git diff -- product-engineer-kit
+git add product-engineer-kit
+git commit -m "fix(product-engineer-kit): describe the change"
 ```
 
-The kit stays on its own `main` branch and uses its own public remote. The enclosing repository neither tracks its files nor reports its changes.
+Commit messages, authors and every file under `product-engineer-kit/` can become public. Never place private Elrond assets, credentials or test repositories in this directory.
 
-Before editing, verify that the kit is clean and up to date:
+## Public synchronization
 
-```bash
-cd product-engineer-kit
-git pull --ff-only origin main
-```
+The maintainer validates and exports only the `product-engineer-kit/` subtree during a release. The public mirror must never be edited or force-pushed directly. See [releasing.md](releasing.md) for the complete validation, synchronization and npm publication sequence.
 
-A public clone of the kit on its own has no dependency on the parent repository. Never commit a parent workspace's private assets into this public repository.
+A public clone remains a normal standalone repository for users. It has no runtime dependency on Elrond.
