@@ -45,7 +45,7 @@ const icons = {
 };
 function clientIcon(client, active, title = "") {
   const text = `${labels[client]}: ${active ? "discovered" : "not discovered"}${title ? ` · ${title}` : ""}`;
-  return `<span class="client-icon ${active ? "" : "off"}" role="img" aria-label="${escape(text)}" title="${escape(text)}"><img src="${icons[client]}" alt="" aria-hidden="true"></span>`;
+  return `<span class="client-icon client-icon--${client} ${active ? "" : "off"}" role="img" aria-label="${escape(text)}" title="${escape(text)}"><img src="${icons[client]}" alt="" aria-hidden="true"></span>`;
 }
 const clients = (row) =>
   `<div class="client-icons">${Object.keys(labels)

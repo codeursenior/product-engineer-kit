@@ -607,6 +607,10 @@ td.name p {
   height: 18px;
   object-fit: contain;
 }
+.client-icon--codex img {
+  width: 22px;
+  height: 22px;
+}
 .client-icon.off img {
   opacity: 0.3;
 }
