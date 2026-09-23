@@ -168,7 +168,7 @@ nav {
   background: #d2dfc6;
 }
 .sidebar-note {
-  margin: auto 12px 42px;
+  margin: auto 12px 12px;
   padding-top: 35px;
 }
 .orbit-mark {
@@ -189,6 +189,12 @@ nav {
   line-height: 1.8;
   color: #87907f;
 }
+.sidebar-rescan {
+  margin: 0 12px 42px;
+}
+.sidebar-rescan .small-button {
+  width: 100%;
+}
 .sidebar-footer {
   border-top: 1px solid #dde3d5;
   padding: 20px 6px 2px;
@@ -204,35 +210,6 @@ nav {
 main {
   min-width: 0;
   flex: 1;
-}
-header {
-  height: 79px;
-  border-bottom: 1px solid var(--line);
-  padding: 0 38px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.breadcrumb {
-  font-size: 11px;
-  color: #8d9489;
-}
-.breadcrumb span {
-  margin: 0 12px;
-  color: #c1c7bb;
-}
-.breadcrumb strong {
-  font-weight: 500;
-  color: #57614f;
-}
-.header-end {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-.privacy {
-  font-size: 10px;
-  color: #8d9685;
 }
 .small-button {
   background: white;
@@ -288,11 +265,13 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   padding: 0 38px 22px;
   gap: 12px;
 }
 .scope-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 .scope-tabs button {
@@ -708,8 +687,7 @@ td.name p {
   color: #7e8d72;
 }
 @media (min-width: 1550px) {
-  .page-heading,
-  header {
+  .page-heading {
     padding-left: 54px;
     padding-right: 54px;
   }
@@ -727,9 +705,6 @@ td.name p {
     padding-left: 10px;
     padding-right: 10px;
   }
-  header {
-    padding: 0 22px;
-  }
   .page-heading {
     padding: 28px 22px 22px;
   }
@@ -738,9 +713,6 @@ td.name p {
   }
   #canvas {
     margin: 0 22px;
-  }
-  .privacy {
-    display: none;
   }
   .filters {
     gap: 5px;
@@ -784,6 +756,9 @@ td.name p {
     display: flex;
     margin-top: 16px;
   }
+  .sidebar-rescan {
+    margin: 12px 0 0;
+  }
   .nav-item {
     flex: 1;
     font-size: 11px;
@@ -792,10 +767,6 @@ td.name p {
   }
   .count {
     font-size: 9px;
-  }
-  header {
-    height: 52px;
-    padding: 0 18px;
   }
   .page-heading {
     padding: 25px 18px 20px;

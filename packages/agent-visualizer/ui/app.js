@@ -132,12 +132,6 @@ function render() {
   $("#page-eyebrow").textContent = title[0];
   $("#page-title").textContent = title[1];
   $("#page-description").textContent = title[2];
-  $("#breadcrumb").textContent =
-    state.tab === "context"
-      ? "Context"
-      : state.tab === "skills"
-        ? "Skills"
-        : "MCP servers";
   $("#view-switch").hidden = state.tab !== "context";
   $("#client-filter").hidden = state.tab === "context";
   $("#search").placeholder =

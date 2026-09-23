@@ -50,6 +50,11 @@
           <strong>A little clarity<br />for your agent.</strong>
           <p>See what it knows.<br />Understand where it comes from.</p>
         </div>
+        <div class="sidebar-rescan">
+          <button id="refresh" class="small-button">
+            ↻ <span>Rescan</span>
+          </button>
+        </div>
         <div class="sidebar-footer">
           <span class="safe-dot"></span> Read-only exploration<span
             class="version"
@@ -58,17 +63,6 @@
         </div>
       </aside>
       <main>
-        <header>
-          <div class="breadcrumb">
-            Workspace <span>/</span> <strong id="breadcrumb">Context</strong>
-          </div>
-          <div class="header-end">
-            <span class="privacy">◉ &nbsp; Stays on your machine</span
-            ><button id="refresh" class="small-button">
-              ↻ <span>Rescan</span>
-            </button>
-          </div>
-        </header>
         <section class="page-heading">
           <div>
             <div class="eyebrow" id="page-eyebrow">THE BIG PICTURE</div>
@@ -86,8 +80,11 @@
           <div class="scope-tabs" role="group" aria-label="Asset scope">
             <button data-scope="all" class="selected">All assets</button
             ><button data-scope="project">
-              <i class="dot project"></i>Project</button
-            ><button data-scope="user"><i class="dot user"></i>User</button>
+              <i class="dot project"></i>Project (shared with your team)</button
+            ><button data-scope="user">
+              <i class="dot user"></i>On Your Machine (not shared with your
+              team)
+            </button>
           </div>
           <div class="filters">
             <select id="client-filter" aria-label="Filter by client">

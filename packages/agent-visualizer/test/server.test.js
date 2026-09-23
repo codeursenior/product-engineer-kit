@@ -30,7 +30,16 @@ test("serves the packaged UI and authenticated read-only APIs without cross-orig
       .get("content-security-policy")
       .includes("frame-ancestors 'none'"),
   );
-  assert.match(await ui.text(), /Agent Visualizer/);
+  const html = await ui.text();
+  assert.match(html, /Agent Visualizer/);
+  assert.match(html, /Project \(shared with your team\)/);
+  assert.match(html, /On Your Machine \(not shared with your\s+team\)/);
+  assert.doesNotMatch(html, /Stays on your machine/);
+  assert.doesNotMatch(html, /class="breadcrumb"/);
+  const sidebarNote = html.indexOf('class="sidebar-note"');
+  const refresh = html.indexOf('id="refresh"');
+  const sidebarFooter = html.indexOf('class="sidebar-footer"');
+  assert.ok(sidebarNote < refresh && refresh < sidebarFooter);
   assert.equal((await fetch(base + "api/scan")).status, 401);
   assert.equal(
     (
