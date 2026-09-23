@@ -79,6 +79,7 @@ async function load(refresh = false) {
     $("#project-path").title = state.data.project.path;
     document.title = `${state.data.project.name} · Agent Visualizer`;
     $("#count-context").textContent = state.data.nodes.length;
+    $("#count-rules").textContent = state.data.rules.length;
     $("#count-skills").textContent = state.data.skills.length;
     $("#count-mcp").textContent = state.data.mcp.length;
     $("#updated").textContent =
@@ -103,7 +104,7 @@ function filtered(rows) {
         !row.clients ||
         row.clients.includes(state.client)) &&
       (!state.search ||
-        `${row.name} ${row.path || ""} ${(row.paths || []).join(" ")} ${row.description || ""}`
+        `${row.name} ${row.path || ""} ${(row.paths || []).join(" ")} ${row.description || ""} ${(row.globs || []).join(" ")} ${(row.pathsCondition || []).join(" ")}`
           .toLowerCase()
           .includes(state.search.toLowerCase())),
   );
@@ -116,6 +117,11 @@ function render() {
       "THE BIG PICTURE",
       "Your agent’s context.",
       "Follow the connections. Find the source of every instruction.",
+    ],
+    rules: [
+      "SCOPED INSTRUCTIONS",
+      "Your agent’s rules.",
+      "Browse dedicated Cursor and Claude Code rule files.",
     ],
     skills: [
       "WHAT YOUR AGENT CAN DO",
@@ -137,9 +143,11 @@ function render() {
   $("#search").placeholder =
     state.tab === "context"
       ? "Find a file…"
-      : state.tab === "skills"
-        ? "Find a skill…"
-        : "Find a server…";
+      : state.tab === "rules"
+        ? "Find a rule…"
+        : state.tab === "skills"
+          ? "Find a skill…"
+          : "Find a server…";
   $$(".nav-item").forEach((button) => {
     button.classList.toggle("active", button.dataset.tab === state.tab);
     button.setAttribute(
@@ -161,12 +169,20 @@ function render() {
   );
   const projectCount = rows.filter((row) => row.scope === "project").length;
   $("#summary").textContent =
-    `${rows.length} ${state.tab === "context" ? "files" : state.tab === "mcp" ? "servers" : "skills"} · ${projectCount} project · ${rows.length - projectCount} user`;
+    `${rows.length} ${state.tab === "context" ? "files" : state.tab === "mcp" ? "servers" : state.tab === "rules" ? "rules" : "skills"} · ${projectCount} project · ${rows.length - projectCount} user`;
   const canvas = $("#canvas");
   canvas.className = "";
+  canvas.setAttribute(
+    "aria-label",
+    state.tab === "context"
+      ? "Context graph"
+      : `${state.tab === "mcp" ? "MCP servers" : state.tab === "rules" ? "Rules" : "Skills"} list`,
+  );
   canvas.replaceChildren();
   if (!rows.length) {
-    canvas.innerHTML = `<div class="empty"><span class="empty-mark">✳</span><strong>${state.search || state.scope !== "all" || state.client !== "all" ? "No matching assets" : "A blank canvas, for now"}</strong><p>${state.tab === "context" ? "Context appears here when your folder contains AGENTS.md, CLAUDE.md, Cursor rules, or linked knowledge files." : state.tab === "skills" ? "Add a SKILL.md in an agent skills folder to see it here." : "No MCP servers found in the supported configuration files."}</p><p>Try another scope or clear your search.</p></div>`;
+    const filteredOut =
+      state.search || state.scope !== "all" || state.client !== "all";
+    canvas.innerHTML = `<div class="empty"><span class="empty-mark">✳</span><strong>${filteredOut ? "No matching assets" : "A blank canvas, for now"}</strong><p>${filteredOut ? "Try another scope, client, or search." : state.tab === "context" ? "Context appears here when your folder contains AGENTS.md, CLAUDE.md, or linked knowledge files." : state.tab === "rules" ? "Add .cursor/rules, .claude/rules, or a legacy .cursorrules file to see rules here. Codex instructions stay in Context." : state.tab === "skills" ? "Add a SKILL.md in an agent skills folder to see it here." : "No MCP servers found in the supported configuration files."}</p></div>`;
     return;
   }
   if (state.tab === "context" && state.view === "graph") renderGraph(rows);
@@ -344,22 +360,37 @@ function renderGraph(rows) {
 }
 function renderTable(rows) {
   const headers =
-    state.tab === "skills"
-      ? ["Skill", "Invocation", "Scope", "Clients"]
-      : state.tab === "mcp"
-        ? ["Server", "Connection", "Transport", "Scope", "Clients"]
-        : ["File", "Type", "Scope"];
+    state.tab === "rules"
+      ? ["Rule", "Conditions", "Scope", "Clients"]
+      : state.tab === "skills"
+        ? ["Skill", "Invocation", "Scope", "Clients"]
+        : state.tab === "mcp"
+          ? ["Server", "Connection", "Transport", "Scope", "Clients"]
+          : ["File", "Type", "Scope"];
   const help =
-    state.tab === "skills"
-      ? "Client icons: Cursor · Claude Code · Codex. Active means a discovery path was found, not a running session. Hover for invocation details. Identical copies are grouped."
-      : state.tab === "mcp"
-        ? "Client icons: Cursor · Claude Code · Codex. Configuration does not prove a live connection. This read-only viewer never launches a server or sends credentials."
-        : "Only context entry points, agent knowledge folders, and their linked documents appear here.";
+    state.tab === "rules"
+      ? "Dedicated Cursor and Claude Code files only. File metadata describes conditions; it does not prove a rule loaded in a session. Codex AGENTS.md remains in Context."
+      : state.tab === "skills"
+        ? "Client icons: Cursor · Claude Code · Codex. Active means a discovery path was found, not a running session. Hover for invocation details. Identical copies are grouped."
+        : state.tab === "mcp"
+          ? "Client icons: Cursor · Claude Code · Codex. Configuration does not prove a live connection. This read-only viewer never launches a server or sends credentials."
+          : "Only context entry points, agent knowledge folders, and their linked documents appear here.";
   $("#canvas").innerHTML =
     `<div class="table-wrap"><div class="table-help">${help}</div><table><thead><tr>${headers.map((h) => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${rows
       .map((row) => {
         const name = `<td class="name"><button data-detail="${escape(row.id)}">${escape(row.name)}</button><p title="${escape(row.path || row.paths?.join("\n"))}">${escape(row.description || row.path || row.paths?.[0])}</p></td>`;
-        return `<tr>${name}${state.tab === "skills" ? `<td><span class="badge neutral">${escape(row.mode)}</span></td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "mcp" ? `<td><span class="badge ${row.status === "Disabled" ? "neutral" : "warn"}">○ ${escape(row.status)}</span></td><td>${escape(row.transport)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : `<td>${escape(row.kind)}</td><td>${scopeBadge(row.scope)}</td>`}</tr>`;
+        const conditions = row.legacy
+          ? "Legacy .cursorrules"
+          : [
+              row.alwaysApply ? "Cursor alwaysApply" : "",
+              row.globs?.length ? `Cursor globs: ${row.globs.join(", ")}` : "",
+              row.pathsCondition?.length
+                ? `Claude paths: ${row.pathsCondition.join(", ")}`
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" · ") || "No path condition";
+        return `<tr>${name}${state.tab === "rules" ? `<td>${escape(conditions)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "skills" ? `<td><span class="badge neutral">${escape(row.mode)}</span></td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "mcp" ? `<td><span class="badge ${row.status === "Disabled" ? "neutral" : "warn"}">○ ${escape(row.status)}</span></td><td>${escape(row.transport)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : `<td>${escape(row.kind)}</td><td>${scopeBadge(row.scope)}</td>`}</tr>`;
       })
       .join("")}</tbody></table></div>`;
   $$("[data-detail]").forEach((button) => {
@@ -383,7 +414,7 @@ async function showDetail(row) {
             )
             .join("")}`
         : ""
-    }${row.legacy ? "<p>Includes a legacy .codex/skills discovery path. Client behavior can depend on its installed version.</p>" : ""}`;
+    }${row.legacy && state.tab === "skills" ? "<p>Includes a legacy .codex/skills discovery path. Client behavior can depend on its installed version.</p>" : ""}${state.tab === "rules" ? `<h3>Declared conditions</h3><p>${escape(row.legacy ? "Legacy .cursorrules" : [row.alwaysApply ? "Cursor alwaysApply: true" : "", row.globs?.length ? `Cursor globs: ${row.globs.join(", ")}` : "", row.pathsCondition?.length ? `Claude paths: ${row.pathsCondition.join(", ")}` : ""].filter(Boolean).join(" · ") || "No path condition declared")}</p><p>File discovery does not confirm whether this rule loaded in an agent session.</p>` : ""}`;
   if (state.tab === "mcp") {
     $("#detail-body").insertAdjacentHTML(
       "beforeend",
@@ -411,6 +442,8 @@ function closeDetail() {
 $$("[data-tab]").forEach((button) => {
   button.onclick = () => {
     state.tab = button.dataset.tab;
+    state.client = "all";
+    $("#client-filter").value = "all";
     state.search = "";
     $("#search").value = "";
     closeDetail();

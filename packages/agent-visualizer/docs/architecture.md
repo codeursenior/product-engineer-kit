@@ -2,7 +2,7 @@
 
 `src/cli.js` parses arguments, starts the server for the requested folder and opens the default browser using OS launchers with argument arrays and no shell interpolation.
 
-`src/scanner.js` indexes supported local text files, merges real-path aliases, extracts context relationships and normalizes skill/MCP metadata. Every scan is a fresh snapshot. Documents are data, never instructions to the application. The API exposes a whitelist of MCP metadata rather than serialized configuration.
+`src/scanner.js` indexes supported local text files, merges real-path aliases, separates dedicated Cursor/Claude rules from the context graph, extracts context relationships and normalizes skill/MCP metadata. Every scan is a fresh snapshot. Documents are data, never instructions to the application. The API exposes a whitelist of MCP metadata rather than serialized configuration.
 
 `src/server.js` owns the in-memory snapshot and a random session credential. Static routes are an explicit allowlist. Previews use opaque IDs already present in the snapshot, never arbitrary file paths supplied by the browser. The server validates loopback Host/Origin and supports only GET. Rescans are coalesced. CSP blocks remote code, frames, plugins and inline scripts.
 
@@ -18,5 +18,8 @@ Behavior was checked against official documentation on 2026-09-21. Runtime behav
 - [Claude Code MCP](https://code.claude.com/docs/en/mcp): `.mcp.json` plus user and project-local entries in `~/.claude.json`.
 - [Cursor skills](https://cursor.com/docs/skills): `.agents/skills`, `.cursor/skills`, and compatibility with Claude/Codex directories.
 - [Cursor MCP](https://cursor.com/docs/context/model-context-protocol): `.cursor/mcp.json` project/user configuration.
+- [Cursor rules](https://cursor.com/docs/context/rules): `.cursor/rules` and legacy `.cursorrules`.
+- [Claude Code rules](https://code.claude.com/docs/en/memory): `.claude/rules` and `paths` frontmatter.
+- [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md): `AGENTS.md` belongs in Context. [Codex command rules](https://learn.chatgpt.com/docs/agent-configuration/rules) are a separate execution policy.
 
 A live connection indicator needs an explicit integration with each client's running session. Executing commands found in arbitrary repository configuration is deliberately outside the viewer's scope. File-based discovery, configuration enablement, transport reachability and authenticated session connectivity are separate facts.

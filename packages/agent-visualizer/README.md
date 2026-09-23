@@ -13,6 +13,7 @@ Requires Node.js 20 or newer. Run the command in the folder you want to explore.
 ## Explore
 
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for an accessible table.
+- **Rules:** searchable list of dedicated Cursor and Claude Code rule files, with source paths, declared file conditions, client discovery, and previews. Metadata does not prove a rule loaded in a session.
 - **Skills:** names, descriptions, invocation policy, source paths, and discovery indicators for Cursor, Claude Code, and Codex. Identical copies in the same scope are grouped, retaining their paths.
 - **MCP servers:** names, configuration sources, transport, and client indicators. The tool reads configuration without launching servers or transmitting credentials.
 - **Project and User:** green and purple distinguish assets in the selected folder from assets in supported home-directory locations. Scope filters work in all views.
@@ -29,14 +30,17 @@ A random available loopback port is used by default. The terminal URL includes a
 
 ## What is discovered
 
-| Asset               | Project                                                                                                                  | User                                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Instructions        | `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, `.cursorrules`, including nested folders | `~/.codex/AGENTS.md`, override, `~/.claude/CLAUDE.md`, `~/.cursor/AGENTS.md`                                |
-| Knowledge and rules | Markdown under `.agents`, `.claude`, `.codex`, `.cursor` knowledge/rules folders; local documents linked from context    | Supported agent knowledge/rules directories                                                                 |
-| Skills              | `SKILL.md` files; client discovery depends on the containing agent directory                                             | `~/.agents/skills`, `~/.claude/skills`, `~/.cursor/skills`, legacy `~/.codex/skills`                        |
-| MCP                 | `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`, including nested folders                      | `~/.cursor/mcp.json`, `~/.codex/config.toml`, global and matching project-local entries in `~/.claude.json` |
+| Asset        | Project                                                                                                  | User                                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Instructions | `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, including nested folders | `~/.codex/AGENTS.md`, override, `~/.claude/CLAUDE.md`, `~/.cursor/AGENTS.md`                                |
+| Rules        | `.cursor/rules/`, `.claude/rules/`, and legacy `.cursorrules`, including nested folders                  | Supported Cursor and Claude Code rule directories                                                           |
+| Knowledge    | Markdown under supported agent knowledge folders, other linked local documents                           | Supported agent knowledge directories                                                                       |
+| Skills       | `SKILL.md` files; client discovery depends on the containing agent directory                             | `~/.agents/skills`, `~/.claude/skills`, `~/.cursor/skills`, legacy `~/.codex/skills`                        |
+| MCP          | `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`, including nested folders      | `~/.cursor/mcp.json`, `~/.codex/config.toml`, global and matching project-local entries in `~/.claude.json` |
 
 `CODEX_HOME` is respected. Markdown links, Obsidian wikilinks, backtick file paths and `@file.md` references connect context nodes. Unrelated Markdown stays out of the graph. Symlinks within the selected folder and supported agent home directories are resolved and deduplicated. External symlinks are excluded.
+
+Codex behavior instructions in `AGENTS.md` stay in Context. Codex `.codex/rules/*.rules` are command approval policies and are not included in Rules. Cursor user rules configured only in application settings cannot be read from the filesystem.
 
 Client icons show **file-based discovery**, not whether an application is installed, whether a skill's dependencies are available, or whether an asset is active in a particular conversation. Nested skills may only load when that client works in their folder. A skill outside recognized directories is listed with inactive client icons.
 

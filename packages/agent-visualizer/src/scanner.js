@@ -27,6 +27,14 @@ const AGENT_DIRS = [".agents", ".claude", ".codex", ".cursor"];
 const INSTRUCTION =
   /^(AGENTS(?:\.override)?|CLAUDE(?:\.local)?|GEMINI)\.md$|^\.cursorrules$/i;
 const MARKDOWN = /\.(md|mdc)$/i;
+const ruleClient = (file) => {
+  if (path.basename(file).toLowerCase() === ".cursorrules") return "cursor";
+  if (!MARKDOWN.test(file)) return null;
+  const normalized = slash(file).toLowerCase();
+  if (/(^|\/)\.cursor\/rules\//.test(normalized)) return "cursor";
+  if (/(^|\/)\.claude\/rules\//.test(normalized)) return "claude";
+  return null;
+};
 const MAX_FILES = 20000;
 const MAX_BYTES = 512 * 1024;
 const id = (value) =>
@@ -195,20 +203,23 @@ export async function scanProject(
     byName.get(name).push(entry);
   }
   const context = new Map();
+  const rules = new Map();
   const edges = new Map();
   const skills = new Map();
   const content = new Map();
   function addContext(entry) {
     if (context.has(entry.id)) return;
-    const paths = entry.aliases.map((p) => display(p, entry.scope));
-    const kind = entry.aliases.some((p) => INSTRUCTION.test(path.basename(p)))
+    const aliases = entry.aliases.filter((p) => !ruleClient(p));
+    if (!aliases.length) return;
+    const paths = aliases.map((p) => display(p, entry.scope));
+    const kind = aliases.some((p) => INSTRUCTION.test(path.basename(p)))
       ? "instruction"
-      : entry.aliases.some((p) => /[\\/]rules[\\/]|\.mdc$/.test(p))
+      : aliases.some((p) => /[\\/]rules[\\/]|\.mdc$/.test(p))
         ? "rule"
         : "knowledge";
     context.set(entry.id, {
       id: entry.id,
-      name: path.basename(entry.file),
+      name: path.basename(aliases[0]),
       path: paths[0],
       aliases: paths,
       scope: entry.scope,
@@ -295,17 +306,57 @@ export async function scanProject(
       skill.mode =
         [...new Set(Object.values(skill.invocation))].join(" / ") ||
         "Not discovered";
-    } else if (
-      !entry.aliases.every((p) => /[\\/]skills[\\/]/.test(p)) &&
-      entry.aliases.some(
-        (p) =>
-          INSTRUCTION.test(path.basename(p)) ||
-          /[\\/]\.(agents|claude|cursor|codex)[\\/](knowledge|rules)[\\/]/.test(
-            p,
+    } else {
+      const ruleAliases = entry.aliases.filter((p) => ruleClient(p));
+      if (ruleAliases.length) {
+        let meta = {};
+        try {
+          meta = frontmatter(entry.text);
+        } catch {
+          warnings.push(
+            `Invalid rule frontmatter: ${display(entry.file, entry.scope)}`,
+          );
+        }
+        const patterns = (value) =>
+          (Array.isArray(value)
+            ? value
+            : typeof value === "string"
+              ? [value]
+              : []
+          )
+            .filter((item) => typeof item === "string")
+            .map((item) => item.trim())
+            .filter(Boolean);
+        rules.set(entry.id, {
+          id: entry.id,
+          name: path.basename(ruleAliases[0]),
+          description:
+            typeof meta.description === "string" ? meta.description : "",
+          scope: entry.scope,
+          paths: ruleAliases.map((p) => display(p, entry.scope)),
+          clients: [...new Set(ruleAliases.map(ruleClient))],
+          legacy: ruleAliases.some(
+            (p) => path.basename(p).toLowerCase() === ".cursorrules",
           ),
+          globs: patterns(meta.globs),
+          pathsCondition: patterns(meta.paths),
+          alwaysApply: meta.alwaysApply === true,
+        });
+        content.set(entry.id, entry.text);
+      }
+      if (
+        !entry.aliases.every((p) => /[\\/]skills[\\/]/.test(p)) &&
+        entry.aliases.some(
+          (p) =>
+            !ruleClient(p) &&
+            (INSTRUCTION.test(path.basename(p)) ||
+              /[\\/]\.(agents|claude|cursor|codex)[\\/](knowledge|rules)[\\/]/.test(
+                p,
+              )),
+        )
       )
-    )
-      addContext(entry);
+        addContext(entry);
+    }
   }
   // Follow references from context roots, never turn the entire codebase into a graph.
   const queue = entries.filter((entry) => context.has(entry.id));
@@ -344,10 +395,14 @@ export async function scanProject(
         );
         if (candidates.length === 1) found = candidates[0];
       }
-      if (found && path.basename(found.file) !== "SKILL.md") {
+      if (
+        found &&
+        path.basename(found.file) !== "SKILL.md" &&
+        found.aliases.some((p) => !ruleClient(p))
+      ) {
         addContext(found);
-        queue.push(found);
-        if (found.id !== entry.id)
+        if (context.has(found.id)) queue.push(found);
+        if (context.has(found.id) && found.id !== entry.id)
           edges.set(`${entry.id}:${found.id}`, {
             source: entry.id,
             target: found.id,
@@ -505,6 +560,7 @@ export async function scanProject(
     project: { name: path.basename(root), path: root },
     scannedAt: new Date().toISOString(),
     nodes: [...context.values()],
+    rules: [...rules.values()].sort((a, b) => a.name.localeCompare(b.name)),
     edges: [...edges.values()],
     skills: [...skills.values()].sort((a, b) => a.name.localeCompare(b.name)),
     mcp: mcp.sort((a, b) => a.name.localeCompare(b.name)),
