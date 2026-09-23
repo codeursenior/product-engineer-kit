@@ -1,8 +1,8 @@
-# Working from a parent repository
+# Working inside another repository
 
-This kit can live inside another repository as a Git submodule. Its code, history and public remote remain independent. The parent records the exact kit commit it uses.
+This kit can be cloned inside another repository while remaining completely independent. The enclosing repository must ignore the `product-engineer-kit/` directory instead of tracking it as a Git submodule.
 
-In the original local workspace, the submodule path is `product-engineer-kit/`. That folder contains the entire kit; the visualizer package lives at `product-engineer-kit/packages/agent-visualizer/`.
+In the original local workspace, the repository lives at `product-engineer-kit/`. That folder contains the entire kit; the visualizer package lives at `product-engineer-kit/packages/agent-visualizer/`.
 
 ## Edit and publish the kit
 
@@ -15,30 +15,31 @@ git add packages/agent-visualizer
 # Include any related root README, lockfile or workflow changes explicitly.
 git commit -m "fix: describe the change"
 git push origin main
-cd ..
-git add product-engineer-kit
-git commit -m "chore: update product engineer kit"
 ```
 
-The first commit versions the tool. The second records its new revision in the parent. Publishing npm remains a separate step, documented in [releasing.md](releasing.md).
+This commit versions the tool directly in its public repository. The enclosing repository does not record the kit's revision. Publishing npm remains a separate step, documented in [releasing.md](releasing.md).
 
-## Clone or restore the parent
+## Clone or restore the kit
+
+First, ensure the enclosing repository ignores the directory from its root `.gitignore`:
+
+```gitignore
+/product-engineer-kit/
+```
+
+Then clone the kit at that path:
 
 ```bash
-git clone --recurse-submodules <parent-repository-url>
+cd /path/to/enclosing-repository
+git clone https://github.com/codeursenior/product-engineer-kit.git product-engineer-kit
 ```
 
-For an existing clone:
+The kit stays on its own `main` branch and uses its own public remote. The enclosing repository neither tracks its files nor reports its changes.
 
-```bash
-git submodule update --init --recursive
-```
-
-Git checks out the recorded commit in detached HEAD mode when initializing a submodule. Before editing, enter the kit, ensure the working tree is clean and switch to its existing `main` branch:
+Before editing, verify that the kit is clean and up to date:
 
 ```bash
 cd product-engineer-kit
-git switch main
 git pull --ff-only origin main
 ```
 

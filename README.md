@@ -43,6 +43,6 @@ npm start -- /chemin/du/projet
 
 - [Architecture d’Agent Visualizer](packages/agent-visualizer/docs/architecture.md)
 - [Publication des packages](docs/releasing.md)
-- [Travail depuis un dépôt parent](docs/working-from-parent.md)
+- [Travail depuis un espace Git parent](docs/working-from-parent.md)
 
 MIT © Simon Dieny. Projet indépendant, sans affiliation avec OpenAI, Anthropic ou Cursor.
