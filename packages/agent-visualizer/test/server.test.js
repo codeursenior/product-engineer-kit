@@ -71,6 +71,21 @@ test("serves the packaged UI and authenticated read-only APIs without cross-orig
     404,
   );
   assert.equal((await fetch(base + "src/scanner.js")).status, 404);
+  for (const [name, type] of [
+    ["cursor.png", "image/png"],
+    ["claude.png", "image/png"],
+    ["chatgpt.webp", "image/webp"],
+  ]) {
+    const response = await fetch(base + `client-logos/${name}`);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type"), type);
+    assert.deepEqual(
+      Buffer.from(await response.arrayBuffer()),
+      await fs.readFile(
+        new URL(`../public/client-logos/${name}`, import.meta.url),
+      ),
+    );
+  }
   await fs.writeFile(path.join(root, "CLAUDE.md"), "# New file");
   const refreshed = await (
     await fetch(base + "api/scan?refresh=1", { headers })

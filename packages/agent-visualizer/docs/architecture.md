@@ -8,6 +8,8 @@
 
 `ui/app.js` renders the graph and tables, filters data locally, and fetches previews on demand. Untrusted text is escaped before HTML insertion; document bodies use `textContent`. The session token arrives in the URL fragment, is moved to tab session storage, and is removed from the visible URL. D3 uses deterministic initial positions and a bounded force-layout warm-up.
 
+Client badges use local raster marks from [Cursor](https://cursor.com/brand), [Claude](https://claude.com/), and [ChatGPT](https://chatgpt.com/). The Codex discovery indicator uses the ChatGPT mark. The static asset allowlist keeps these images available without remote requests.
+
 ## Discovery references
 
 Behavior was checked against official documentation on 2026-09-21. Runtime behavior can differ by client release or configuration.

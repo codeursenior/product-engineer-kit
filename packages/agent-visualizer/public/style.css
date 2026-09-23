@@ -602,10 +602,13 @@ td.name p {
   border-color: #e9ede4;
   color: #cdd4c6;
 }
-.client-icon svg {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
+.client-icon img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+.client-icon.off img {
+  opacity: 0.3;
 }
 .table-help {
   font-size: 10px;

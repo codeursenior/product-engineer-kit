@@ -39,15 +39,13 @@ let detailRequest = 0;
 let lastFocus;
 const labels = { cursor: "Cursor", claude: "Claude Code", codex: "Codex" };
 const icons = {
-  cursor: '<path d="m3 1 11 6-5 2-2 6z"/><path d="m9 9 4 5-2 1-4-5z"/>',
-  claude:
-    '<path d="m7 0 2 .3-.3 5 3.5-3.7 1.4 1.3-3.8 3.5 5-.1.2 2-5-.2 3.7 3.4-1.3 1.5-3.5-3.8.1 5-2 .3.3-5-3.4 3.6-1.5-1.4L6 8.5l-5 .1-.2-2 5 .3-3.5-3.5 1.4-1.5 3.5 3.8z"/>',
-  codex:
-    '<path fill-rule="evenodd" d="m8 0 7 4v8l-7 4-7-4V4zm0 2L3 5v6l5 3 5-3V5z"/><path d="m6 4 2 1-3 3 3 3-2 1-4-4zm4 0 4 4-4 4-2-1 3-3-3-3z"/>',
+  cursor: "/client-logos/cursor.png",
+  claude: "/client-logos/claude.png",
+  codex: "/client-logos/chatgpt.webp",
 };
 function clientIcon(client, active, title = "") {
   const text = `${labels[client]}: ${active ? "discovered" : "not discovered"}${title ? ` · ${title}` : ""}`;
-  return `<span class="client-icon ${active ? "" : "off"}" role="img" aria-label="${escape(text)}" title="${escape(text)}"><svg viewBox="0 0 16 16" aria-hidden="true">${icons[client]}</svg></span>`;
+  return `<span class="client-icon ${active ? "" : "off"}" role="img" aria-label="${escape(text)}" title="${escape(text)}"><img src="${icons[client]}" alt="" aria-hidden="true"></span>`;
 }
 const clients = (row) =>
   `<div class="client-icons">${Object.keys(labels)

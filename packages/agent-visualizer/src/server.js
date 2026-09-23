@@ -9,6 +9,9 @@ const assets = new Map([
   ["/app.js", ["app.js", "text/javascript; charset=utf-8"]],
   ["/style.css", ["style.css", "text/css; charset=utf-8"]],
   ["/favicon.svg", ["favicon.svg", "image/svg+xml"]],
+  ["/client-logos/cursor.png", ["client-logos/cursor.png", "image/png"]],
+  ["/client-logos/claude.png", ["client-logos/claude.png", "image/png"]],
+  ["/client-logos/chatgpt.webp", ["client-logos/chatgpt.webp", "image/webp"]],
 ]);
 
 export async function startServer({
@@ -33,7 +36,11 @@ export async function startServer({
     );
     const send = (status, body, type = "application/json; charset=utf-8") => {
       res.writeHead(status, { "Content-Type": type });
-      res.end(typeof body === "string" ? body : JSON.stringify(body));
+      res.end(
+        typeof body === "string" || Buffer.isBuffer(body)
+          ? body
+          : JSON.stringify(body),
+      );
     };
     if (
       req.headers.host !== host ||
@@ -90,7 +97,7 @@ export async function startServer({
     const asset = assets.get(url.pathname);
     if (!asset) return send(404, { error: "Not found." });
     try {
-      send(200, await fs.readFile(publicDir + asset[0], "utf8"), asset[1]);
+      send(200, await fs.readFile(publicDir + asset[0]), asset[1]);
     } catch {
       send(500, { error: "UI assets missing. Run npm run build." });
     }
