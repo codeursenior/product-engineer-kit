@@ -5,7 +5,7 @@ import path from "node:path";
 import http from "node:http";
 import { startServer } from "../src/server.js";
 
-test("serves the packaged UI and authenticated read-only APIs without cross-origin or arbitrary-file access", async (t) => {
+test("serves the packaged UI and authenticated APIs without cross-origin or arbitrary-file access", async (t) => {
   await fs.mkdir(".local/test", { recursive: true });
   const root = await fs.mkdtemp(path.resolve(".local/test/server-"));
   await fs.writeFile(
@@ -91,4 +91,76 @@ test("serves the packaged UI and authenticated read-only APIs without cross-orig
     await fetch(base + "api/scan?refresh=1", { headers })
   ).json();
   assert.equal(refreshed.nodes.length, 2);
+});
+
+test("edits indexed context and skill files without overwriting newer changes", async (t) => {
+  await fs.mkdir(".local/test", { recursive: true });
+  const root = await fs.mkdtemp(path.resolve(".local/test/edit-"));
+  const context = path.join(root, "AGENTS.md");
+  const skill = path.join(root, ".claude/skills/example/SKILL.md");
+  await fs.mkdir(path.dirname(skill), { recursive: true });
+  await fs.writeFile(context, "# Original context\n");
+  await fs.writeFile(skill, "---\nname: example\n---\nOriginal skill\n");
+  const { server, url, token } = await startServer({
+    root,
+    includeUser: false,
+  });
+  t.after(async () => {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+  const base = url.split("#")[0];
+  const headers = { Authorization: `Bearer ${token}` };
+  const data = await (await fetch(base + "api/scan", { headers })).json();
+  const contextId = data.nodes[0].editTargets[0].id;
+  const skillId = data.skills[0].editTargets[0].id;
+  const fileUrl = (id) => base + `api/file?id=${id}`;
+  const put = (id, text, revision, extraHeaders = {}) =>
+    fetch(fileUrl(id), {
+      method: "PUT",
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+        ...extraHeaders,
+      },
+      body: JSON.stringify({ text, revision }),
+    });
+
+  const initial = await (await fetch(fileUrl(contextId), { headers })).json();
+  assert.equal(initial.text, "# Original context\n");
+  assert.equal(
+    (
+      await put(contextId, "blocked", initial.revision, {
+        Origin: "https://evil.example",
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (await put("../../AGENTS.md", "blocked", initial.revision)).status,
+    404,
+  );
+  assert.equal(
+    (await put(contextId, "# Updated context\n", initial.revision)).status,
+    200,
+  );
+  assert.equal(await fs.readFile(context, "utf8"), "# Updated context\n");
+  assert.equal((await put(contextId, "stale", initial.revision)).status, 409);
+
+  const skillInitial = await (
+    await fetch(fileUrl(skillId), { headers })
+  ).json();
+  await fs.writeFile(skill, "Changed elsewhere\n");
+  assert.equal(
+    (await put(skillId, "stale", skillInitial.revision)).status,
+    409,
+  );
+  assert.equal(await fs.readFile(skill, "utf8"), "Changed elsewhere\n");
+  const current = await (await fetch(fileUrl(skillId), { headers })).json();
+  assert.equal(
+    (await put(skillId, "Updated skill\n", current.revision)).status,
+    200,
+  );
+  assert.equal(await fs.readFile(skill, "utf8"), "Updated skill\n");
 });

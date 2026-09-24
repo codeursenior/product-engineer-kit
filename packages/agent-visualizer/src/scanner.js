@@ -207,6 +207,7 @@ export async function scanProject(
   const edges = new Map();
   const skills = new Map();
   const content = new Map();
+  const editable = new Map();
   function addContext(entry) {
     if (context.has(entry.id)) return;
     const aliases = entry.aliases.filter((p) => !ruleClient(p));
@@ -222,12 +223,14 @@ export async function scanProject(
       name: path.basename(aliases[0]),
       path: paths[0],
       aliases: paths,
+      editTargets: [{ id: entry.id, path: paths[0] }],
       scope: entry.scope,
       kind,
       bytes: Buffer.byteLength(entry.text),
       excerpt: entry.text.slice(0, 180),
     });
     content.set(entry.id, entry.text);
+    editable.set(entry.id, { file: entry.file, real: entry.real });
   }
   for (const entry of entries) {
     if (path.basename(entry.file) === "SKILL.md") {
@@ -252,12 +255,18 @@ export async function scanProject(
             typeof meta.description === "string" ? meta.description : "",
           scope: entry.scope,
           paths: [],
+          editTargets: [],
           clients: [],
           invocation: {},
           legacy: false,
         });
       const skill = skills.get(key);
       content.set(skill.id, entry.text);
+      editable.set(entry.id, { file: entry.file, real: entry.real });
+      skill.editTargets.push({
+        id: entry.id,
+        path: display(entry.file, entry.scope),
+      });
       let policy = {};
       try {
         policy =
@@ -567,5 +576,5 @@ export async function scanProject(
     warnings: [...new Set(warnings)],
     limits: { includeUser, scannedFiles: inspected, truncated: capped },
   };
-  return { data, content };
+  return { data, content, editable };
 }

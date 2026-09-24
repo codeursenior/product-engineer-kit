@@ -4,9 +4,9 @@
 
 `src/scanner.js` indexes supported local text files, merges real-path aliases, separates dedicated Cursor/Claude rules from the context graph, extracts context relationships and normalizes skill/MCP metadata. Every scan is a fresh snapshot. Documents are data, never instructions to the application. The API exposes a whitelist of MCP metadata rather than serialized configuration.
 
-`src/server.js` owns the in-memory snapshot and a random session credential. Static routes are an explicit allowlist. Previews use opaque IDs already present in the snapshot, never arbitrary file paths supplied by the browser. The server validates loopback Host/Origin and supports only GET. Rescans are coalesced. CSP blocks remote code, frames, plugins and inline scripts.
+`src/server.js` owns the in-memory snapshot and a random session credential. Static routes are an explicit allowlist. Previews and edits use opaque IDs already present in the snapshot, never arbitrary file paths supplied by the browser. Edits are limited to indexed context files and skills, with a size limit and a content revision check before saving. The server validates loopback Host/Origin. Rescans are coalesced. CSP blocks remote code, frames, plugins and inline scripts.
 
-`ui/app.js` renders the graph and tables, filters data locally, and fetches previews on demand. Untrusted text is escaped before HTML insertion; document bodies use `textContent`. The session token arrives in the URL fragment, is moved to tab session storage, and is removed from the visible URL. D3 uses deterministic initial positions and a bounded force-layout warm-up.
+`ui/app.js` renders the graph and tables, filters data locally, and fetches previews on demand. The detail panel offers a plain text editor for context files and skills. Untrusted text is escaped before HTML insertion; document bodies use `textContent` or a textarea value. The session token arrives in the URL fragment, is moved to tab session storage, and is removed from the visible URL. D3 uses deterministic initial positions and a bounded force-layout warm-up.
 
 Client badges use local raster marks from [Cursor](https://cursor.com/brand), [Claude](https://claude.com/), and [ChatGPT](https://chatgpt.com/). The Codex discovery indicator uses the ChatGPT mark. The static asset allowlist keeps these images available without remote requests.
 

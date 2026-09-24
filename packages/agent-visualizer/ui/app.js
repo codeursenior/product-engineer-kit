@@ -59,9 +59,13 @@ const clients = (row) =>
     .join("")}</div>`;
 const scopeBadge = (scope) =>
   `<span class="badge ${scope}"><i class="dot ${scope}"></i>${scope === "user" ? "User" : "Project"}</span>`;
-async function api(route) {
+async function api(route, options = {}) {
   const response = await fetch(route, {
-    headers: { Authorization: `Bearer ${token || ""}` },
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token || ""}`,
+      ...options.headers,
+    },
   });
   const body = await response.json();
   if (!response.ok)
@@ -371,7 +375,7 @@ function renderTable(rows) {
       : state.tab === "skills"
         ? "Client icons: Cursor · Claude Code · Codex. Active means a discovery path was found, not a running session. Hover for invocation details. Identical copies are grouped."
         : state.tab === "mcp"
-          ? "Client icons: Cursor · Claude Code · Codex. Configuration does not prove a live connection. This read-only viewer never launches a server or sends credentials."
+          ? "Client icons: Cursor · Claude Code · Codex. Configuration does not prove a live connection. The viewer never launches a server or sends credentials."
           : "Only context entry points, agent knowledge folders, and their linked documents appear here.";
   $("#canvas").innerHTML =
     `<div class="table-wrap"><div class="table-help">${help}</div><table><thead><tr>${headers.map((h) => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${rows
@@ -425,6 +429,119 @@ async function showDetail(row) {
   const preview = document.createElement("pre");
   preview.textContent = "Loading…";
   $("#detail-body").append(heading, preview);
+  if (row.editTargets?.length) {
+    const targets = row.editTargets;
+    const targetSelect = document.createElement("select");
+    if (targets.length > 1) {
+      const label = document.createElement("label");
+      label.className = "edit-source";
+      label.textContent = "File to edit";
+      for (const target of targets) {
+        const option = document.createElement("option");
+        option.value = target.id;
+        option.textContent = target.path;
+        targetSelect.append(option);
+      }
+      label.append(targetSelect);
+      $("#detail-body").append(label);
+    }
+    const editButton = document.createElement("button");
+    editButton.className = "edit-button";
+    editButton.textContent = "Edit file";
+    editButton.disabled = true;
+    const form = document.createElement("form");
+    form.className = "edit-form";
+    form.hidden = true;
+    const textarea = document.createElement("textarea");
+    textarea.setAttribute("aria-label", `Edit ${row.name}`);
+    textarea.spellcheck = false;
+    const actions = document.createElement("div");
+    actions.className = "edit-actions";
+    const saveButton = document.createElement("button");
+    saveButton.type = "submit";
+    saveButton.textContent = "Save";
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "Cancel";
+    actions.append(saveButton, cancelButton);
+    form.append(textarea, actions);
+    const status = document.createElement("p");
+    status.className = "edit-status";
+    status.setAttribute("role", "status");
+    $("#detail-body").append(editButton, form, status);
+    let file;
+    let targetRequest = 0;
+    async function loadTarget() {
+      const current = ++targetRequest;
+      preview.textContent = "Loading…";
+      editButton.disabled = true;
+      status.textContent = "";
+      try {
+        const result = await api(
+          `/api/file?id=${encodeURIComponent(targetSelect.value || targets[0].id)}`,
+        );
+        if (request !== detailRequest || current !== targetRequest) return;
+        file = result;
+        preview.textContent = result.text;
+        editButton.disabled = false;
+      } catch (error) {
+        if (request === detailRequest && current === targetRequest)
+          preview.textContent = error.message;
+      }
+    }
+    targetSelect.onchange = loadTarget;
+    editButton.onclick = () => {
+      textarea.value = file.text;
+      preview.hidden = true;
+      editButton.hidden = true;
+      form.hidden = false;
+      targetSelect.disabled = true;
+      status.textContent = "";
+      textarea.focus();
+    };
+    cancelButton.onclick = () => {
+      form.hidden = true;
+      preview.hidden = false;
+      editButton.hidden = false;
+      targetSelect.disabled = false;
+      editButton.focus();
+    };
+    form.onsubmit = async (event) => {
+      event.preventDefault();
+      saveButton.disabled = true;
+      cancelButton.disabled = true;
+      status.textContent = "Saving…";
+      try {
+        const result = await api(
+          `/api/file?id=${encodeURIComponent(targetSelect.value || targets[0].id)}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: textarea.value,
+              revision: file.revision,
+            }),
+          },
+        );
+        if (request !== detailRequest) return;
+        file = { text: textarea.value, revision: result.revision };
+        preview.textContent = file.text;
+        form.hidden = true;
+        preview.hidden = false;
+        editButton.hidden = false;
+        targetSelect.disabled = false;
+        status.textContent = "Saved. Workspace rescanned.";
+        await load(true);
+      } catch (error) {
+        if (request === detailRequest) status.textContent = error.message;
+      } finally {
+        saveButton.disabled = false;
+        cancelButton.disabled = false;
+      }
+    };
+    await loadTarget();
+    return;
+  }
   try {
     const result = await api(`/api/content?id=${encodeURIComponent(row.id)}`);
     if (request === detailRequest) preview.textContent = result.text;

@@ -20,6 +20,8 @@ Requires Node.js 20 or newer. Run the command in the folder you want to explore.
 
 Search with `/`, close the preview with Escape, and use Rescan after changing files.
 
+Open a context file or skill to edit its text in the side panel. Choose a source file first when a skill groups identical copies. Save writes that existing file on your machine, then rescans the workspace. If the file changed on disk after you opened it, reopen it before saving. Rules and MCP configurations remain view only.
+
 ```bash
 npx @codeursenior/boyscout ui /path/to/project
 npx @codeursenior/boyscout ui --project-only
@@ -54,7 +56,7 @@ This is an inventory of the selected subtree and supported user locations, not a
 
 ## Privacy
 
-The application binds to `127.0.0.1` only, checks Host and Origin, and requires a random session token for data requests. Everything stays in memory; the scanner does not modify the scanned folder or save inventories. There is no telemetry, CDN, external font, AI API, or network request during scanning. npm may access its registry when installing the tool.
+The application binds to `127.0.0.1` only, checks Host and Origin, and requires a random session token for data requests and edits. Scans and inventories stay in memory. Saving a context file or skill changes that file on disk. There is no telemetry, CDN, external font, AI API, or network request during scanning. npm may access its registry when installing the tool.
 
 MCP commands, arguments, URLs, environment values, and headers are excluded from the API and UI. Context and skill previews display their actual text locally. Treat the open dashboard like your editor: documents may contain private information.
 

@@ -21,7 +21,8 @@ body {
 }
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 button {
@@ -31,6 +32,10 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
+  outline: 2px solid #6a9261;
+  outline-offset: 3px;
+}
+textarea:focus-visible {
   outline: 2px solid #6a9261;
   outline-offset: 3px;
 }
@@ -692,6 +697,56 @@ td.name p {
   margin: 9px 0;
   font-size: 11px;
   color: #7e8d72;
+}
+.detail .edit-source {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0;
+  color: #7d8c70;
+  font-size: 11px;
+}
+.detail .edit-source select {
+  max-width: 100%;
+  width: 100%;
+}
+.detail .edit-button,
+.detail .edit-actions button {
+  border: 1px solid #c9d7bf;
+  border-radius: 6px;
+  background: #e9f0e2;
+  color: #36522e;
+  padding: 9px 13px;
+  font-size: 11px;
+}
+.detail .edit-form {
+  margin-top: 12px;
+}
+.detail .edit-form[hidden] {
+  display: none;
+}
+.detail .edit-form textarea {
+  width: 100%;
+  min-height: 340px;
+  resize: vertical;
+  border: 1px solid #c9d7bf;
+  border-radius: 6px;
+  background: #fcfdf9;
+  color: #26332d;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.detail .edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.detail .edit-actions button:last-child {
+  background: white;
+}
+.detail .edit-status {
+  color: #526f48;
 }
 @media (min-width: 1550px) {
   .page-heading {

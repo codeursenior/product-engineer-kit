@@ -15,7 +15,7 @@ Explore context, skills and MCP configuration in your default browser.
   --project-only    Skip user-level assets
   --help, -h        Show this help
 
-Read-only. Localhost only. No telemetry. Ctrl+C to stop.
+Local workspace. No telemetry. Ctrl+C to stop.
 `;
 
 try {
@@ -45,9 +45,7 @@ try {
       port,
       includeUser: !values["project-only"],
     });
-    console.log(
-      `\n  ${url}\n\n  Read-only · local to this machine · Ctrl+C to stop\n`,
-    );
+    console.log(`\n  ${url}\n\n  Local workspace · Ctrl+C to stop\n`);
     if (!values["no-open"]) {
       const command =
         process.platform === "darwin"
