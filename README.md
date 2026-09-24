@@ -29,7 +29,13 @@ Lance cette commande dans le dossier à explorer. Ton navigateur ouvre un tablea
 
 Clarifie une idée dans un chat web local, en gardant l’agent et le contexte de ta session Codex. Une question à la fois, avec une recommandation. Fermer ne crée aucun document.
 
-[Installation et limites de PEK Grill Me](skills/pek-grill-me/README.md)
+```bash
+npx skills add codeursenior/product-engineer-kit --skill pek-grill-me -g -a codex
+```
+
+Installe le skill pour toutes tes sessions Codex. Node.js 20 ou plus récent est nécessaire. Lance ensuite `$pek-grill-me` avec ton sujet dans Codex.
+
+[Voir PEK Grill Me sur skills.sh](https://skills.sh/codeursenior/product-engineer-kit/pek-grill-me) · [Installation et limites](skills/pek-grill-me/README.md)
 
 ## Explorer la suite
 
