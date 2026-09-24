@@ -8,10 +8,10 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "test": "npm test --workspaces --if-present",
+    "test": "npm test --workspaces --if-present && node --test skills/pek-grill-me/test/*.test.mjs",
     "check": "npm run build && npm test",
     "start": "npm run start --workspace @codeursenior/boyscout --",
-    "format": "npm run format --workspaces --if-present && prettier --write README.md docs package.json .github"
+    "format": "npm run format --workspaces --if-present && prettier --write README.md docs skills package.json .github"
   },
   "devDependencies": {
     "prettier": "^3.9.8"

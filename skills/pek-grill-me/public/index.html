@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Entretien · Product Engineer Kit</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div>
+          <p class="eyebrow">Product Engineer Kit</p>
+          <h1>Entretien</h1>
+        </div>
+        <button id="close" type="button">Fermer</button>
+      </header>
+      <p id="status" class="status" role="status" aria-live="polite">
+        Connexion…
+      </p>
+      <ol
+        id="history"
+        class="history"
+        aria-label="Messages de l’entretien"
+        aria-live="polite"
+      ></ol>
+      <form id="reply">
+        <label for="answer">Votre réponse</label>
+        <textarea
+          id="answer"
+          rows="4"
+          placeholder="Écrivez votre réponse…"
+          required
+        ></textarea>
+        <div class="actions">
+          <span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span
+          ><button id="send" type="submit">Envoyer</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

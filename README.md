@@ -25,7 +25,11 @@ Lance cette commande dans le dossier à explorer. Ton navigateur ouvre un tablea
 
 ## Installer un skill
 
-Aucun skill distribué pour le moment. Cette section accueillera les premiers skills avec leurs instructions d’installation.
+### PEK Grill Me
+
+Clarifie une idée dans un chat web local, en gardant l’agent et le contexte de ta session Codex. Une question à la fois, avec une recommandation. Fermer ne crée aucun document.
+
+[Installation et limites de PEK Grill Me](skills/pek-grill-me/README.md)
 
 ## Explorer la suite
 
