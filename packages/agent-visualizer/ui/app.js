@@ -130,8 +130,8 @@ function render() {
   simulation?.stop();
   const titles = {
     context: [
-      "See what your agent reads.",
-      "Explore the files and connections behind its work.",
+      "See what your agent can find.",
+      "Explore the files each coding agent can reach from its context.",
     ],
     rules: [
       "Rules in your workspace.",
@@ -150,7 +150,7 @@ function render() {
   $("#page-title").textContent = title[0];
   $("#page-description").textContent = title[1];
   $("#view-switch").hidden = state.tab !== "context";
-  $("#client-filter").hidden = state.tab === "context";
+  $("#client-filter").hidden = false;
   $("#search").placeholder =
     state.tab === "context"
       ? "Find a file…"
@@ -258,7 +258,11 @@ function renderGraph(rows) {
     )
     .attr("role", "button")
     .attr("tabindex", 0)
-    .attr("aria-label", (n) => `${n.name}, ${n.scope}, ${n.path}`)
+    .attr(
+      "aria-label",
+      (n) =>
+        `${n.name}, ${n.scope}, ${n.path}, ${n.clients.map((client) => labels[client]).join(", ") || "no client entry point"}`,
+    )
     .on("click", (_, n) => showDetail(n))
     .on("keydown", (event, n) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -290,7 +294,12 @@ function renderGraph(rows) {
     .attr("class", (n) => `node-label ${n.id === root?.id ? "root-label" : ""}`)
     .attr("y", (n) => n.radius + 17)
     .text((n) => (n.name.length > 30 ? n.name.slice(0, 27) + "…" : n.name));
-  node.append("title").text((n) => n.path);
+  node
+    .append("title")
+    .text(
+      (n) =>
+        `${n.path}\n${n.clients.map((client) => labels[client]).join(", ") || "No client entry point"}`,
+    );
   const zoomer = zoom()
     .scaleExtent([0.06, 4])
     .on("zoom", (event) => group.attr("transform", event.transform));
@@ -381,7 +390,7 @@ function renderTable(rows) {
         ? ["Skill", "Invocation", "Scope", "Clients"]
         : state.tab === "mcp"
           ? ["Server", "Connection", "Transport", "Scope", "Clients"]
-          : ["File", "Type", "Lines", "Scope"];
+          : ["File", "Type", "Lines", "Scope", "Clients"];
   const help =
     state.tab === "rules"
       ? "Dedicated Cursor and Claude Code files only. File metadata describes conditions; it does not prove a rule loaded in a session. Codex AGENTS.md remains in Context."
@@ -389,7 +398,7 @@ function renderTable(rows) {
         ? "Client icons: Cursor · Claude Code · Codex. Active means a discovery path was found, not a running session. Hover for invocation details. Identical copies are grouped."
         : state.tab === "mcp"
           ? "Client icons: Cursor · Claude Code · Codex. Configuration does not prove a live connection. The viewer never launches a server or sends credentials."
-          : "Only context entry points, agent knowledge folders, and their linked documents appear here.";
+          : "Client icons show entry points and linked documents that each agent can discover. They do not confirm a file loaded in a session. Unlinked knowledge has no client entry point.";
   $("#canvas").innerHTML =
     `<div class="table-wrap"><div class="table-help">${help}</div><table><thead><tr>${headers.map((h) => `<th scope="col">${h}</th>`).join("")}</tr></thead><tbody>${rows
       .map((row) => {
@@ -405,7 +414,7 @@ function renderTable(rows) {
             ]
               .filter(Boolean)
               .join(" · ") || "No path condition";
-        return `<tr>${name}${state.tab === "rules" ? `<td>${escape(conditions)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "skills" ? `<td><span class="badge neutral">${escape(row.mode)}</span></td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "mcp" ? `<td><span class="badge ${row.status === "Disabled" ? "neutral" : "warn"}">○ ${escape(row.status)}</span></td><td>${escape(row.transport)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : `<td>${escape(row.kind)}</td><td class="line-count">${Number(row.lines).toLocaleString()}</td><td>${scopeBadge(row.scope)}</td>`}</tr>`;
+        return `<tr>${name}${state.tab === "rules" ? `<td>${escape(conditions)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "skills" ? `<td><span class="badge neutral">${escape(row.mode)}</span></td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "mcp" ? `<td><span class="badge ${row.status === "Disabled" ? "neutral" : "warn"}">○ ${escape(row.status)}</span></td><td>${escape(row.transport)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : `<td>${escape(row.kind)}</td><td class="line-count">${Number(row.lines).toLocaleString()}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>`}</tr>`;
       })
       .join("")}</tbody></table></div>`;
   $$("[data-detail]").forEach((button) => {
@@ -425,7 +434,7 @@ async function showDetail(row) {
         ? `<h3>Client discovery</h3>${Object.keys(labels)
             .map(
               (client) =>
-                `<div class="client-line">${clientIcon(client, row.clients.includes(client))}${labels[client]} · ${escape(row.invocation?.[client] || (row.clients.includes(client) ? "Configured" : "Not discovered"))}</div>`,
+                `<div class="client-line">${clientIcon(client, row.clients.includes(client))}${labels[client]} · ${escape(row.invocation?.[client] || (row.clients.includes(client) ? (state.tab === "context" ? "Entry point or linked" : "Configured") : "Not discovered"))}</div>`,
             )
             .join("")}`
         : ""

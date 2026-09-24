@@ -63,6 +63,21 @@ const toolsForSkill = (p) => {
   if (/(^|\/)\.(agents|codex)\/skills\//.test(p)) result.push("codex");
   return result;
 };
+const clientsForContextEntry = (alias, scope, root, codexHome) => {
+  const name = path.basename(alias).toLowerCase();
+  if (name === "agents.override.md") return ["codex"];
+  if (name === "agents.md") {
+    if (scope === "user")
+      return inside(codexHome, alias) ? ["codex"] : ["cursor"];
+    return ["cursor", "codex"];
+  }
+  if (name === "claude.local.md") return ["claude"];
+  if (name === "claude.md")
+    return scope === "project" && path.dirname(alias) === root
+      ? ["cursor", "claude"]
+      : ["claude"];
+  return [];
+};
 function frontmatter(text) {
   const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
   if (!match) return {};
@@ -227,6 +242,13 @@ export async function scanProject(
       name: path.basename(aliases[0]),
       path: paths[0],
       aliases: paths,
+      clients: [
+        ...new Set(
+          aliases.flatMap((alias) =>
+            clientsForContextEntry(alias, entry.scope, root, codexHome),
+          ),
+        ),
+      ],
       editTargets: [{ id: entry.id, path: paths[0] }],
       scope: entry.scope,
       kind,
@@ -444,6 +466,28 @@ export async function scanProject(
         target: child.id,
         kind: "scope",
       });
+  }
+
+  // Only explicit references carry discovery to other documents. Folder scope
+  // describes where instructions apply; it does not import the child file.
+  const references = new Map();
+  for (const edge of edges.values()) {
+    if (edge.kind !== "reference") continue;
+    if (!references.has(edge.source)) references.set(edge.source, []);
+    references.get(edge.source).push(edge.target);
+  }
+  const pending = [...context.values()].filter((node) => node.clients.length);
+  for (let i = 0; i < pending.length; i++) {
+    const source = pending[i];
+    for (const targetId of references.get(source.id) || []) {
+      const target = context.get(targetId);
+      const added = source.clients.filter(
+        (client) => !target.clients.includes(client),
+      );
+      if (!added.length) continue;
+      target.clients.push(...added);
+      pending.push(target);
+    }
   }
 
   const mcp = [];

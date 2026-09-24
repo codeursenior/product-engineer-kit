@@ -39,6 +39,40 @@ test("counts visible lines in context files", async (t) => {
   );
 });
 
+test("attributes linked context to each discovering client without inheriting folder scope", async (t) => {
+  const { root, home, write, scan } = await fixture(t);
+  await write(
+    path.join(root, "CLAUDE.md"),
+    "[Claude guide](docs/guide.md) [Shared](docs/shared.md)",
+  );
+  await write(
+    path.join(root, "AGENTS.md"),
+    "[Codex guide](docs/codex.md) [Shared](docs/shared.md)",
+  );
+  await write(path.join(root, "docs/guide.md"), "[Deep](deep.md)");
+  await write(path.join(root, "docs/deep.md"), "Deep context");
+  await write(path.join(root, "docs/codex.md"), "Codex context");
+  await write(path.join(root, "docs/shared.md"), "Shared context");
+  await write(path.join(root, "app/CLAUDE.md"), "Nested Claude context");
+  await write(path.join(root, ".agents/knowledge/orphan.md"), "Unlinked");
+  await write(path.join(home, ".claude/CLAUDE.md"), "User Claude context");
+  const { data } = await scan();
+  const clientsAt = (location) =>
+    new Set(data.nodes.find((node) => node.path === location).clients);
+  assert.deepEqual(clientsAt("CLAUDE.md"), new Set(["cursor", "claude"]));
+  assert.deepEqual(clientsAt("AGENTS.md"), new Set(["cursor", "codex"]));
+  assert.deepEqual(clientsAt("docs/guide.md"), new Set(["cursor", "claude"]));
+  assert.deepEqual(clientsAt("docs/deep.md"), new Set(["cursor", "claude"]));
+  assert.deepEqual(clientsAt("docs/codex.md"), new Set(["cursor", "codex"]));
+  assert.deepEqual(
+    clientsAt("docs/shared.md"),
+    new Set(["cursor", "claude", "codex"]),
+  );
+  assert.deepEqual(clientsAt("app/CLAUDE.md"), new Set(["claude"]));
+  assert.deepEqual(clientsAt(".agents/knowledge/orphan.md"), new Set());
+  assert.deepEqual(clientsAt("~/.claude/CLAUDE.md"), new Set(["claude"]));
+});
+
 async function fixture(t) {
   await fs.mkdir(".local/test", { recursive: true });
   const base = await fs.mkdtemp(path.resolve(".local/test/scanner-"));
@@ -86,6 +120,14 @@ test("follows markdown, wikilinks, root-relative references, symlinks and nested
     data.nodes.find((n) => n.name === "AGENTS.md" || n.name === "CLAUDE.md")
       .aliases.length,
     2,
+  );
+  assert.deepEqual(
+    new Set(data.nodes.find((n) => n.aliases.length === 2).clients),
+    new Set(["cursor", "claude", "codex"]),
+  );
+  assert.deepEqual(
+    new Set(data.nodes.find((n) => n.path === "notes/detail.md").clients),
+    new Set(["cursor", "claude", "codex"]),
   );
   assert.equal(data.edges.filter((e) => e.kind === "scope").length, 1);
   assert.equal(data.edges.filter((e) => e.kind === "reference").length, 5);

@@ -12,7 +12,7 @@ Requires Node.js 20 or newer. Run the command in the folder you want to explore.
 
 ## Explore
 
-- **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for an accessible table.
+- **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.
 - **Rules:** searchable list of dedicated Cursor and Claude Code rule files, with source paths, declared file conditions, client discovery, and previews. Metadata does not prove a rule loaded in a session.
 - **Skills:** names, descriptions, invocation policy, source paths, and discovery indicators for Cursor, Claude Code, and Codex. Identical copies in the same scope are grouped, retaining their paths.
 - **MCP servers:** names, configuration sources, transport, and client indicators. The tool reads configuration without launching servers or transmitting credentials.
@@ -41,6 +41,8 @@ A random available loopback port is used by default. The terminal URL includes a
 | MCP          | `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`, including nested folders      | `~/.cursor/mcp.json`, `~/.codex/config.toml`, global and matching project-local entries in `~/.claude.json` |
 
 `CODEX_HOME` is respected. Markdown links, Obsidian wikilinks, backtick file paths and `@file.md` references connect context nodes. Unrelated Markdown stays out of the graph. Symlinks within the selected folder and supported agent home directories are resolved and deduplicated. External symlinks are excluded.
+
+Context client icons start at recognized instruction files and follow explicit local references through the graph. A linked document can appear for several clients when their entry points converge. Folder-scope lines do not import files, and unlinked knowledge files have no client entry point. Project-root `CLAUDE.md` is shown for both Claude Code and Cursor because Cursor also reads it; nested and user Claude instructions are shown for Claude Code. Project `AGENTS.md` is shown for Codex and Cursor. These icons describe possible file discovery, not a confirmed read in a running conversation.
 
 Codex behavior instructions in `AGENTS.md` stay in Context. Codex `.codex/rules/*.rules` are command approval policies and are not included in Rules. Cursor user rules configured only in application settings cannot be read from the filesystem.
 
