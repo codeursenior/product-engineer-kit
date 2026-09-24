@@ -36,10 +36,14 @@ test("serves the packaged UI and authenticated APIs without cross-origin or arbi
   assert.match(html, /On Your Machine \(not shared with your\s+team\)/);
   assert.doesNotMatch(html, /Stays on your machine/);
   assert.doesNotMatch(html, /class="breadcrumb"/);
-  const sidebarNote = html.indexOf('class="sidebar-note"');
+  assert.doesNotMatch(html, /class="sidebar-note"/);
+  assert.match(html, /src="\/mountain-context\.jpg"/);
   const refresh = html.indexOf('id="refresh"');
   const sidebarFooter = html.indexOf('class="sidebar-footer"');
-  assert.ok(sidebarNote < refresh && refresh < sidebarFooter);
+  assert.ok(refresh >= 0 && refresh < sidebarFooter);
+  const image = await fetch(base + "mountain-context.jpg");
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get("content-type"), "image/jpeg");
   assert.equal((await fetch(base + "api/scan")).status, 401);
   assert.equal(
     (

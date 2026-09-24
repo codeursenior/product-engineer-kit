@@ -130,30 +130,25 @@ function render() {
   simulation?.stop();
   const titles = {
     context: [
-      "THE BIG PICTURE",
-      "Your agent’s context.",
-      "Follow the connections. Find the source of every instruction.",
+      "See what your agent reads.",
+      "Explore the files and connections behind its work.",
     ],
     rules: [
-      "SCOPED INSTRUCTIONS",
-      "Your agent’s rules.",
-      "Browse dedicated Cursor and Claude Code rule files.",
+      "Rules in your workspace.",
+      "Browse the rule files discovered for Cursor and Claude Code.",
     ],
     skills: [
-      "WHAT YOUR AGENT CAN DO",
-      "A skill for every task.",
-      "Explore reusable workflows and the clients that discover them.",
+      "Skills your agent can use.",
+      "Find each workflow and see which clients discover it.",
     ],
     mcp: [
-      "CONNECTED CAPABILITIES",
-      "Tools beyond the code.",
-      "See configured MCP servers, their scope, and their client setup.",
+      "Configured MCP servers.",
+      "See where each server is configured and which clients can find it.",
     ],
   };
   const title = titles[state.tab];
-  $("#page-eyebrow").textContent = title[0];
-  $("#page-title").textContent = title[1];
-  $("#page-description").textContent = title[2];
+  $("#page-title").textContent = title[0];
+  $("#page-description").textContent = title[1];
   $("#view-switch").hidden = state.tab !== "context";
   $("#client-filter").hidden = state.tab === "context";
   $("#search").placeholder =

@@ -1054,3 +1054,429 @@ td.name p {
   background: #493e29;
   color: #e9ca81;
 }
+
+/* A quiet field guide around the mountain image shared with Codeur Senior. */
+:root {
+  color-scheme: light;
+  color: #171412;
+  background: #f7f5f1;
+  --line: #dad7d1;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline-color: #0057e6;
+}
+.sidebar {
+  background: #252b27;
+  border-right: 0;
+  padding-top: 27px;
+}
+.brand,
+.workspace strong {
+  color: #f7f5f1;
+}
+.brand {
+  font-size: 23px;
+  letter-spacing: -0.7px;
+}
+.brand-sub {
+  margin-top: 0;
+  font-size: 10px;
+  letter-spacing: 0;
+  font-weight: 450;
+  color: #b9c0b8;
+}
+.workspace {
+  margin-top: 45px;
+  margin-bottom: 34px;
+}
+.eyebrow,
+.nav-label {
+  color: #aab5aa;
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 550;
+}
+.workspace .mono,
+.local-label,
+.sidebar-footer {
+  color: #aab5aa;
+}
+.nav-label {
+  margin-bottom: 9px;
+}
+nav {
+  gap: 3px;
+}
+.nav-item {
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  color: #d2d9d0;
+  padding: 11px 12px;
+  font-size: 13px;
+}
+.nav-item:hover,
+.nav-item.active {
+  background: #354238;
+  color: #fff;
+}
+.nav-item.active {
+  border-left-color: #b5c9a6;
+  font-weight: 650;
+}
+.count,
+.active .count {
+  background: transparent;
+  color: #acbaab;
+  font-size: 11px;
+  padding-right: 0;
+}
+.sidebar-rescan {
+  margin: auto 12px 21px;
+}
+.sidebar .small-button {
+  color: #edf1e9;
+  background: #354238;
+  border: 1px solid #536256;
+}
+.sidebar .small-button:hover {
+  background: #435348;
+}
+.sidebar-footer {
+  border-top-color: #465149;
+}
+main {
+  background: #f7f5f1;
+}
+.page-heading {
+  isolation: isolate;
+  position: relative;
+  min-height: 275px;
+  overflow: hidden;
+  align-items: flex-end;
+  padding: 36px 42px 39px;
+  border-bottom: 1px solid var(--line);
+}
+.page-heading-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 61%;
+}
+.page-heading::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    #f7f5f1 0%,
+    rgb(247 245 241 / 96%) 26%,
+    rgb(247 245 241 / 74%) 48%,
+    rgb(247 245 241 / 4%) 100%
+  );
+}
+.page-heading-copy {
+  max-width: 480px;
+}
+.page-heading h1 {
+  margin: 0 0 15px;
+  max-width: 430px;
+  color: #171412;
+  font-size: clamp(34px, 3.4vw, 49px);
+  line-height: 1.03;
+  letter-spacing: -1.7px;
+  font-weight: 650;
+}
+.page-heading p {
+  max-width: 390px;
+  color: #34332f;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.view-switch {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  background: rgb(255 255 255 / 90%);
+  border-color: rgb(37 43 39 / 15%);
+}
+.view-switch button {
+  color: #5d645c;
+  font-size: 12px;
+}
+.view-switch .selected {
+  color: #202923;
+  background: #e7ece3;
+  box-shadow: none;
+}
+.toolbar {
+  padding: 24px 42px 18px;
+}
+.scope-tabs button {
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: #66685f;
+  font-size: 12px;
+}
+.scope-tabs .selected {
+  background: transparent;
+  border-bottom-color: #536450;
+  color: #273528;
+  font-weight: 650;
+}
+.dot.project,
+.local-label i,
+.safe-dot {
+  background: #769274;
+}
+.search,
+select {
+  background: #fffdf9;
+  color: #66685f;
+}
+.search input {
+  color: #171412;
+}
+#canvas {
+  height: calc(100vh - 430px);
+  min-height: 440px;
+  margin: 0 42px;
+  background-color: #fffdf9;
+  border-radius: 5px;
+}
+#canvas.graph-canvas {
+  background-image: radial-gradient(#e1e4dc 0.7px, transparent 0.7px);
+  background-size: 22px 22px;
+}
+.graph-key {
+  color: #626d61;
+}
+.graph-node text {
+  fill: #505f4e;
+  stroke: #fffdf9;
+}
+.graph-node .node-label.root-label {
+  fill: #273528;
+}
+.graph-controls {
+  border-color: var(--line);
+  background: #fffdf9;
+}
+.notice {
+  margin-right: 42px;
+  margin-left: 42px;
+  background: #f1eadb;
+  color: #665637;
+}
+.table-help,
+th {
+  background: #f1f1eb;
+}
+.table-help {
+  color: #626d61;
+  font-size: 11px;
+}
+th {
+  color: #555e53;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+td {
+  color: #4d594d;
+  border-bottom-color: #e9e8e1;
+}
+td.name button {
+  color: #273528;
+  font-size: 13px;
+}
+td.name p {
+  color: #777e73;
+  font-size: 11px;
+}
+tbody tr:hover {
+  background: #f3f4ee;
+}
+.detail {
+  background: #fffdf9;
+}
+.detail h2 {
+  color: #171412;
+}
+.detail pre {
+  background: #f3f4ee;
+}
+
+:root[data-theme="dark"] {
+  color: #eeeae4;
+  background: #171a18;
+  --line: #3d443e;
+}
+[data-theme="dark"] .sidebar {
+  background: #1c231e;
+}
+[data-theme="dark"] .brand,
+[data-theme="dark"] .workspace strong,
+[data-theme="dark"] .detail h2 {
+  color: #f7f5f1;
+}
+[data-theme="dark"] .brand-sub,
+[data-theme="dark"] .eyebrow,
+[data-theme="dark"] .nav-label,
+[data-theme="dark"] .workspace .mono,
+[data-theme="dark"] .local-label,
+[data-theme="dark"] .sidebar-footer {
+  color: #b6c0b5;
+}
+[data-theme="dark"] .nav-item {
+  color: #d2d9d0;
+}
+[data-theme="dark"] .nav-item:hover,
+[data-theme="dark"] .nav-item.active {
+  background: #354238;
+  color: #fff;
+}
+[data-theme="dark"] .sidebar .small-button {
+  background: #354238;
+  color: #edf1e9;
+  border-color: #536256;
+}
+[data-theme="dark"] main {
+  background: #171a18;
+}
+[data-theme="dark"] .page-heading {
+  border-bottom-color: var(--line);
+}
+[data-theme="dark"] .page-heading::before {
+  background: linear-gradient(
+    90deg,
+    #171a18 0%,
+    rgb(23 26 24 / 95%) 27%,
+    rgb(23 26 24 / 75%) 53%,
+    rgb(23 26 24 / 24%) 100%
+  );
+}
+[data-theme="dark"] .page-heading h1 {
+  color: #f7f5f1;
+}
+[data-theme="dark"] .page-heading p {
+  color: #d9ded7;
+}
+[data-theme="dark"] .view-switch {
+  background: rgb(30 36 31 / 90%);
+  border-color: #4a544b;
+}
+[data-theme="dark"] .view-switch button {
+  color: #d0d8cb;
+}
+[data-theme="dark"] .view-switch .selected {
+  background: #435348;
+  color: #fff;
+}
+[data-theme="dark"] .scope-tabs button {
+  color: #abb7a9;
+}
+[data-theme="dark"] .scope-tabs .selected {
+  color: #ecf2e9;
+  border-bottom-color: #9cb793;
+}
+[data-theme="dark"] .search,
+[data-theme="dark"] select,
+[data-theme="dark"] #canvas,
+[data-theme="dark"] .detail {
+  background-color: #202722;
+}
+[data-theme="dark"] #canvas.graph-canvas {
+  background-image: radial-gradient(#39463c 0.7px, transparent 0.7px);
+}
+[data-theme="dark"] .graph-node text {
+  stroke: #202722;
+}
+[data-theme="dark"] .table-help,
+[data-theme="dark"] th {
+  background: #2a332c;
+  color: #c5d0c1;
+}
+[data-theme="dark"] td {
+  border-bottom-color: #3d443e;
+}
+[data-theme="dark"] td.name button {
+  color: #e0ecda;
+}
+[data-theme="dark"] .notice {
+  background: #403928;
+  color: #ead7aa;
+}
+
+@media (max-width: 950px) {
+  .page-heading {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+  .toolbar {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+  #canvas {
+    margin-right: 24px;
+    margin-left: 24px;
+  }
+}
+@media (max-width: 700px) {
+  .sidebar {
+    background: #252b27;
+  }
+  .sidebar-rescan {
+    margin: 12px 0 0;
+  }
+  .page-heading {
+    min-height: 290px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 32px 20px 24px;
+  }
+  .page-heading h1 {
+    max-width: 330px;
+    font-size: 35px;
+  }
+  .page-heading::before {
+    background: linear-gradient(
+      90deg,
+      #f7f5f1 0%,
+      rgb(247 245 241 / 90%) 48%,
+      rgb(247 245 241 / 26%) 100%
+    );
+  }
+  [data-theme="dark"] .page-heading::before {
+    background: linear-gradient(
+      90deg,
+      #171a18 0%,
+      rgb(23 26 24 / 91%) 48%,
+      rgb(23 26 24 / 36%) 100%
+    );
+  }
+  .page-heading .view-switch {
+    display: flex;
+    position: static;
+    margin-top: 18px;
+  }
+  .toolbar {
+    padding: 20px 18px 16px;
+  }
+  #canvas {
+    margin: 0 18px;
+  }
+  .notice {
+    margin: 0 18px 15px;
+  }
+}

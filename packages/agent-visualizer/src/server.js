@@ -9,6 +9,7 @@ const assets = new Map([
   ["/app.js", ["app.js", "text/javascript; charset=utf-8"]],
   ["/style.css", ["style.css", "text/css; charset=utf-8"]],
   ["/favicon.svg", ["favicon.svg", "image/svg+xml"]],
+  ["/mountain-context.jpg", ["mountain-context.jpg", "image/jpeg"]],
   ["/client-logos/cursor.png", ["client-logos/cursor.png", "image/png"]],
   ["/client-logos/claude.png", ["client-logos/claude.png", "image/png"]],
   ["/client-logos/chatgpt.webp", ["client-logos/chatgpt.webp", "image/webp"]],
