@@ -37,6 +37,10 @@ const ruleClient = (file) => {
 };
 const MAX_FILES = 20000;
 const MAX_BYTES = 512 * 1024;
+const lineCount = (text) =>
+  text.length === 0
+    ? 0
+    : text.split(/\r\n|\r|\n/).length - Number(/(?:\r\n|\r|\n)$/.test(text));
 const id = (value) =>
   createHash("sha256").update(value).digest("hex").slice(0, 16);
 const slash = (value) => value.split(path.sep).join("/");
@@ -227,6 +231,7 @@ export async function scanProject(
       scope: entry.scope,
       kind,
       bytes: Buffer.byteLength(entry.text),
+      lines: lineCount(entry.text),
       excerpt: entry.text.slice(0, 180),
     });
     content.set(entry.id, entry.text);

@@ -22,6 +22,23 @@ test("discovers skills and context with a custom CODEX_HOME", async (t) => {
   assert.equal(data.mcp[0].scope, "user");
 });
 
+test("counts visible lines in context files", async (t) => {
+  const { root, write, scan } = await fixture(t);
+  await write(path.join(root, "CLAUDE.md"), "one\r\ntwo\r\n");
+  await write(path.join(root, "nested/AGENTS.md"), "single line");
+  await write(path.join(root, "empty/AGENTS.md"), "");
+  const { data } = await scan();
+  assert.equal(data.nodes.find((node) => node.name === "CLAUDE.md").lines, 2);
+  assert.equal(
+    data.nodes.find((node) => node.path === "nested/AGENTS.md").lines,
+    1,
+  );
+  assert.equal(
+    data.nodes.find((node) => node.path === "empty/AGENTS.md").lines,
+    0,
+  );
+});
+
 async function fixture(t) {
   await fs.mkdir(".local/test", { recursive: true });
   const base = await fs.mkdtemp(path.resolve(".local/test/scanner-"));

@@ -34,6 +34,20 @@ const state = {
   search: "",
   view: "graph",
 };
+const themeKey = "boyscout-theme";
+const savedTheme = localStorage.getItem(themeKey);
+document.documentElement.dataset.theme =
+  savedTheme === "dark" ? "dark" : "light";
+function updateThemeButton() {
+  const dark = document.documentElement.dataset.theme === "dark";
+  $("#theme-toggle").textContent = dark ? "☀" : "☾";
+  $("#theme-toggle").setAttribute(
+    "aria-label",
+    dark ? "Switch to light mode" : "Switch to dark mode",
+  );
+  $("#theme-toggle").title = dark ? "Light mode" : "Dark mode";
+  $("#theme-toggle").setAttribute("aria-pressed", String(dark));
+}
 let simulation;
 let detailRequest = 0;
 let lastFocus;
@@ -242,7 +256,11 @@ function renderGraph(rows) {
     .selectAll("g")
     .data(nodes)
     .join("g")
-    .attr("class", (n) => `graph-node ${n.scope}`)
+    .attr(
+      "class",
+      (n) =>
+        `graph-node ${n.scope} ${n.kind} ${n.id === root?.id ? "root" : ""}`,
+    )
     .attr("role", "button")
     .attr("tabindex", 0)
     .attr("aria-label", (n) => `${n.name}, ${n.scope}, ${n.path}`)
@@ -368,7 +386,7 @@ function renderTable(rows) {
         ? ["Skill", "Invocation", "Scope", "Clients"]
         : state.tab === "mcp"
           ? ["Server", "Connection", "Transport", "Scope", "Clients"]
-          : ["File", "Type", "Scope"];
+          : ["File", "Type", "Lines", "Scope"];
   const help =
     state.tab === "rules"
       ? "Dedicated Cursor and Claude Code files only. File metadata describes conditions; it does not prove a rule loaded in a session. Codex AGENTS.md remains in Context."
@@ -392,7 +410,7 @@ function renderTable(rows) {
             ]
               .filter(Boolean)
               .join(" · ") || "No path condition";
-        return `<tr>${name}${state.tab === "rules" ? `<td>${escape(conditions)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "skills" ? `<td><span class="badge neutral">${escape(row.mode)}</span></td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "mcp" ? `<td><span class="badge ${row.status === "Disabled" ? "neutral" : "warn"}">○ ${escape(row.status)}</span></td><td>${escape(row.transport)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : `<td>${escape(row.kind)}</td><td>${scopeBadge(row.scope)}</td>`}</tr>`;
+        return `<tr>${name}${state.tab === "rules" ? `<td>${escape(conditions)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "skills" ? `<td><span class="badge neutral">${escape(row.mode)}</span></td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : state.tab === "mcp" ? `<td><span class="badge ${row.status === "Disabled" ? "neutral" : "warn"}">○ ${escape(row.status)}</span></td><td>${escape(row.transport)}</td><td>${scopeBadge(row.scope)}</td><td>${clients(row)}</td>` : `<td>${escape(row.kind)}</td><td class="line-count">${Number(row.lines).toLocaleString()}</td><td>${scopeBadge(row.scope)}</td>`}</tr>`;
       })
       .join("")}</tbody></table></div>`;
   $$("[data-detail]").forEach((button) => {
@@ -593,6 +611,14 @@ $("#refresh").onclick = () => {
   closeDetail();
   load(true);
 };
+$("#theme-toggle").onclick = () => {
+  const next =
+    document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem(themeKey, next);
+  updateThemeButton();
+};
+updateThemeButton();
 $("#close-detail").onclick = closeDetail;
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeDetail();
