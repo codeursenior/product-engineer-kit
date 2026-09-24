@@ -16,8 +16,17 @@ git commit -m "fix(product-engineer-kit): describe the change"
 
 Commit messages, authors and every file under `product-engineer-kit/` can become public. Never place private Elrond assets, credentials or test repositories in this directory.
 
+Whenever a kit change is pushed to Elrond's `origin/main`, synchronize the public mirror in the same work session, even for a single changed file:
+
+```bash
+git push origin main
+./scripts/sync-product-engineer-kit.sh
+```
+
+The sync script validates the kit and pushes only its subtree. Verify that the new commit is visible on the public `main` branch and that its GitHub Actions check succeeds. Do not wait for a package release or a separate request to synchronize.
+
 ## Public synchronization
 
-The maintainer validates and exports only the `product-engineer-kit/` subtree during a release. The public mirror must never be edited or force-pushed directly. See [releasing.md](releasing.md) for the complete validation, synchronization and npm publication sequence.
+The maintainer validates and exports only the `product-engineer-kit/` subtree after each pushed kit change. The public mirror must never be edited or force-pushed directly. See [releasing.md](releasing.md) for the validation, synchronization and separate npm publication sequence.
 
 A public clone remains a normal standalone repository for users. It has no runtime dependency on Elrond.

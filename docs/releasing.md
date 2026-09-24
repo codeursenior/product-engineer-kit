@@ -6,6 +6,8 @@ Agent Visualizer lives in `packages/agent-visualizer`. Its npm package is `@code
 
 ## Validate and synchronize from Elrond
 
+Run this after every push of a change under `product-engineer-kit/` to Elrond's `origin/main`, including a one-file change. Mirroring is part of completing that push and does not wait for a package release.
+
 ```bash
 ./scripts/sync-product-engineer-kit.sh
 ```
@@ -14,7 +16,7 @@ The script requires Elrond's committed `main` branch to match `origin/main`. It 
 
 Review the package file list. Only the selected tool's source, prebuilt browser assets, package metadata, documentation and licenses belong in the archive. Private test repositories and temporary credentials belong in ignored `.local/` directories and must never be committed or published.
 
-Wait for the public GitHub Actions workflow to pass before continuing. Create the public GitHub Release and its tag against the mirror's `main` branch; never push an Elrond tag to the public repository.
+Verify that the new commit is visible on the public `main` branch and wait for its GitHub Actions workflow to pass. A GitHub Release and tag are separate publication steps; when making a release, create them against the mirror's `main` branch and never push an Elrond tag to the public repository.
 
 ## Publish npm from the kit directory
 
@@ -40,4 +42,4 @@ Verify from another folder:
 npx @codeursenior/boyscout@0.1.0 ui
 ```
 
-For later releases, update the workspace version and the root lockfile in Elrond, commit and push Elrond, synchronize the public mirror, wait for CI, create the public GitHub Release, then publish npm. Each package has its own version. Published versions cannot be overwritten.
+For later npm releases, update the workspace version and the root lockfile in Elrond, commit and push Elrond, synchronize the public mirror as usual, wait for CI, create the public GitHub Release, then publish npm. Each package has its own version. Published versions cannot be overwritten.
