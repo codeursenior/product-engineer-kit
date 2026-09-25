@@ -67,11 +67,12 @@ jobs:
         env:
           LOCAL_VERSION: ${{ steps.release.outputs.local_version }}
         run: |
-          for attempt in {1..10}; do
+          # npm may accept a publish while the new version is still processing.
+          for attempt in {1..40}; do
             if published="$(npm view @codeursenior/boyscout@latest version --prefer-online)"; then
               if [[ "$published" == "$LOCAL_VERSION" ]]; then exit 0; fi
             fi
-            sleep 3
+            sleep 15
           done
           echo "npm latest did not advance to $LOCAL_VERSION" >&2
           exit 1
