@@ -1,45 +1,30 @@
 # Releasing
 
-Elrond is the source of truth for the Product Engineer Kit. The public `codeursenior/product-engineer-kit` repository is a read-only mirror of Elrond's `product-engineer-kit/` subtree. Each tool remains an independent npm workspace, and the kit root stays private to prevent accidentally publishing the entire repository.
+Elrond is the source of truth for the Product Engineer Kit. The public `codeursenior/product-engineer-kit` repository is a read-only mirror of Elrond's `product-engineer-kit/` subtree. Each tool remains an independent npm workspace, and the kit root stays private.
 
 Agent Visualizer lives in `packages/agent-visualizer`. Its npm package is `@codeursenior/boyscout`, with the `boyscout` executable.
 
-## Validate and synchronize from Elrond
+## Automatic release flow
 
-Run this after every push of a change under `product-engineer-kit/` to Elrond's `origin/main`, including a one-file change. Mirroring is part of completing that push and does not wait for a package release.
+A push to Elrond's `main` starts the private **Sync Product Engineer Kit** workflow only when `product-engineer-kit/` or its sync automation changes. It also runs daily and can be started with `workflow_dispatch` to retry a failed release.
 
-```bash
-./scripts/sync-product-engineer-kit.sh
-```
+The private workflow installs dependencies, builds and tests the kit, and compares the files that `npm pack` would publish with the current npm archive. It ignores the version field in `package.json` and normalizes line endings. A change outside the npm archive, including tests or another kit tool, synchronizes the mirror without releasing Boyscout. When publishable files have changed, the workflow commits the next patch version and root lockfile to Elrond's `main`, then pushes the complete kit subtree to the public mirror. An already bumped but unpublished version is reused on retry.
 
-The script requires Elrond's committed `main` branch to match `origin/main`. It installs dependencies, runs the complete checks, previews the npm archive and pushes only the kit subtree to the public mirror. It never publishes npm, creates a tag or force-pushes.
+The public **Check and publish** workflow tests the mirror on each push. After those checks pass, it publishes a changed Boyscout package through npm trusted publishing and verifies that `latest` points to the new version. Its daily run retries a publication that previously failed. A changed archive with an already published version fails rather than attempting to overwrite it.
 
-Review the package file list. Only the selected tool's source, prebuilt browser assets, package metadata, documentation and licenses belong in the archive. Private test repositories and temporary credentials belong in ignored `.local/` directories and must never be committed or published.
-
-Verify that the new commit is visible on the public `main` branch and wait for its GitHub Actions workflow to pass. A GitHub Release and tag are separate publication steps; when making a release, create them against the mirror's `main` branch and never push an Elrond tag to the public repository.
-
-## Publish npm from the kit directory
-
-From Elrond:
+Check both workflows after a kit push. The private workflow must finish successfully, the mirror must contain the new subtree commit, and the public workflow must pass. When package files changed, check the installed version from a separate folder:
 
 ```bash
-cd product-engineer-kit
+npx --prefer-online @codeursenior/boyscout@latest --version
 ```
 
-Sign in with an npm account allowed to publish in the `@codeursenior` scope. Keep authentication files local to this checkout:
+The local fallback `./scripts/sync-product-engineer-kit.sh` validates and pushes the subtree but does not publish npm, create a tag or create a GitHub Release. It requires a clean kit and Elrond's committed `main` to match `origin/main`. Never edit or force-push the public mirror directly.
 
-```bash
-npm login --userconfig "$PWD/.local/npmrc" --cache "$PWD/.local/npm-cache"
-npm whoami --userconfig "$PWD/.local/npmrc" --cache "$PWD/.local/npm-cache"
-npm publish --workspace @codeursenior/boyscout --access public --userconfig "$PWD/.local/npmrc" --cache "$PWD/.local/npm-cache"
-```
+## One-time configuration
 
-Complete any browser authentication or 2FA yourself. The scope must belong to your account or an organization in which you have publishing rights.
+1. Enable GitHub Actions in Elrond and allow its `GITHUB_TOKEN` to push the automatic version commit to `main` (`contents: write`). Each local clone must pull that commit before its next push.
+2. Add an Elrond Actions secret named `KIT_MIRROR_TOKEN`: a fine-grained GitHub token with **Contents: Read and write** on `codeursenior/product-engineer-kit` only. The private workflow uses it only for the mirror push. Keep all credentials outside the repository.
+3. In the npm settings for `@codeursenior/boyscout`, configure a GitHub Actions trusted publisher for owner `codeursenior`, repository `product-engineer-kit`, workflow filename `ci.yml`, with direct `npm publish` allowed and no environment name. The publish job runs on a GitHub-hosted runner with `id-token: write` and npm 11.5.1.
+4. Run the private workflow once to catch up the current code. Confirm the version commit, mirror push, public checks, and new npm `latest` before relying on the automation.
 
-Verify from another folder:
-
-```bash
-npx @codeursenior/boyscout@0.1.0 ui
-```
-
-For later npm releases, update the workspace version and the root lockfile in Elrond, commit and push Elrond, synchronize the public mirror as usual, wait for CI, create the public GitHub Release, then publish npm. Each package has its own version. Published versions cannot be overwritten.
+Only commit public-safe files under `product-engineer-kit/`. The npm archive must contain only the tool's source, prebuilt browser assets, package metadata, documentation and licenses. Keep local test repositories and temporary credentials in ignored `.local/` directories.

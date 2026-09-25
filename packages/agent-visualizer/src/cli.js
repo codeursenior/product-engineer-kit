@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { startServer } from "./server.js";
 
@@ -14,6 +15,7 @@ Explore context, skills and MCP configuration in your default browser.
   --no-open         Print the URL without opening a browser
   --project-only    Skip user-level assets
   --help, -h        Show this help
+  --version, -v     Show the installed version
 
 Local workspace. No telemetry. Ctrl+C to stop.
 `;
@@ -25,10 +27,16 @@ try {
       "no-open": { type: "boolean" },
       "project-only": { type: "boolean" },
       help: { type: "boolean", short: "h" },
+      version: { type: "boolean", short: "v" },
     },
     allowPositionals: true,
   });
-  if (values.help || !positionals.length) {
+  if (values.version) {
+    const { version } = JSON.parse(
+      readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+    );
+    console.log(version);
+  } else if (values.help || !positionals.length) {
     console.log(help);
   } else {
     if (positionals[0] !== "ui" || positionals.length > 2)

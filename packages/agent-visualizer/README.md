@@ -10,6 +10,8 @@ npx @codeursenior/boyscout ui
 
 Requires Node.js 20 or newer. Run the command in the folder you want to explore. Your default browser opens automatically. Press Ctrl+C in the terminal to stop the server.
 
+To check the installed release, run `npx --prefer-online @codeursenior/boyscout@latest --version`. The `--prefer-online` option asks npm to check the registry even when it has cached package data.
+
 ## Explore
 
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.

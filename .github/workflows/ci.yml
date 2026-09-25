@@ -1,12 +1,15 @@
-name: Check
+name: Check and publish
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "37 4 * * *"
 permissions:
   contents: read
 jobs:
   check:
+    if: github.event_name != 'schedule'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -21,3 +24,54 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm pack --workspace @codeursenior/boyscout --dry-run
+  publish:
+    needs: check
+    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || needs.check.result == 'success')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Use an npm version with trusted publishing support
+        run: npm install --global npm@11.5.1
+      - run: npm ci
+      - run: npm run check
+      - name: Compare publishable files with npm
+        id: release
+        run: npm run release:status
+      - name: Reject a reused or unnecessary version
+        env:
+          CHANGED: ${{ steps.release.outputs.changed }}
+          LOCAL_VERSION: ${{ steps.release.outputs.local_version }}
+          PUBLISHED_VERSION: ${{ steps.release.outputs.published_version }}
+          NEXT_VERSION: ${{ steps.release.outputs.next_version }}
+        run: |
+          if [[ "$CHANGED" == 'true' && "$LOCAL_VERSION" != "$NEXT_VERSION" ]]; then
+            echo "Package files changed without an unpublished version" >&2
+            exit 1
+          fi
+          if [[ "$CHANGED" == 'false' && "$LOCAL_VERSION" != "$PUBLISHED_VERSION" ]]; then
+            echo "Package version changed without publishable file changes" >&2
+            exit 1
+          fi
+      - name: Publish changed package
+        if: steps.release.outputs.changed == 'true'
+        run: npm publish --workspace @codeursenior/boyscout --access public
+      - name: Verify npm latest
+        if: steps.release.outputs.changed == 'true'
+        env:
+          LOCAL_VERSION: ${{ steps.release.outputs.local_version }}
+        run: |
+          for attempt in {1..10}; do
+            if published="$(npm view @codeursenior/boyscout@latest version --prefer-online)"; then
+              if [[ "$published" == "$LOCAL_VERSION" ]]; then exit 0; fi
+            fi
+            sleep 3
+          done
+          echo "npm latest did not advance to $LOCAL_VERSION" >&2
+          exit 1
