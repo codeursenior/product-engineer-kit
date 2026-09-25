@@ -16,6 +16,15 @@ npx @codeursenior/boyscout ui
 
 Lance cette commande dans le dossier à explorer. Ton navigateur ouvre un tableau de bord local. Node.js 20 ou plus récent est nécessaire.
 
+Pour utiliser la dernière version depuis un autre dépôt ou un autre PC, ouvre un terminal dans ce dépôt et vérifie la version avant de lancer l'interface :
+
+```bash
+npx --yes --prefer-online @codeursenior/boyscout@latest --version
+npx --yes --prefer-online @codeursenior/boyscout@latest ui
+```
+
+`npx` installe l'outil si nécessaire, sans installation globale. `@latest` cible la dernière version publiée sur npm et `--prefer-online` demande à npm de vérifier le registre même si une version est en cache. Cette commande fonctionne quel que soit l'agent utilisé dans le dépôt.
+
 - Graphe des instructions et de leurs références, avec aperçu des fichiers.
 - Inventaire des skills et de leur découverte par Cursor, Claude Code et Codex.
 - Inventaire des configurations MCP. Les connexions actives ne sont pas vérifiées.
