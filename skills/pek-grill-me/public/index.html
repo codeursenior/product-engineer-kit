@@ -3,40 +3,53 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Entretien · Product Engineer Kit</title>
+    <title>Entretien · Codeur Senior</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/style.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
     <main class="shell">
-      <header>
-        <div>
-          <p class="eyebrow">Product Engineer Kit</p>
-          <h1>Entretien</h1>
-        </div>
-        <button id="close" type="button">Fermer</button>
+      <header class="masthead">
+        <div class="brand">Codeur Senior<span class="brand-dot">.</span></div>
+        <span class="product-name">Product Engineer Kit</span>
       </header>
-      <p id="status" class="status" role="status" aria-live="polite">
-        Connexion…
-      </p>
+      <div class="heading">
+        <div>
+          <p class="section-name">Un sujet, une décision à la fois</p>
+          <h1>Clarifions votre idée.</h1>
+        </div>
+        <span class="session-label">Entretien en cours</span>
+      </div>
       <ol
         id="history"
         class="history"
         aria-label="Messages de l’entretien"
         aria-live="polite"
       ></ol>
-      <form id="reply">
-        <label for="answer">Votre réponse</label>
+      <form id="reply" class="composer">
+        <div class="activity" id="activity" role="status" aria-live="polite">
+          <span class="activity-indicator" aria-hidden="true"></span>
+          <span id="status">Connexion…</span>
+          <span id="elapsed" class="elapsed"></span>
+        </div>
+        <div id="choices" class="choices"></div>
+        <label id="answer-label" for="answer">Votre réponse</label>
         <textarea
           id="answer"
-          rows="4"
+          rows="3"
           placeholder="Écrivez votre réponse…"
-          required
         ></textarea>
         <div class="actions">
-          <span>Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span
-          ><button id="send" type="submit">Envoyer</button>
+          <span class="keyboard-hint"
+            >Entrée pour envoyer · Maj + Entrée pour une nouvelle ligne</span
+          >
+          <div class="buttons">
+            <button id="close" type="button" class="close-button">
+              Terminer
+            </button>
+            <button id="send" type="submit" class="send-button">Envoyer</button>
+          </div>
         </div>
       </form>
     </main>

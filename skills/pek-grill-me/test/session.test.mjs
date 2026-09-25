@@ -117,6 +117,118 @@ test("closing while the agent waits releases the wait", async (t) => {
   );
 });
 
+test("choice questions preserve the selected answer and optional clarification", async (t) => {
+  const { request } = await withSession(t);
+  const question = {
+    text: "Quelle direction ?",
+    choices: [
+      { id: "a", label: "Simplifier", description: "Faire moins" },
+      { id: "b", label: "Étendre" },
+    ],
+    recommendedId: "a",
+    recommendationReason: "La portée reste maîtrisable.",
+  };
+  assert.equal(
+    (await request("question", { method: "POST", body: question })).status,
+    201,
+  );
+  const seen = await request("events?after=0");
+  assert.deepEqual(seen.data.events[0].choices, question.choices);
+  assert.equal(seen.data.events[0].recommendedId, "a");
+  assert.equal(
+    (
+      await request("answer", {
+        method: "POST",
+        body: { key: "choice-bad", choiceId: "missing", text: "" },
+      })
+    ).status,
+    400,
+  );
+  const answer = {
+    key: "choice-001",
+    choiceId: "a",
+    text: "D'abord le flux principal",
+  };
+  const accepted = await request("answer", { method: "POST", body: answer });
+  assert.equal(accepted.status, 201);
+  assert.equal(
+    accepted.data.text,
+    "Simplifier\nPrécision : D'abord le flux principal",
+  );
+  assert.equal(
+    (await request("answer", { method: "POST", body: answer })).data.duplicate,
+    true,
+  );
+  const history = await request("history");
+  assert.equal(history.data.history[1].choiceId, "a");
+  assert.equal(history.data.history[1].text, accepted.data.text);
+  assert.equal(
+    (
+      await request("question", {
+        method: "POST",
+        body: {
+          text: "Quelle suite ?",
+          choices: [
+            { id: "ship", label: "Publier" },
+            { id: "wait", label: "Attendre" },
+          ],
+          recommendedId: "ship",
+          recommendationReason: "Le besoin est confirmé.",
+        },
+      })
+    ).status,
+    201,
+  );
+  const custom = await request("answer", {
+    method: "POST",
+    body: { key: "answer-free", text: "Je consulte d'abord un utilisateur." },
+  });
+  assert.equal(custom.status, 201);
+  assert.equal(custom.data.text, "Je consulte d'abord un utilisateur.");
+});
+
+test("choice questions reject missing recommendations and duplicate identifiers", async (t) => {
+  const { request } = await withSession(t);
+  const question = {
+    text: "Quelle option ?",
+    choices: [
+      { id: "same", label: "A" },
+      { id: "same", label: "B" },
+    ],
+    recommendedId: "same",
+    recommendationReason: "Raison",
+  };
+  assert.equal(
+    (await request("question", { method: "POST", body: question })).status,
+    400,
+  );
+  question.choices[1].id = "other";
+  delete question.recommendationReason;
+  assert.equal(
+    (await request("question", { method: "POST", body: question })).status,
+    400,
+  );
+});
+
+test("agent closure wakes the browser and waits for its finished state", async (t) => {
+  const { request } = await withSession(t);
+  const browserWait = request("events?after=0");
+  const agentWait = request("events?after=0");
+  assert.equal(
+    (await request("close", { method: "POST", body: {} })).status,
+    200,
+  );
+  assert.equal((await browserWait).data.closed, true);
+  assert.equal((await agentWait).data.closed, true);
+  const closeAckWait = request("close-ack");
+  assert.equal(
+    (await request("close-ack", { method: "POST", body: {} })).data
+      .acknowledged,
+    true,
+  );
+  assert.equal((await closeAckWait).data.acknowledged, true);
+});
+
 test("the local relay rejects unauthorized, repeated, and malformed submissions", async (t) => {
   const { session, request } = await withSession(t);
   assert.equal((await request("history", { token: "bad" })).status, 401);
