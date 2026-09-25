@@ -1,6 +1,6 @@
 {
   "name": "@codeursenior/boyscout",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agent Visualizer: explore your AI context, skills and MCP configuration in a local dashboard.",
   "type": "module",
   "bin": {
