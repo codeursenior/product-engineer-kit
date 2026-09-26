@@ -22,7 +22,7 @@ Whenever a kit change is pushed to Elrond's `origin/main`, the private GitHub Ac
 git push origin main
 ```
 
-Verify that the new commit is visible on the public `main` branch and that its GitHub Actions check succeeds. If automation is unavailable, run `./scripts/sync-product-engineer-kit.sh` from a clean Elrond `main`, then check the public workflow. The script itself does not publish npm.
+Verify that the new commit is visible on the public `main` branch and that its GitHub Actions check succeeds. If automation is unavailable, run `./scripts/sync-product-engineer-kit.sh` from a clean Elrond `main`, then check the public workflow. Report any mirror delay and its cause explicitly. The script itself does not publish npm.
 
 ## Public synchronization
 
