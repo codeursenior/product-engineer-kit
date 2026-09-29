@@ -457,7 +457,7 @@ async function showDetail(row) {
     if (targets.length > 1) {
       const label = document.createElement("label");
       label.className = "edit-source";
-      label.textContent = "File to edit";
+      label.textContent = "Source file";
       for (const target of targets) {
         const option = document.createElement("option");
         option.value = target.id;
@@ -471,6 +471,25 @@ async function showDetail(row) {
     editButton.className = "edit-button";
     editButton.textContent = "Edit file";
     editButton.disabled = true;
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "delete-button";
+    deleteButton.textContent = "Delete file";
+    deleteButton.disabled = true;
+    const deleteConfirm = document.createElement("div");
+    deleteConfirm.className = "delete-confirm";
+    deleteConfirm.hidden = true;
+    const deleteMessage = document.createElement("p");
+    const confirmDeleteButton = document.createElement("button");
+    confirmDeleteButton.type = "button";
+    confirmDeleteButton.textContent = "Delete permanently";
+    const cancelDeleteButton = document.createElement("button");
+    cancelDeleteButton.type = "button";
+    cancelDeleteButton.textContent = "Cancel";
+    deleteConfirm.append(
+      deleteMessage,
+      confirmDeleteButton,
+      cancelDeleteButton,
+    );
     const form = document.createElement("form");
     form.className = "edit-form";
     form.hidden = true;
@@ -490,13 +509,26 @@ async function showDetail(row) {
     const status = document.createElement("p");
     status.className = "edit-status";
     status.setAttribute("role", "status");
-    $("#detail-body").append(editButton, form, status);
+    $("#detail-body").append(
+      editButton,
+      deleteButton,
+      deleteConfirm,
+      form,
+      status,
+    );
     let file;
     let targetRequest = 0;
+    const selectedTarget = () =>
+      targets.find(
+        (target) => target.id === (targetSelect.value || targets[0].id),
+      );
     async function loadTarget() {
       const current = ++targetRequest;
       preview.textContent = "Loading…";
       editButton.disabled = true;
+      deleteButton.disabled = true;
+      deleteButton.hidden = !selectedTarget().deletable;
+      deleteConfirm.hidden = true;
       status.textContent = "";
       try {
         const result = await api(
@@ -506,6 +538,7 @@ async function showDetail(row) {
         file = result;
         preview.textContent = result.text;
         editButton.disabled = false;
+        deleteButton.disabled = false;
       } catch (error) {
         if (request === detailRequest && current === targetRequest)
           preview.textContent = error.message;
@@ -516,6 +549,7 @@ async function showDetail(row) {
       textarea.value = file.text;
       preview.hidden = true;
       editButton.hidden = true;
+      deleteButton.hidden = true;
       form.hidden = false;
       targetSelect.disabled = true;
       status.textContent = "";
@@ -525,8 +559,45 @@ async function showDetail(row) {
       form.hidden = true;
       preview.hidden = false;
       editButton.hidden = false;
+      deleteButton.hidden = !selectedTarget().deletable;
       targetSelect.disabled = false;
       editButton.focus();
+    };
+    deleteButton.onclick = () => {
+      deleteMessage.textContent = `Delete ${selectedTarget().path} permanently?`;
+      deleteButton.hidden = true;
+      editButton.hidden = true;
+      deleteConfirm.hidden = false;
+      targetSelect.disabled = true;
+      status.textContent = "";
+      confirmDeleteButton.focus();
+    };
+    cancelDeleteButton.onclick = () => {
+      deleteConfirm.hidden = true;
+      deleteButton.hidden = false;
+      editButton.hidden = false;
+      targetSelect.disabled = false;
+      deleteButton.focus();
+    };
+    confirmDeleteButton.onclick = async () => {
+      confirmDeleteButton.disabled = true;
+      cancelDeleteButton.disabled = true;
+      status.textContent = "Deleting…";
+      try {
+        await api(`/api/file?id=${encodeURIComponent(selectedTarget().id)}`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ revision: file.revision }),
+        });
+        if (request !== detailRequest) return;
+        closeDetail();
+        await load(true);
+      } catch (error) {
+        if (request === detailRequest) status.textContent = error.message;
+      } finally {
+        confirmDeleteButton.disabled = false;
+        cancelDeleteButton.disabled = false;
+      }
     };
     form.onsubmit = async (event) => {
       event.preventDefault();

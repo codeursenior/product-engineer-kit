@@ -231,6 +231,9 @@ export async function scanProject(
     if (context.has(entry.id)) return;
     const aliases = entry.aliases.filter((p) => !ruleClient(p));
     if (!aliases.length) return;
+    const deletable =
+      entry.aliases.length === 1 &&
+      path.relative(entry.file, entry.real) === "";
     const paths = aliases.map((p) => display(p, entry.scope));
     const kind = aliases.some((p) => INSTRUCTION.test(path.basename(p)))
       ? "instruction"
@@ -249,7 +252,7 @@ export async function scanProject(
           ),
         ),
       ],
-      editTargets: [{ id: entry.id, path: paths[0] }],
+      editTargets: [{ id: entry.id, path: paths[0], deletable }],
       scope: entry.scope,
       kind,
       bytes: Buffer.byteLength(entry.text),
@@ -257,10 +260,13 @@ export async function scanProject(
       excerpt: entry.text.slice(0, 180),
     });
     content.set(entry.id, entry.text);
-    editable.set(entry.id, { file: entry.file, real: entry.real });
+    editable.set(entry.id, { file: entry.file, real: entry.real, deletable });
   }
   for (const entry of entries) {
     if (path.basename(entry.file) === "SKILL.md") {
+      const deletable =
+        entry.aliases.length === 1 &&
+        path.relative(entry.file, entry.real) === "";
       let meta = {};
       try {
         meta = frontmatter(entry.text);
@@ -289,10 +295,11 @@ export async function scanProject(
         });
       const skill = skills.get(key);
       content.set(skill.id, entry.text);
-      editable.set(entry.id, { file: entry.file, real: entry.real });
+      editable.set(entry.id, { file: entry.file, real: entry.real, deletable });
       skill.editTargets.push({
         id: entry.id,
         path: display(entry.file, entry.scope),
+        deletable,
       });
       let policy = {};
       try {

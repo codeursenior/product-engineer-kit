@@ -17,7 +17,7 @@ const assets = new Map([
 const MAX_EDIT_BYTES = 512 * 1024;
 const revision = (text) => createHash("sha256").update(text).digest("hex");
 
-async function readEditBody(req) {
+async function readEditBody(req, deleting = false) {
   if (!req.headers["content-type"]?.startsWith("application/json"))
     throw { status: 415, error: "Expected JSON." };
   const chunks = [];
@@ -34,9 +34,15 @@ async function readEditBody(req) {
   } catch {
     throw { status: 400, error: "Invalid JSON." };
   }
-  if (typeof body?.text !== "string" || typeof body?.revision !== "string")
-    throw { status: 400, error: "Missing text or revision." };
-  if (Buffer.byteLength(body.text) > MAX_EDIT_BYTES)
+  if (
+    typeof body?.revision !== "string" ||
+    (!deleting && typeof body?.text !== "string")
+  )
+    throw {
+      status: 400,
+      error: deleting ? "Missing revision." : "Missing text or revision.",
+    };
+  if (!deleting && Buffer.byteLength(body.text) > MAX_EDIT_BYTES)
     throw { status: 413, error: "File is too large to edit." };
   return body;
 }
@@ -96,7 +102,7 @@ export async function startServer({
         });
       try {
         if (url.pathname === "/api/file") {
-          if (!["GET", "PUT"].includes(req.method))
+          if (!["GET", "PUT", "DELETE"].includes(req.method))
             return send(405, { error: "Method not allowed." });
           const target = snapshot.editable.get(url.searchParams.get("id"));
           if (!target) return send(404, { error: "Editable file not found." });
@@ -115,14 +121,26 @@ export async function startServer({
             const text = await readCurrent();
             return send(200, { text, revision: revision(text) });
           }
-          const body = await readEditBody(req);
+          const body = await readEditBody(req, req.method === "DELETE");
           const save = saving.then(async () => {
             const current = await readCurrent();
             if (revision(current) !== body.revision)
               throw {
                 status: 409,
-                error: "File changed on disk. Reopen it before saving.",
+                error: "File changed on disk. Reopen it before changing it.",
               };
+            if (req.method === "DELETE") {
+              if (
+                !target.deletable ||
+                (await fs.lstat(target.file)).isSymbolicLink()
+              )
+                throw {
+                  status: 409,
+                  error: "This file has another path. Rescan before deleting.",
+                };
+              await fs.unlink(target.file);
+              return { deleted: true };
+            }
             await fs.writeFile(target.real, body.text, "utf8");
             return { revision: revision(body.text) };
           });

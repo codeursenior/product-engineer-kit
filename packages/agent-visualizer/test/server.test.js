@@ -168,3 +168,89 @@ test("edits indexed context and skill files without overwriting newer changes", 
   );
   assert.equal(await fs.readFile(skill, "utf8"), "Updated skill\n");
 });
+
+test("deletes only indexed, unchanged files with a single real path", async (t) => {
+  await fs.mkdir(".local/test", { recursive: true });
+  const root = await fs.mkdtemp(path.resolve(".local/test/delete-"));
+  const context = path.join(root, "AGENTS.md");
+  const linked = path.join(root, "CLAUDE.md");
+  const linkTarget = path.join(root, "link-target.txt");
+  const linkedOnly = path.join(root, "GEMINI.md");
+  await fs.writeFile(context, "# Original\n");
+  await fs.symlink("AGENTS.md", linked);
+  await fs.writeFile(linkTarget, "# Linked only\n");
+  await fs.symlink("link-target.txt", linkedOnly);
+  const { server, url, token } = await startServer({
+    root,
+    includeUser: false,
+  });
+  t.after(async () => {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+    await fs.rm(root, { recursive: true, force: true });
+  });
+  const base = url.split("#")[0];
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+  const fileUrl = (id) => base + `api/file?id=${encodeURIComponent(id)}`;
+  const remove = (id, revision, extraHeaders = {}) =>
+    fetch(fileUrl(id), {
+      method: "DELETE",
+      headers: { ...headers, ...extraHeaders },
+      body: JSON.stringify({ revision }),
+    });
+  const scan = await (await fetch(base + "api/scan", { headers })).json();
+  const target = scan.nodes.find((node) => node.path === "AGENTS.md")
+    .editTargets[0];
+  assert.equal(target.deletable, false);
+  const initial = await (await fetch(fileUrl(target.id), { headers })).json();
+  assert.equal((await remove(target.id, initial.revision)).status, 409);
+  assert.equal(await fs.readFile(context, "utf8"), "# Original\n");
+  const symlinkTarget = scan.nodes.find((node) => node.path === "GEMINI.md")
+    .editTargets[0];
+  assert.equal(symlinkTarget.deletable, false);
+  const linkedInitial = await (
+    await fetch(fileUrl(symlinkTarget.id), { headers })
+  ).json();
+  assert.equal(
+    (await remove(symlinkTarget.id, linkedInitial.revision)).status,
+    409,
+  );
+  assert.equal(await fs.readFile(linkTarget, "utf8"), "# Linked only\n");
+  await fs.unlink(linked);
+  const rescanned = await (
+    await fetch(base + "api/scan?refresh=1", { headers })
+  ).json();
+  const refreshedTarget = rescanned.nodes.find(
+    (node) => node.path === "AGENTS.md",
+  ).editTargets[0];
+  const id = refreshedTarget.id;
+  assert.equal(refreshedTarget.deletable, true);
+  assert.equal(
+    (await remove(id, initial.revision, { Origin: "https://evil.example" }))
+      .status,
+    403,
+  );
+  assert.equal((await remove("../../AGENTS.md", initial.revision)).status, 404);
+  assert.equal(
+    (
+      await fetch(fileUrl(id), {
+        method: "DELETE",
+        body: JSON.stringify({ revision: initial.revision }),
+      })
+    ).status,
+    401,
+  );
+  await fs.writeFile(context, "# Changed\n");
+  assert.equal((await remove(id, initial.revision)).status, 409);
+  assert.equal(await fs.readFile(context, "utf8"), "# Changed\n");
+  const current = await (await fetch(fileUrl(id), { headers })).json();
+  assert.equal((await remove(id, current.revision)).status, 200);
+  await assert.rejects(fs.stat(context), { code: "ENOENT" });
+  const after = await (
+    await fetch(base + "api/scan?refresh=1", { headers })
+  ).json();
+  assert.ok(after.nodes.every((node) => node.path !== "AGENTS.md"));
+});
