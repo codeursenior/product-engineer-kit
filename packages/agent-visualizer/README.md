@@ -20,6 +20,8 @@ To check the installed release, run `npx --prefer-online @codeursenior/boyscout@
 - **MCP servers:** names, configuration sources, transport, and client indicators. The tool reads configuration without launching servers or transmitting credentials.
 - **Project and User:** green and purple distinguish assets in the selected folder from assets in supported home-directory locations. Scope filters work in all views.
 
+On Windows, user asset paths are shown as full filesystem paths so you can copy them into Explorer. On other systems, paths under your home directory use `~/`.
+
 Search with `/`, close the preview with Escape, and use Rescan after changing files.
 
 Open a context file or skill to edit its text in the side panel. Choose a source file first when a skill groups identical copies. Save writes that existing file on your machine, then rescans the workspace. If the file changed on disk after you opened it, reopen it before saving. Rules and MCP configurations remain view only.

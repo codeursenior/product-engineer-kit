@@ -187,6 +187,7 @@ export async function scanProject(
     }
   }
   function display(file, scope) {
+    if (scope === "user" && process.platform === "win32") return file;
     return scope === "user" && inside(home, file)
       ? `~/${slash(path.relative(home, file))}`
       : slash(path.relative(root, file)) || path.basename(root);

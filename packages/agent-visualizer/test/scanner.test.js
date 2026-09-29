@@ -20,6 +20,16 @@ test("discovers skills and context with a custom CODEX_HOME", async (t) => {
   assert.deepEqual(data.skills[0].clients, ["codex"]);
   assert.equal(data.nodes[0].scope, "user");
   assert.equal(data.mcp[0].scope, "user");
+  const displayPath = (file) =>
+    process.platform === "win32"
+      ? file
+      : `~/${path.relative(home, file).split(path.sep).join("/")}`;
+  assert.equal(data.nodes[0].path, displayPath(path.join(custom, "AGENTS.md")));
+  assert.equal(data.nodes[0].editTargets[0].path, data.nodes[0].path);
+  assert.deepEqual(data.skills[0].paths, [
+    displayPath(path.join(custom, "skills/review/SKILL.md")),
+  ]);
+  assert.equal(data.mcp[0].path, displayPath(path.join(custom, "config.toml")));
 });
 
 test("counts visible lines in context files", async (t) => {
@@ -70,7 +80,11 @@ test("attributes linked context to each discovering client without inheriting fo
   );
   assert.deepEqual(clientsAt("app/CLAUDE.md"), new Set(["claude"]));
   assert.deepEqual(clientsAt(".agents/knowledge/orphan.md"), new Set());
-  assert.deepEqual(clientsAt("~/.claude/CLAUDE.md"), new Set(["claude"]));
+  const userClaudePath =
+    process.platform === "win32"
+      ? path.join(home, ".claude/CLAUDE.md")
+      : "~/.claude/CLAUDE.md";
+  assert.deepEqual(clientsAt(userClaudePath), new Set(["claude"]));
 });
 
 async function fixture(t) {
