@@ -15,19 +15,19 @@ test("version-only metadata and line endings do not require a release", () => {
       "package.json",
       Buffer.from('{"name":"@codeursenior/boyscout","version":"0.1.0"}'),
     ],
-    ["src/cli.js", Buffer.from("current code\n")],
+    ["dist/cli.js", Buffer.from("current code\n")],
   ]);
   const local = new Map([
     [
       "package.json",
       Buffer.from('{"version":"0.1.1","name":"@codeursenior/boyscout"}'),
     ],
-    ["src/cli.js", Buffer.from("current code\r\n")],
+    ["dist/cli.js", Buffer.from("current code\r\n")],
   ]);
 
   assert.deepEqual(compareFiles(local, published), []);
-  local.set("src/cli.js", Buffer.from("updated code"));
-  assert.deepEqual(compareFiles(local, published), ["src/cli.js"]);
+  local.set("dist/cli.js", Buffer.from("updated code"));
+  assert.deepEqual(compareFiles(local, published), ["dist/cli.js"]);
 });
 
 test("the real npm archive excludes tests and includes the built UI", () => {
@@ -47,11 +47,16 @@ test("the real npm archive excludes tests and includes the built UI", () => {
     { cwd: kitDirectory, encoding: "utf8" },
   );
   const paths = JSON.parse(output)[0].files.map((file) => file.path);
-  assert.ok(paths.includes("public/app.js"));
-  assert.ok(paths.includes("src/cli.js"));
+  assert.ok(paths.includes("dist/browser/index.html"));
+  assert.ok(
+    paths.some((filePath) => /^dist\/browser\/main-[\w-]+\.js$/.test(filePath)),
+  );
+  assert.ok(paths.includes("dist/cli.js"));
   assert.ok(
     !paths.some(
-      (filePath) => filePath.startsWith("test/") || filePath.startsWith("ui/"),
+      (filePath) =>
+        /^(test|ui|src|scripts|\.local)\//.test(filePath) ||
+        filePath.endsWith(".map"),
     ),
   );
 });
@@ -66,7 +71,7 @@ test("retry uses an unpublished version and a published version gets a new patch
 test("published tar entries are read as package files", () => {
   const contents = Buffer.from("published code");
   const header = Buffer.alloc(512);
-  header.write("package/src/cli.js", 0);
+  header.write("package/dist/cli.js", 0);
   header.write("00000000016\0", 124);
   header[156] = 48;
   const padded = Buffer.alloc(512);
@@ -74,7 +79,7 @@ test("published tar entries are read as package files", () => {
   const files = unpackFiles(
     gzipSync(Buffer.concat([header, padded, Buffer.alloc(1024)])),
   );
-  assert.equal(files.get("src/cli.js").toString(), "published code");
+  assert.equal(files.get("dist/cli.js").toString(), "published code");
 });
 
 test("CLI reports the version in its own package manifest", () => {
@@ -86,7 +91,7 @@ test("CLI reports the version in its own package manifest", () => {
   const expected = JSON.parse(
     readFileSync(path.join(packageDirectory, "package.json"), "utf8"),
   ).version;
-  const actual = execFileSync(process.execPath, ["src/cli.js", "--version"], {
+  const actual = execFileSync(process.execPath, ["dist/cli.js", "--version"], {
     cwd: packageDirectory,
     encoding: "utf8",
   }).trim();

@@ -1,9 +1,10 @@
-import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { test, type TestContext } from "vitest";
+import type { ScanOptions } from "../src/scan/types.js";
+import { required } from "../src/scan/values.js";
 import { scanProject } from "../src/scanner.js";
-
 test("discovers skills and context with a custom CODEX_HOME", async (t) => {
   const { home, write, scan } = await fixture(t);
   const custom = path.join(home, "custom-codex");
@@ -17,38 +18,48 @@ test("discovers skills and context with a custom CODEX_HOME", async (t) => {
     '[mcp_servers.docs]\nurl = "https://example.com/mcp"',
   );
   const { data } = await scan({ codexHome: custom });
-  assert.deepEqual(data.skills[0].clients, ["codex"]);
-  assert.equal(data.nodes[0].scope, "user");
-  assert.equal(data.mcp[0].scope, "user");
-  const displayPath = (file) =>
+  assert.deepEqual(required(data.skills[0]).clients, ["codex"]);
+  assert.equal(required(data.nodes[0]).scope, "user");
+  assert.equal(required(data.mcp[0]).scope, "user");
+  const displayPath = (file: string) =>
     process.platform === "win32"
       ? file
       : `~/${path.relative(home, file).split(path.sep).join("/")}`;
-  assert.equal(data.nodes[0].path, displayPath(path.join(custom, "AGENTS.md")));
-  assert.equal(data.nodes[0].editTargets[0].path, data.nodes[0].path);
-  assert.deepEqual(data.skills[0].paths, [
+  assert.equal(
+    required(data.nodes[0]).path,
+    displayPath(path.join(custom, "AGENTS.md")),
+  );
+  assert.equal(
+    required(required(data.nodes[0]).editTargets[0]).path,
+    required(data.nodes[0]).path,
+  );
+  assert.deepEqual(required(data.skills[0]).paths, [
     displayPath(path.join(custom, "skills/review/SKILL.md")),
   ]);
-  assert.equal(data.mcp[0].path, displayPath(path.join(custom, "config.toml")));
+  assert.equal(
+    required(data.mcp[0]).path,
+    displayPath(path.join(custom, "config.toml")),
+  );
 });
-
 test("counts visible lines in context files", async (t) => {
   const { root, write, scan } = await fixture(t);
   await write(path.join(root, "CLAUDE.md"), "one\r\ntwo\r\n");
   await write(path.join(root, "nested/AGENTS.md"), "single line");
   await write(path.join(root, "empty/AGENTS.md"), "");
   const { data } = await scan();
-  assert.equal(data.nodes.find((node) => node.name === "CLAUDE.md").lines, 2);
   assert.equal(
-    data.nodes.find((node) => node.path === "nested/AGENTS.md").lines,
+    required(data.nodes.find((node) => node.name === "CLAUDE.md")).lines,
+    2,
+  );
+  assert.equal(
+    required(data.nodes.find((node) => node.path === "nested/AGENTS.md")).lines,
     1,
   );
   assert.equal(
-    data.nodes.find((node) => node.path === "empty/AGENTS.md").lines,
+    required(data.nodes.find((node) => node.path === "empty/AGENTS.md")).lines,
     0,
   );
 });
-
 test("attributes linked context to each discovering client without inheriting folder scope", async (t) => {
   const { root, home, write, scan } = await fixture(t);
   await write(
@@ -67,8 +78,10 @@ test("attributes linked context to each discovering client without inheriting fo
   await write(path.join(root, ".agents/knowledge/orphan.md"), "Unlinked");
   await write(path.join(home, ".claude/CLAUDE.md"), "User Claude context");
   const { data } = await scan();
-  const clientsAt = (location) =>
-    new Set(data.nodes.find((node) => node.path === location).clients);
+  const clientsAt = (location: string) =>
+    new Set(
+      required(data.nodes.find((node) => node.path === location)).clients,
+    );
   assert.deepEqual(clientsAt("CLAUDE.md"), new Set(["cursor", "claude"]));
   assert.deepEqual(clientsAt("AGENTS.md"), new Set(["cursor", "codex"]));
   assert.deepEqual(clientsAt("docs/guide.md"), new Set(["cursor", "claude"]));
@@ -86,20 +99,19 @@ test("attributes linked context to each discovering client without inheriting fo
       : "~/.claude/CLAUDE.md";
   assert.deepEqual(clientsAt(userClaudePath), new Set(["claude"]));
 });
-
-async function fixture(t) {
+async function fixture(t: TestContext) {
   await fs.mkdir(".local/test", { recursive: true });
   const base = await fs.mkdtemp(path.resolve(".local/test/scanner-"));
   const root = path.join(base, "project");
   const home = path.join(base, "home");
   await fs.mkdir(root);
   await fs.mkdir(home);
-  t.after(() => fs.rm(base, { recursive: true, force: true }));
-  const write = async (file, text) => {
+  t.onTestFinished(() => fs.rm(base, { recursive: true, force: true }));
+  const write = async (file: string, text: string) => {
     await fs.mkdir(path.dirname(file), { recursive: true });
     await fs.writeFile(file, text);
   };
-  const scan = (options) =>
+  const scan = (options: ScanOptions = {}) =>
     scanProject(root, {
       home,
       codexHome: path.join(home, ".codex"),
@@ -107,7 +119,6 @@ async function fixture(t) {
     });
   return { root, home, write, scan };
 }
-
 test("follows markdown, wikilinks, root-relative references, symlinks and nested context without collecting unrelated prose", async (t) => {
   const { root, write, scan } = await fixture(t);
   await write(
@@ -131,23 +142,25 @@ test("follows markdown, wikilinks, root-relative references, symlinks and nested
   const { data } = await scan();
   assert.equal(data.nodes.length, 6);
   assert.equal(
-    data.nodes.find((n) => n.name === "AGENTS.md" || n.name === "CLAUDE.md")
-      .aliases.length,
+    required(
+      data.nodes.find((n) => n.name === "AGENTS.md" || n.name === "CLAUDE.md"),
+    ).aliases.length,
     2,
   );
   assert.deepEqual(
-    new Set(data.nodes.find((n) => n.aliases.length === 2).clients),
+    new Set(required(data.nodes.find((n) => n.aliases.length === 2)).clients),
     new Set(["cursor", "claude", "codex"]),
   );
   assert.deepEqual(
-    new Set(data.nodes.find((n) => n.path === "notes/detail.md").clients),
+    new Set(
+      required(data.nodes.find((n) => n.path === "notes/detail.md")).clients,
+    ),
     new Set(["cursor", "claude", "codex"]),
   );
   assert.equal(data.edges.filter((e) => e.kind === "scope").length, 1);
   assert.equal(data.edges.filter((e) => e.kind === "reference").length, 5);
   assert.ok(!JSON.stringify(data).includes("unrelated.md"));
 });
-
 test("separates user assets, groups identical copies and preserves client-specific invocation", async (t) => {
   const { root, home, write, scan } = await fixture(t);
   const body =
@@ -161,7 +174,7 @@ test("separates user assets, groups identical copies and preserves client-specif
   await write(path.join(home, ".cursor/skills/deploy/SKILL.md"), body);
   const { data } = await scan();
   assert.equal(data.skills.length, 2);
-  const skill = data.skills.find((s) => s.scope === "project");
+  const skill = required(data.skills.find((s) => s.scope === "project"));
   assert.deepEqual(
     new Set(skill.clients),
     new Set(["cursor", "codex", "claude"]),
@@ -171,7 +184,6 @@ test("separates user assets, groups identical copies and preserves client-specif
   assert.equal(skill.paths.length, 2);
   assert.equal((await scan({ includeUser: false })).data.skills.length, 1);
 });
-
 test("follows a skill directory symlink without loops or duplicate rows", async (t) => {
   const { root, write, scan } = await fixture(t);
   await write(
@@ -184,11 +196,10 @@ test("follows a skill directory symlink without loops or duplicate rows", async 
   const { data } = await scan();
   assert.equal(data.skills.length, 1);
   assert.deepEqual(
-    new Set(data.skills[0].clients),
+    new Set(required(data.skills[0]).clients),
     new Set(["cursor", "codex", "claude"]),
   );
 });
-
 test("does not read external symlinks or follow remote links", async (t) => {
   const { root, home, write, scan } = await fixture(t);
   await write(path.join(home, "secret.md"), "OUTSIDE_SECRET");
@@ -203,7 +214,6 @@ test("does not read external symlinks or follow remote links", async (t) => {
     ![...content.values()].some((text) => text.includes("OUTSIDE_SECRET")),
   );
 });
-
 test("parses JSONC and TOML MCP configs while never exposing secrets or claiming connectivity", async (t) => {
   const { root, home, write, scan } = await fixture(t);
   await write(
@@ -230,17 +240,25 @@ test("parses JSONC and TOML MCP configs while never exposing secrets or claiming
   );
   const { data, content } = await scan();
   assert.equal(data.mcp.length, 5);
-  assert.equal(data.mcp.find((m) => m.name === "docs").status, "Disabled");
   assert.equal(
-    data.mcp.find((m) => m.name === "remote").status,
+    required(data.mcp.find((m) => m.name === "docs")).status,
+    "Disabled",
+  );
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "remote")).status,
     "Not verified",
   );
-  assert.equal(data.mcp.find((m) => m.name === "local").scope, "project");
-  assert.equal(data.mcp.find((m) => m.name === "global").scope, "user");
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "local")).scope,
+    "project",
+  );
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "global")).scope,
+    "user",
+  );
   assert.ok(!JSON.stringify(data).includes("SECRET"));
   assert.equal(content.size, 0);
 });
-
 test("reports malformed configs and keeps valid context available", async (t) => {
   const { root, write, scan } = await fixture(t);
   await write(path.join(root, ".mcp.json"), "{broken");
@@ -249,7 +267,6 @@ test("reports malformed configs and keeps valid context available", async (t) =>
   assert.equal(data.nodes.length, 1);
   assert.equal(data.warnings.length, 1);
 });
-
 test("does not guess ambiguous wikilinks", async (t) => {
   const { root, write, scan } = await fixture(t);
   await write(path.join(root, "AGENTS.md"), "[[Note]]");

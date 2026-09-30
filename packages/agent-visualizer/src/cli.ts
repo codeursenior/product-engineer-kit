@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import path from "node:path";
 import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
+import path from "node:path";
 import { parseArgs } from "node:util";
+import { errorCode, record } from "./scan/values.js";
 import { startServer } from "./server.js";
 
 const help = `Agent Visualizer · Boyscout
@@ -32,8 +33,10 @@ try {
     allowPositionals: true,
   });
   if (values.version) {
-    const { version } = JSON.parse(
-      readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+    const { version } = record(
+      JSON.parse(
+        readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+      ),
     );
     console.log(version);
   } else if (values.help || !positionals.length) {
@@ -78,7 +81,7 @@ try {
       });
       child.unref();
     }
-    for (const signal of ["SIGINT", "SIGTERM"])
+    for (const signal of ["SIGINT", "SIGTERM"] as const)
       process.once(signal, () => {
         server.close();
         server.closeAllConnections();
@@ -86,7 +89,7 @@ try {
   }
 } catch (error) {
   console.error(
-    `\n  ${error.code === "EADDRINUSE" ? "Port is in use. Choose another --port or omit it." : error.message}\n`,
+    `\n  ${errorCode(error) === "EADDRINUSE" ? "Port is in use. Choose another --port or omit it." : error instanceof Error ? error.message : String(error)}\n`,
   );
   process.exitCode = 1;
 }

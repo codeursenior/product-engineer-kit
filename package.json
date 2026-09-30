@@ -9,15 +9,21 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm test --workspaces --if-present && node --test skills/pek-grill-me/test/*.test.mjs scripts/test/*.test.mjs",
-    "check": "npm run build && npm test",
+    "check": "npm run check --workspaces --if-present && node --test skills/pek-grill-me/test/*.test.mjs scripts/test/*.test.mjs",
     "release:status": "node scripts/release-status.mjs",
     "start": "npm run start --workspace @codeursenior/boyscout --",
     "format": "npm run format --workspaces --if-present && prettier --write README.md docs skills package.json .github"
   },
   "devDependencies": {
-    "prettier": "^3.9.8"
+    "@vitest/coverage-v8": "5.0.3",
+    "prettier": "^3.9.8",
+    "vitest": "5.0.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+  },
+  "overrides": {
+    "vitest": "5.0.3",
+    "@vitest/coverage-v8": "5.0.3"
   }
 }

@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": [],
+    "rootDir": ".",
+    "outDir": ".angular/out",
+    "experimentalDecorators": true,
+    "isolatedModules": true,
+    "lib": ["ES2022", "DOM"],
+    "importHelpers": true
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  },
+  "include": ["ui/**/*.ts", "src/contracts.ts"],
+  "exclude": ["ui/**/*.spec.ts"]
+}

@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": { "types": ["vitest/globals"] },
+  "include": ["ui/**/*.ts", "src/contracts.ts"],
+  "exclude": []
+}

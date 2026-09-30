@@ -1,0 +1,55 @@
+<div class="table-help">{{ help[tab()] }}</div>
+<table>
+  <thead>
+    <tr>
+      @for (header of headers[tab()]; track header) {
+      <th scope="col">{{ header }}</th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.id) {
+    <tr>
+      <td class="name">
+        <button [attr.data-detail]="row.id" (click)="selected.emit(row)">
+          {{ row.name }}
+        </button>
+        <p [title]="'path' in row ? row.path : row.paths.join('\n')">
+          {{ description(row) || paths(row)[0] }}
+        </p>
+      </td>
+      @if ('globs' in row) {
+      <td>{{ conditions(row) }}</td>
+      } @if ('mode' in row) {
+      <td><span class="badge neutral">{{ row.mode }}</span></td>
+      } @if ('status' in row) {
+      <td>
+        <span
+          class="badge"
+          [class.neutral]="row.status === 'Disabled'"
+          [class.warn]="row.status !== 'Disabled'"
+          >○ {{ row.status }}</span
+        >
+      </td>
+      <td>{{ row.transport }}</td>
+      } @if ('kind' in row) {
+      <td>{{ row.kind }}</td>
+      <td class="line-count">{{ row.lines.toLocaleString() }}</td>
+      }
+      <td><span appScope [assetScope]="row.scope"></span></td>
+      <td>
+        <div class="client-icons">
+          @for (client of clients; track client) {
+          <span
+            appClient
+            [client]="client"
+            [active]="row.clients.includes(client)"
+            [hint]="invocation(row, client)"
+          ></span>
+          }
+        </div>
+      </td>
+    </tr>
+    }
+  </tbody>
+</table>

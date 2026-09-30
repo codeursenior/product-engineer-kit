@@ -1,0 +1,50 @@
+<div class="scope-tabs" role="group" aria-label="Asset scope">
+  <button
+    data-scope="all"
+    [class.selected]="state.scope() === 'all'"
+    [attr.aria-pressed]="state.scope() === 'all'"
+    (click)="state.scope.set('all')"
+  >
+    All assets
+  </button>
+  <button
+    data-scope="project"
+    [class.selected]="state.scope() === 'project'"
+    [attr.aria-pressed]="state.scope() === 'project'"
+    (click)="state.scope.set('project')"
+  >
+    <i class="dot project"></i>Project (shared with your team)
+  </button>
+  <button
+    data-scope="user"
+    [class.selected]="state.scope() === 'user'"
+    [attr.aria-pressed]="state.scope() === 'user'"
+    (click)="state.scope.set('user')"
+  >
+    <i class="dot user"></i>On Your Machine (not shared with your team)
+  </button>
+</div>
+<div class="filters">
+  <select
+    id="client-filter"
+    aria-label="Filter by client"
+    [value]="state.client()"
+    #clientFilter
+    (change)="client(clientFilter.value)"
+  >
+    <option value="all">All clients</option>
+    <option value="cursor">Cursor</option>
+    <option value="claude">Claude Code</option>
+    <option value="codex">Codex</option>
+  </select>
+  <label class="search"
+    >⌕<input
+      id="search"
+      #searchInput
+      [value]="query()"
+      (input)="search(searchInput.value)"
+      [placeholder]="state.tab() === 'context' ? 'Find a file…' : state.tab() === 'rules' ? 'Find a rule…' : state.tab() === 'skills' ? 'Find a skill…' : 'Find a server…'"
+      aria-label="Search assets"
+    /><kbd>/</kbd></label
+  >
+</div>

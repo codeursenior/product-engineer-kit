@@ -70,13 +70,31 @@ MCP commands, arguments, URLs, environment values, and headers are excluded from
 
 ## Development
 
+Use Node.js 24 for development. The published CLI still supports Node.js 20 or newer; it includes compiled JavaScript and the prebuilt UI.
+
 ```bash
 npm ci
 npm run check
 npm start -- /path/to/project
 ```
 
-The Node server and scanner use ordinary ES modules. D3 powers the graph; esbuild bundles browser code. The published package contains prebuilt assets, so end users need no build step. Source lives in `src/` and `ui/`; browser assets live in `public/`; integration tests live in `test/`.
+The server and scanner use strict TypeScript compiled to Node ESM. The UI uses Angular 22 with signals and standalone components. D3 owns the graph's SVG inside an Angular component. Source lives in `src/` and `ui/`; static images and the existing stylesheet live in `public/`. Build output in `dist/` is ignored by Git.
+
+From this package directory:
+
+| Command                        | Purpose                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| `npm run check`                | Lint, formatting, strict types, production build, and Vitest tests             |
+| `npm run test:server`          | Fast scanner and HTTP regression tests; build first for static asset tests     |
+| `npm run test:ui`              | Angular component, state, and HTTP tests through the Angular CLI               |
+| `npm run test:coverage`        | Backend and UI coverage reports, without percentage thresholds                 |
+| `npm run test:e2e`             | Chromium interaction tests and visual comparisons against the production build |
+| `npm run test:package`         | Pack the existing build and test an isolated production-only installation      |
+| `npm run test:reproducibility` | Rebuild and compare every distribution file with the previous build            |
+
+Run `npx playwright install chromium` before browser tests. Visual baselines were captured from the original UI on Windows with the locked Chromium version. CI runs comparisons on Windows; Linux and macOS run unit/integration and package compatibility checks. Keep screenshots in the same rendering environment when updating baselines, and review each changed image. Tests use synthetic project and home directories, never the contributor's agent configuration.
+
+`npm start -- /path/to/project` builds before starting. After source changes, stop and restart it to rebuild both halves. End users running the published `boyscout` command need no build step. Development tooling and smoke-test runners stay outside the npm archive.
 
 See [architecture and discovery notes](docs/architecture.md) and [release instructions](https://github.com/codeursenior/product-engineer-kit/blob/main/docs/releasing.md).
 

@@ -9,24 +9,77 @@ permissions:
   contents: read
 jobs:
   check:
-    if: github.event_name != 'schedule'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        node: [20, 22, 24]
+        os: [ubuntu-latest, macos-latest, windows-2025]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npm pack --workspace @codeursenior/boyscout --dry-run
-  publish:
+      - name: Verify reproducibility and prepare one release archive
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          npm run test:reproducibility --workspace @codeursenior/boyscout
+          mkdir -p .local/distribution
+          npm pack --workspace @codeursenior/boyscout --ignore-scripts --pack-destination .local/distribution
+          npm exec --workspace @codeursenior/boyscout -- tsc -p tsconfig.tools.json
+          cp packages/agent-visualizer/.local/tools/package-smoke.js .local/distribution/package-smoke.mjs
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: boyscout-package
+          include-hidden-files: true
+          path: .local/distribution/
+  browser:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm exec --workspace @codeursenior/boyscout -- playwright install chromium
+      - run: npm run test:e2e --workspace @codeursenior/boyscout
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failures
+          include-hidden-files: true
+          path: packages/agent-visualizer/.local/playwright-results
+  package:
     needs: check
-    if: always() && github.event_name != 'pull_request' && (github.event_name == 'schedule' || needs.check.result == 'success')
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-2025]
+        node: [20, 22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: boyscout-package
+          path: ${{ runner.temp }}/boyscout-artifact
+      - name: Test the archive without a checkout or development dependencies
+        shell: bash
+        env:
+          ARTIFACT_ROOT: ${{ runner.temp }}/boyscout-artifact
+        run: |
+          archives=("$ARTIFACT_ROOT"/*.tgz)
+          node "$ARTIFACT_ROOT/package-smoke.mjs" "${archives[0]}"
+  publish:
+    needs: [check, browser, package]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read

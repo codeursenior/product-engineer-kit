@@ -1,0 +1,6 @@
+dist/
+.angular/
+.local/
+node_modules/
+coverage/
+test/browser/snapshots/

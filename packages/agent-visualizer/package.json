@@ -4,11 +4,10 @@
   "description": "Agent Visualizer: explore your AI context, skills and MCP configuration in a local dashboard.",
   "type": "module",
   "bin": {
-    "boyscout": "src/cli.js"
+    "boyscout": "dist/cli.js"
   },
   "files": [
-    "src",
-    "public",
+    "dist",
     "README.md",
     "LICENSE",
     "docs"
@@ -17,12 +16,22 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "esbuild ui/app.js --bundle --minify --format=esm --outfile=public/app.js",
-    "start": "node src/cli.js ui",
-    "test": "node --test test/*.test.js",
-    "check": "npm run build && npm test",
+    "build": "tsx scripts/clean.ts && npm run build:server && ng build",
+    "build:server": "tsc -p tsconfig.json",
+    "prestart": "npm run build",
+    "start": "node dist/cli.js ui",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json && ngc -p tsconfig.app.json --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "test": "npm run test:server && npm run test:ui",
+    "test:server": "vitest run --config vitest.config.ts",
+    "test:ui": "ng test --watch=false",
+    "test:coverage": "npm run test:server -- --coverage && npm run test:ui -- --coverage",
+    "test:e2e": "playwright test",
+    "test:package": "tsx scripts/package-smoke.ts",
+    "test:reproducibility": "tsx scripts/reproducibility.ts",
+    "check": "npm run lint && npm run typecheck && npm run build && npm test",
     "prepack": "npm run build",
-    "format": "prettier --write src ui test public/index.html public/style.css package.json docs README.md"
+    "format": "prettier --write ."
   },
   "keywords": [
     "agents",
@@ -51,8 +60,29 @@
     "yaml": "^2.8.1"
   },
   "devDependencies": {
+    "@angular/build": "22.2.0",
+    "@angular/cli": "22.2.0",
+    "@angular/common": "22.2.0",
+    "@angular/compiler": "22.2.0",
+    "@angular/compiler-cli": "22.2.0",
+    "@angular/core": "22.2.0",
+    "@angular/platform-browser": "22.2.0",
+    "@playwright/test": "1.63.0",
+    "@types/d3": "7.4.3",
+    "@types/node": "22.20.4",
+    "@types/node20": "npm:@types/node@20.19.43",
+    "@vitest/coverage-v8": "5.0.3",
+    "angular-eslint": "22.5.0",
     "d3": "^7.9.0",
-    "esbuild": "^0.25.10",
-    "prettier": "^3.9.8"
+    "eslint": "10.11.0",
+    "jiti": "2.7.0",
+    "jsdom": "30.1.1",
+    "prettier": "^3.9.8",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vitest": "5.0.3"
   }
 }

@@ -1,0 +1,95 @@
+<div class="app">
+  <aside appSidebar class="sidebar"></aside>
+  <main>
+    <section class="page-heading">
+      <img
+        class="page-heading-image"
+        src="/mountain-context.jpg"
+        alt=""
+        aria-hidden="true"
+      />
+      <div class="page-heading-copy">
+        <h1 id="page-title">{{ titles[state.tab()][0] }}</h1>
+        <p id="page-description">{{ titles[state.tab()][1] }}</p>
+      </div>
+      <div
+        class="view-switch"
+        id="view-switch"
+        [hidden]="state.tab() !== 'context'"
+      >
+        <button
+          id="graph-view"
+          [class.selected]="state.view() === 'graph'"
+          (click)="state.view.set('graph')"
+        >
+          ⌘ Graph</button
+        ><button
+          id="list-view"
+          [class.selected]="state.view() === 'list'"
+          (click)="state.view.set('list')"
+        >
+          ☷ Files
+        </button>
+      </div>
+    </section>
+    <div appFilters class="toolbar"></div>
+    <div id="notice" class="notice" [hidden]="!state.data()?.warnings?.length">
+      {{ state.data()?.warnings?.join(' ') }}
+    </div>
+    @if (!state.error() && state.data() && state.rows().length && state.tab()
+    === 'context' && state.view() === 'graph') {
+    <section
+      appGraph
+      id="canvas"
+      class="graph-canvas"
+      aria-label="Context graph"
+      [nodes]="state.nodes()"
+      [edges]="state.data()?.edges ?? []"
+      (selected)="select($event)"
+    ></section>
+    } @else {
+    <section
+      id="canvas"
+      [attr.aria-label]="state.tab() === 'context' ? 'Context graph' : state.tab() === 'mcp' ? 'MCP servers list' : state.tab() === 'rules' ? 'Rules list' : 'Skills list'"
+    >
+      @if (state.error()) {
+      <div class="empty">
+        <span class="empty-mark">⌁</span
+        ><strong>Couldn’t load this workspace</strong>
+        <p>{{ state.error() }}</p>
+      </div>
+      } @else if (!state.data()) {
+      <div class="loading">Mapping your agent’s world…</div>
+      } @else if (!state.rows().length) {
+      <div class="empty">
+        <span class="empty-mark">✳</span
+        ><strong
+          >{{ state.search() || state.scope() !== 'all' || state.client() !==
+          'all' ? 'No matching assets' : 'A blank canvas, for now' }}</strong
+        >
+        <p>{{ empty() }}</p>
+      </div>
+      } @else {
+      <div
+        appAssetTable
+        class="table-wrap"
+        [rows]="state.rows()"
+        [tab]="state.tab()"
+        (selected)="select($event)"
+      ></div>
+      }
+    </section>
+    }
+    <footer class="main-footer">
+      <span id="summary" aria-live="polite">{{ state.summary() }}</span
+      ><span id="updated">{{ updated() }}</span>
+    </footer>
+  </main>
+  <aside
+    appDetail
+    id="detail"
+    class="detail"
+    [hidden]="!state.selection()"
+    aria-label="Asset details"
+  ></aside>
+</div>

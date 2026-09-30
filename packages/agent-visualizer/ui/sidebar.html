@@ -1,0 +1,60 @@
+<a class="brand" href="#"
+  ><img src="/favicon.svg" alt="" width="36" height="36" /><span
+    >boyscout<span class="brand-sub">Agent Visualizer</span></span
+  ></a
+>
+<div class="workspace">
+  <span class="eyebrow">Workspace</span
+  ><strong id="project-name"
+    >{{ state.data()?.project?.name ?? 'Loading workspace' }}</strong
+  ><span
+    id="project-path"
+    class="mono"
+    [title]="state.data()?.project?.path ?? ''"
+    >{{ state.data()?.project?.path }}</span
+  ><span class="local-label"><i></i> Local session</span>
+</div>
+<div class="nav-label">Explore</div>
+<nav aria-label="Views">
+  @for (tab of tabs; track tab.id) {
+  <button
+    class="nav-item"
+    [class.active]="state.tab() === tab.id"
+    [attr.data-tab]="tab.id"
+    [attr.aria-current]="state.tab() === tab.id ? 'page' : 'false'"
+    (click)="state.selectTab(tab.id)"
+  >
+    <span class="nav-icon">{{ tab.icon }}</span>{{ tab.label }}<span
+      [id]="'count-' + tab.id"
+      class="count"
+      >{{ count(tab.id) }}</span
+    >
+  </button>
+  }
+</nav>
+<div class="sidebar-rescan">
+  <button
+    id="refresh"
+    class="small-button"
+    [disabled]="state.loading()"
+    (click)="refresh()"
+  >
+    ↻ <span>Rescan</span>
+  </button>
+  <button
+    id="theme-toggle"
+    class="small-button"
+    type="button"
+    [attr.aria-label]="state.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+    [title]="state.theme() === 'dark' ? 'Light mode' : 'Dark mode'"
+    [attr.aria-pressed]="state.theme() === 'dark'"
+    (click)="state.toggleTheme()"
+  >
+    {{ state.theme() === 'dark' ? '☀' : '☾' }}
+  </button>
+</div>
+<div class="sidebar-footer">
+  <span class="safe-dot"></span> Local workspace<span class="version"
+    >v0.1</span
+  >
+</div>

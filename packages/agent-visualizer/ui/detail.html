@@ -1,0 +1,111 @@
+<button
+  id="close-detail"
+  class="close-button"
+  aria-label="Close details"
+  (click)="close()"
+>
+  ×
+</button>
+<div id="detail-body">
+  @if (row(); as row) {
+  <span appScope [assetScope]="row.scope"></span>
+  <h2>{{ row.name }}</h2>
+  <p>{{ description(row) }}</p>
+  <h3>Source {{ paths(row).length > 1 ? 'paths' : 'path' }}</h3>
+  @for (path of paths(row); track path) {
+  <p class="mono source-path">{{ path }}</p>
+  }
+  <h3>Client discovery</h3>
+  @for (client of clients; track client) {
+  <div class="client-line">
+    <span
+      appClient
+      [client]="client"
+      [active]="row.clients.includes(client)"
+    ></span
+    >{{ labels[client] }} · {{ invocation(row, client) ||
+    (row.clients.includes(client) ? (state.selection()?.tab === 'context' ?
+    'Entry point or linked' : 'Configured') : 'Not discovered') }}
+  </div>
+  } @if ('legacy' in row && row.legacy && state.selection()?.tab === 'skills') {
+  <p>
+    Includes a legacy .codex/skills discovery path. Client behavior can depend
+    on its installed version.
+  </p>
+  } @if (state.selection()?.tab === 'rules') {
+  <h3>Declared conditions</h3>
+  <p>{{ ruleConditions(row) }}</p>
+  <p>
+    File discovery does not confirm whether this rule loaded in an agent
+    session.
+  </p>
+  } @if ('status' in row) {
+  <h3>Connection status</h3>
+  <p>
+    {{ row.status }}. {{ row.status === 'Disabled' ? 'Disabled in this file.' :
+    'Check the client’s MCP panel to confirm its live connection.' }}
+  </p>
+  <p>{{ row.origin }}</p>
+  <p>
+    Commands, arguments, server URLs, headers, and credentials are intentionally
+    omitted.
+  </p>
+  } @else {
+  <h3>File preview</h3>
+  <pre [hidden]="mode() === 'edit'">{{ preview() }}</pre>
+  @if (targets().length) { @if (targets().length > 1) {
+  <label class="edit-source"
+    >Source file<select
+      #sourceFile
+      [value]="targetId()"
+      [disabled]="mode() !== 'preview'"
+      (change)="source(sourceFile.value)"
+    >
+      @for (target of targets(); track target.id) {
+      <option [value]="target.id">{{ target.path }}</option>
+      }
+    </select></label
+  >
+  }
+  <button
+    class="edit-button"
+    [disabled]="!file()"
+    [hidden]="mode() !== 'preview'"
+    (click)="edit()"
+  >
+    Edit file
+  </button>
+  <button
+    class="delete-button"
+    [disabled]="!file()"
+    [hidden]="mode() !== 'preview' || !target()?.deletable"
+    (click)="confirmDelete()"
+  >
+    Delete file
+  </button>
+  <div class="delete-confirm" [hidden]="mode() !== 'delete'">
+    <p>Delete {{ target()?.path }} permanently?</p>
+    <button type="button" [disabled]="busy()" (click)="remove()">
+      Delete permanently</button
+    ><button type="button" [disabled]="busy()" (click)="cancel()">
+      Cancel
+    </button>
+  </div>
+  <form class="edit-form" [hidden]="mode() !== 'edit'" (submit)="save($event)">
+    <textarea
+      #text
+      [attr.aria-label]="'Edit ' + row.name"
+      spellcheck="false"
+      [value]="draft()"
+      (input)="draft.set(text.value)"
+    ></textarea>
+    <div class="edit-actions">
+      <button type="submit" [disabled]="busy()">Save</button
+      ><button type="button" [disabled]="busy()" (click)="cancel()">
+        Cancel
+      </button>
+    </div>
+  </form>
+  <p class="edit-status" role="status">{{ status() }}</p>
+  } } }
+</div>

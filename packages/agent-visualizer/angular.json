@@ -1,0 +1,55 @@
+{
+  "$schema": "../../node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": { "analytics": false, "packageManager": "npm" },
+  "projects": {
+    "visualizer-ui": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "ui",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "ui/main.ts",
+            "index": "ui/index.html",
+            "tsConfig": "tsconfig.app.json",
+            "outputPath": { "base": "dist/browser", "browser": "" },
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public",
+                "ignore": ["app.js", "index.html", "style.css"]
+              }
+            ],
+            "styles": ["public/style.css"],
+            "optimization": {
+              "scripts": true,
+              "styles": { "minify": true, "inlineCritical": false },
+              "fonts": false
+            },
+            "outputHashing": "all",
+            "sourceMap": false,
+            "budgets": [
+              {
+                "type": "initial",
+                "maximumWarning": "500kB",
+                "maximumError": "1MB"
+              }
+            ]
+          },
+          "configurations": { "development": { "optimization": false } }
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "include": ["ui/**/*.spec.ts"],
+            "runner": "vitest"
+          }
+        }
+      }
+    }
+  }
+}
