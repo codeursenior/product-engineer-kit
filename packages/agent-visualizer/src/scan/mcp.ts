@@ -46,7 +46,7 @@ export async function discoverMcp(
     servers: unknown,
     file: string,
     scope: Scope,
-    client: Client | null,
+    clients: Client[],
     origin?: string,
   ) {
     if (!servers || typeof servers !== "object" || Array.isArray(servers))
@@ -57,11 +57,11 @@ export async function discoverMcp(
       const disabled = config.enabled === false || config.disabled === true;
       // Whitelist public fields. Never expose arguments, env, headers, URLs or credentials.
       mcp.push({
-        id: id(`${file}:${scope}:${client}:${name}:${origin || ""}`),
+        id: id(`${file}:${scope}:${clients.join(",")}:${name}:${origin || ""}`),
         name,
         scope,
         path: display(file, inside(root, file) ? "project" : "user"),
-        clients: client ? [client] : [],
+        clients,
         transport: config.url
           ? config.type === "sse"
             ? "SSE"
@@ -77,21 +77,23 @@ export async function discoverMcp(
   }
   const bases: [string, Scope][] = [[root, "project"]];
   if (includeUser) bases.push([home, "user"]);
-  const locations: [string, Client | null, string][] = [
-    [".cursor/mcp.json", "cursor", "json"],
-    [".mcp.json", "claude", "json"],
-    [".codex/config.toml", "codex", "toml"],
-    [".vscode/mcp.json", null, "json"],
+  const locations: [string, Client[], string][] = [
+    [".cursor/mcp.json", ["cursor"], "json"],
+    [".mcp.json", ["claude", "copilot"], "json"],
+    [".codex/config.toml", ["codex"], "toml"],
+    [".vscode/mcp.json", ["copilot"], "json"],
+    [".copilot/mcp-config.json", ["copilot"], "json"],
   ];
   for (const [base, scope] of bases) {
-    for (const [rel, client, format] of locations) {
+    for (const [rel, clients, format] of locations) {
       if (
         scope === "user" &&
         (rel === ".mcp.json" || rel.startsWith(".vscode"))
       )
         continue;
+      if (scope === "project" && rel.startsWith(".copilot")) continue;
       const file =
-        scope === "user" && client === "codex"
+        scope === "user" && clients.includes("codex")
           ? path.join(codexHome, "config.toml")
           : path.join(base, rel);
       const config = await readConfig(file, format);
@@ -99,10 +101,7 @@ export async function discoverMcp(
         config?.mcpServers || config?.mcp_servers || config?.servers,
         file,
         scope,
-        client,
-        client
-          ? undefined
-          : "VS Code configuration; not installed for these clients",
+        clients,
       );
     }
   }
@@ -117,31 +116,34 @@ export async function discoverMcp(
       ].includes(relative)
     )
       continue;
-    const client = relative.endsWith(".cursor/mcp.json")
-      ? "cursor"
+    const clients: Client[] = relative.endsWith(".cursor/mcp.json")
+      ? ["cursor"]
       : relative.endsWith(".codex/config.toml")
-        ? "codex"
+        ? ["codex"]
         : relative.endsWith(".vscode/mcp.json")
-          ? null
-          : "claude";
-    const config = await readConfig(file, client === "codex" ? "toml" : "json");
+          ? ["copilot"]
+          : ["claude", "copilot"];
+    const config = await readConfig(
+      file,
+      clients.includes("codex") ? "toml" : "json",
+    );
     addServers(
       config?.mcpServers || config?.mcp_servers || config?.servers,
       file,
       "project",
-      client,
+      clients,
       "Nested project configuration",
     );
   }
   if (includeUser) {
     const file = path.join(home, ".claude.json");
     const config = await readConfig(file);
-    addServers(config?.mcpServers, file, "user", "claude");
+    addServers(config?.mcpServers, file, "user", ["claude"]);
     addServers(
       record(record(config.projects)[root]).mcpServers,
       file,
       "project",
-      "claude",
+      ["claude"],
       "Project-local configuration in user settings",
     );
   }

@@ -22,11 +22,11 @@ The detail component owns its edit draft and revision. A request sequence preven
 
 Development uses Node 24 and the Angular CLI's supported Vitest integration. Backend code is checked against Node 20 types and emitted as ESM; test/build tooling uses newer Node types separately. Angular and D3 are bundled into browser assets and are not installed as runtime dependencies. The npm archive includes only compiled output, documentation and licenses. Build caches, sources and fixtures stay out of it.
 
-Client badges use local raster marks from [Cursor](https://cursor.com/brand), [Claude](https://claude.com/), and [ChatGPT](https://chatgpt.com/). The Codex discovery indicator uses the ChatGPT mark. The static asset allowlist keeps these images available without remote requests.
+Client badges use local raster marks from [Cursor](https://cursor.com/brand), [Claude](https://claude.com/), and [ChatGPT](https://chatgpt.com/). The Codex discovery indicator uses the ChatGPT mark; Copilot uses a local text mark. The static asset allowlist keeps the images available without remote requests.
 
 ## Discovery references
 
-Behavior was checked against official documentation on 2026-09-21. Runtime behavior can differ by client release or configuration.
+Behavior was checked against official documentation on 2026-09-30. Runtime behavior can differ by client release or configuration.
 
 - [Codex skills](https://developers.openai.com/codex/skills/): repository and user `.agents/skills` discovery and symlink support.
 - [Codex MCP](https://developers.openai.com/codex/mcp/): TOML server definitions and project/user configuration.
@@ -38,5 +38,8 @@ Behavior was checked against official documentation on 2026-09-21. Runtime behav
 - [Cursor rules help](https://prod.cursor.com/help/customization/rules): project-root `AGENTS.md` and `CLAUDE.md` are both read by Cursor.
 - [Claude Code rules](https://code.claude.com/docs/en/memory): `.claude/rules` and `paths` frontmatter.
 - [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md): `AGENTS.md` belongs in Context. [Codex command rules](https://learn.chatgpt.com/docs/agent-configuration/rules) are a separate execution policy.
+- [Copilot instructions in VS Code](https://code.visualstudio.com/docs/agent-customization/custom-instructions): repository and personal instructions, `AGENTS.md`, and targeted `.instructions.md` files with `applyTo` metadata.
+- [Copilot skills in VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills): project and personal skill locations and invocation metadata.
+- [MCP servers in VS Code](https://code.visualstudio.com/docs/agent-customization/mcp-servers): workspace `.vscode/mcp.json`, portable `.mcp.json`, and Agent Host `~/.copilot/mcp-config.json`.
 
 A live connection indicator needs an explicit integration with each client's running session. Executing commands found in arbitrary repository configuration is deliberately outside the viewer's scope. File-based discovery, configuration enablement, transport reachability and authenticated session connectivity are separate facts.

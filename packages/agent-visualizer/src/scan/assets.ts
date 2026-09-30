@@ -143,7 +143,8 @@ export async function discoverAssets(
                 ? falsehood(meta["user-invocable"])
                   ? "Disabled"
                   : "User only"
-                : falsehood(meta["user-invocable"]) && client === "claude"
+                : falsehood(meta["user-invocable"]) &&
+                    (client === "claude" || client === "copilot")
                   ? "Model only"
                   : "Model + user";
           skill.invocation[client] = [
@@ -197,6 +198,7 @@ export async function discoverAssets(
           ),
           globs: patterns(meta.globs),
           pathsCondition: patterns(meta.paths),
+          applyTo: patterns(meta.applyTo),
           alwaysApply: meta.alwaysApply === true,
         });
         content.set(entry.id, entry.text);

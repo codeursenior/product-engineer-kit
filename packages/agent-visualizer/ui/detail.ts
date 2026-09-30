@@ -86,6 +86,7 @@ export class Detail {
         row.pathsCondition.length
           ? `Claude paths: ${row.pathsCondition.join(", ")}`
           : "",
+        row.applyTo.length ? `Copilot applyTo: ${row.applyTo.join(", ")}` : "",
       ]
         .filter(Boolean)
         .join(" · ") || "No path condition declared"

@@ -5,7 +5,7 @@ export const MAX_FILES = 20000;
 export const MAX_BYTES = 512 * 1024;
 export const MAX_DEPTH = 35;
 export const INSTRUCTION =
-  /^(AGENTS(?:\.override)?|CLAUDE(?:\.local)?|GEMINI)\.md$|^\.cursorrules$/i;
+  /^(AGENTS(?:\.override)?|CLAUDE(?:\.local)?|GEMINI|copilot-instructions)\.md$|^\.cursorrules$/i;
 export const MARKDOWN = /\.(md|mdc)$/i;
 export const id = (value: string): string =>
   createHash("sha256").update(value).digest("hex").slice(0, 16);

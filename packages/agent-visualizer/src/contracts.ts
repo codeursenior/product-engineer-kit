@@ -1,5 +1,5 @@
 /** JSON contracts shared by the local server and browser. No filesystem capabilities. */
-export type Client = "cursor" | "claude" | "codex";
+export type Client = "cursor" | "claude" | "codex" | "copilot";
 export type Scope = "project" | "user";
 export interface EditTarget {
   id: string;
@@ -27,6 +27,7 @@ export interface Rule extends Asset {
   legacy: boolean;
   globs: string[];
   pathsCondition: string[];
+  applyTo: string[];
   alwaysApply: boolean;
 }
 export interface Skill extends Asset {

@@ -40,9 +40,9 @@ export class AssetTable {
     context:
       "Client icons show entry points and linked documents that each agent can discover. They do not confirm a file loaded in a session. Unlinked knowledge has no client entry point.",
     rules:
-      "Dedicated Cursor and Claude Code files only. File metadata describes conditions; it does not prove a rule loaded in a session. Codex AGENTS.md remains in Context.",
+      "Dedicated Cursor, Claude Code, and GitHub Copilot instruction files. File metadata describes conditions; it does not prove a rule loaded in a session. General instructions remain in Context.",
     skills:
-      "Client icons: Cursor · Claude Code · Codex. Active means a discovery path was found, not a running session. Hover for invocation details. Identical copies are grouped.",
-    mcp: "Client icons: Cursor · Claude Code · Codex. Configuration does not prove a live connection. The viewer never launches a server or sends credentials.",
+      "Client icons: Cursor · Claude Code · Codex · GitHub Copilot. Active means a discovery path was found, not a running session. Hover for invocation details. Identical copies are grouped.",
+    mcp: "Client icons: Cursor · Claude Code · Codex · GitHub Copilot. Configuration does not prove a live connection. The viewer never launches a server or sends credentials.",
   };
 }

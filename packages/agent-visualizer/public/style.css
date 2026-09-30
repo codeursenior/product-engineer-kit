@@ -629,6 +629,11 @@ td.name p {
   width: 22px;
   height: 22px;
 }
+.copilot-mark {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.07em;
+}
 .client-icon.off img {
   opacity: 0.3;
 }

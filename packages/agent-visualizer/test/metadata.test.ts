@@ -69,6 +69,7 @@ describe("metadata normalization", () => {
     expect(toolsForSkill("/fixture/.agents/skills/review/SKILL.md")).toEqual([
       "cursor",
       "codex",
+      "copilot",
     ]);
   });
 });

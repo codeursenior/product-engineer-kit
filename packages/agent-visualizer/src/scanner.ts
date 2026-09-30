@@ -27,6 +27,7 @@ export async function scanProject(
           path.join(home, ".agents"),
           path.join(home, ".claude"),
           path.join(home, ".cursor"),
+          path.join(home, ".copilot"),
           codexHome,
         ]
       : []),

@@ -8,6 +8,12 @@ export const ruleClient = (file: string): Client | null => {
   const normalized = slash(file).toLowerCase();
   if (/(^|\/)\.cursor\/rules\//.test(normalized)) return "cursor";
   if (/(^|\/)\.claude\/rules\//.test(normalized)) return "claude";
+  if (
+    /(^|\/)(?:\.github|\.copilot)\/instructions\/.+\.instructions\.md$/.test(
+      normalized,
+    )
+  )
+    return "copilot";
   return null;
 };
 export const toolsForSkill = (p: string): Client[] => {
@@ -16,6 +22,8 @@ export const toolsForSkill = (p: string): Client[] => {
     result.push("cursor");
   if (/(^|\/)\.claude\/skills\//.test(p)) result.push("claude");
   if (/(^|\/)\.(agents|codex)\/skills\//.test(p)) result.push("codex");
+  if (/(^|\/)\.(github|agents|claude|copilot)\/skills\//.test(p))
+    result.push("copilot");
   return result;
 };
 export const clientsForContextEntry = (
@@ -25,11 +33,17 @@ export const clientsForContextEntry = (
   codexHome: string,
 ): Client[] => {
   const name = path.basename(alias).toLowerCase();
+  if (name === "copilot-instructions.md")
+    return /[\\/](?:\.github|\.copilot)[\\/]copilot-instructions\.md$/i.test(
+      alias,
+    )
+      ? ["copilot"]
+      : [];
   if (name === "agents.override.md") return ["codex"];
   if (name === "agents.md") {
     if (scope === "user")
       return inside(codexHome, alias) ? ["codex"] : ["cursor"];
-    return ["cursor", "codex"];
+    return ["cursor", "codex", "copilot"];
   }
   if (name === "claude.local.md") return ["claude"];
   if (name === "claude.md")

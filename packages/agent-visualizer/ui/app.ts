@@ -54,9 +54,9 @@ export class App {
       return "Try another scope, client, or search.";
     switch (this.state.tab()) {
       case "context":
-        return "Context appears here when your folder contains AGENTS.md, CLAUDE.md, or linked knowledge files.";
+        return "Context appears here when your folder contains AGENTS.md, CLAUDE.md, .github/copilot-instructions.md, or linked knowledge files.";
       case "rules":
-        return "Add .cursor/rules, .claude/rules, or a legacy .cursorrules file to see rules here. Codex instructions stay in Context.";
+        return "Add .cursor/rules, .claude/rules, .github/instructions, or a legacy .cursorrules file to see rules here. General instructions stay in Context.";
       case "skills":
         return "Add a SKILL.md in an agent skills folder to see it here.";
       case "mcp":

@@ -29,7 +29,7 @@ const SKIP = new Set([
   "sessions",
   "history",
 ]);
-const AGENT_DIRS = [".agents", ".claude", ".codex", ".cursor"];
+const AGENT_DIRS = [".agents", ".claude", ".codex", ".cursor", ".github"];
 
 export async function collectFiles(env: ScanEnvironment) {
   const { root, home, codexHome, includeUser, allowed, display, warnings } =
@@ -60,6 +60,11 @@ export async function collectFiles(env: ScanEnvironment) {
         for (const entry of entries.sort((a, b) =>
           a.name.localeCompare(b.name),
         )) {
+          if (
+            path.basename(file) === ".github" &&
+            ["agents", "prompts"].includes(entry.name)
+          )
+            continue;
           if (
             SKIP.has(entry.name) ||
             (entry.name.startsWith(".") &&
@@ -110,7 +115,7 @@ export async function collectFiles(env: ScanEnvironment) {
   await collect(root, "project");
   if (includeUser) {
     for (const base of userBases) {
-      for (const child of ["skills", "knowledge", "rules"])
+      for (const child of ["skills", "knowledge", "rules", "instructions"])
         await collect(path.join(base, child), "user");
     }
     for (const file of [
@@ -118,6 +123,7 @@ export async function collectFiles(env: ScanEnvironment) {
       path.join(codexHome, "AGENTS.md"),
       path.join(codexHome, "AGENTS.override.md"),
       path.join(home, ".cursor", "AGENTS.md"),
+      path.join(home, ".copilot", "copilot-instructions.md"),
     ])
       await collect(file, "user");
   }

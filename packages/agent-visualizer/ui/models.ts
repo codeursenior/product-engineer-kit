@@ -16,12 +16,14 @@ export const labels: Record<Client, string> = {
   cursor: "Cursor",
   claude: "Claude Code",
   codex: "Codex",
+  copilot: "GitHub Copilot",
 };
-export const clientNames: Client[] = ["cursor", "claude", "codex"];
+export const clientNames: Client[] = ["cursor", "claude", "codex", "copilot"];
 export const icons: Record<Client, string> = {
   cursor: "/client-logos/cursor.png",
   claude: "/client-logos/claude.png",
   codex: "/client-logos/chatgpt.webp",
+  copilot: "",
 };
 export const titles: Record<Tab, [string, string]> = {
   context: [
@@ -30,7 +32,7 @@ export const titles: Record<Tab, [string, string]> = {
   ],
   rules: [
     "Rules in your workspace.",
-    "Browse the rule files discovered for Cursor and Claude Code.",
+    "Browse the rule files discovered for Cursor, Claude Code, and GitHub Copilot.",
   ],
   skills: [
     "Skills your agent can use.",
@@ -56,6 +58,7 @@ export function conditions(row: Rule): string {
       row.pathsCondition.length
         ? `Claude paths: ${row.pathsCondition.join(", ")}`
         : "",
+      row.applyTo.length ? `Copilot applyTo: ${row.applyTo.join(", ")}` : "",
     ]
       .filter(Boolean)
       .join(" · ") || "No path condition"
@@ -73,7 +76,7 @@ export function filterRows<T extends Row>(
       (scope === "all" || row.scope === scope) &&
       (client === "all" || row.clients.includes(client)) &&
       (!query ||
-        `${row.name} ${"path" in row ? row.path : row.paths.join(" ")} ${description(row)} ${"globs" in row ? row.globs.join(" ") : ""} ${"pathsCondition" in row ? row.pathsCondition.join(" ") : ""}`
+        `${row.name} ${"path" in row ? row.path : row.paths.join(" ")} ${description(row)} ${"globs" in row ? row.globs.join(" ") : ""} ${"pathsCondition" in row ? row.pathsCondition.join(" ") : ""} ${"applyTo" in row ? row.applyTo.join(" ") : ""}`
           .toLowerCase()
           .includes(query)),
   );

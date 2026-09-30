@@ -83,13 +83,19 @@ test("attributes linked context to each discovering client without inheriting fo
       required(data.nodes.find((node) => node.path === location)).clients,
     );
   assert.deepEqual(clientsAt("CLAUDE.md"), new Set(["cursor", "claude"]));
-  assert.deepEqual(clientsAt("AGENTS.md"), new Set(["cursor", "codex"]));
+  assert.deepEqual(
+    clientsAt("AGENTS.md"),
+    new Set(["cursor", "codex", "copilot"]),
+  );
   assert.deepEqual(clientsAt("docs/guide.md"), new Set(["cursor", "claude"]));
   assert.deepEqual(clientsAt("docs/deep.md"), new Set(["cursor", "claude"]));
-  assert.deepEqual(clientsAt("docs/codex.md"), new Set(["cursor", "codex"]));
+  assert.deepEqual(
+    clientsAt("docs/codex.md"),
+    new Set(["cursor", "codex", "copilot"]),
+  );
   assert.deepEqual(
     clientsAt("docs/shared.md"),
-    new Set(["cursor", "claude", "codex"]),
+    new Set(["cursor", "claude", "codex", "copilot"]),
   );
   assert.deepEqual(clientsAt("app/CLAUDE.md"), new Set(["claude"]));
   assert.deepEqual(clientsAt(".agents/knowledge/orphan.md"), new Set());
@@ -119,6 +125,93 @@ async function fixture(t: TestContext) {
     });
   return { root, home, write, scan };
 }
+
+test("discovers Copilot VS Code context, rules, skills, and MCP without agent or prompt files", async (t) => {
+  const { root, home, write, scan } = await fixture(t);
+  await write(
+    path.join(root, ".github/copilot-instructions.md"),
+    "[Shared guide](../docs/shared.md) [GitHub guide](docs/conventions.md)",
+  );
+  await write(path.join(root, "docs/shared.md"), "Shared guidance");
+  await write(
+    path.join(root, ".github/docs/conventions.md"),
+    "Repository conventions",
+  );
+  await write(path.join(root, "app/AGENTS.md"), "App guidance");
+  await write(
+    path.join(root, ".github/instructions/frontend.instructions.md"),
+    '---\ndescription: Frontend guidance\napplyTo: "src/**/*.ts"\n---\nUse signals',
+  );
+  await write(
+    path.join(home, ".copilot/instructions/personal.instructions.md"),
+    "---\ndescription: Personal guidance\n---\nUse clear names",
+  );
+  await write(
+    path.join(home, ".copilot/copilot-instructions.md"),
+    "Personal context",
+  );
+  await write(
+    path.join(root, ".github/skills/review/SKILL.md"),
+    "---\nname: review\ndescription: Review changes\nuser-invocable: false\n---\nReview",
+  );
+  await write(
+    path.join(home, ".copilot/skills/explain/SKILL.md"),
+    "---\nname: explain\ndescription: Explain code\n---\nExplain",
+  );
+  await write(
+    path.join(root, ".vscode/mcp.json"),
+    '{"servers":{"editor":{"command":"node","args":["SECRET"]}}}',
+  );
+  await write(
+    path.join(root, ".mcp.json"),
+    '{"mcpServers":{"shared":{"url":"https://secret.example"}}}',
+  );
+  await write(
+    path.join(home, ".copilot/mcp-config.json"),
+    '{"mcpServers":{"personal":{"command":"node"}}}',
+  );
+  await write(path.join(root, ".github/agents/reviewer.agent.md"), "Agent");
+  await write(path.join(root, ".github/prompts/review.prompt.md"), "Prompt");
+
+  const { data } = await scan();
+  const node = (name: string) =>
+    required(data.nodes.find((n) => n.name === name));
+  assert.deepEqual(node("copilot-instructions.md").clients, ["copilot"]);
+  assert.ok(
+    required(
+      data.nodes.find((n) => n.path === "app/AGENTS.md"),
+    ).clients.includes("copilot"),
+  );
+  assert.deepEqual(node("shared.md").clients, ["copilot"]);
+  assert.deepEqual(node("conventions.md").clients, ["copilot"]);
+  assert.ok(
+    data.nodes.some((n) => n.scope === "user" && n.clients.includes("copilot")),
+  );
+  assert.deepEqual(
+    data.rules.find((r) => r.name === "frontend.instructions.md")?.applyTo,
+    ["src/**/*.ts"],
+  );
+  assert.ok(data.rules.every((r) => r.clients.includes("copilot")));
+  assert.ok(data.rules.some((r) => r.scope === "user"));
+  assert.equal(
+    data.skills.find((s) => s.name === "review")?.invocation.copilot,
+    "Model only",
+  );
+  assert.ok(
+    data.skills.some((s) => s.name === "explain" && s.scope === "user"),
+  );
+  assert.deepEqual(data.mcp.find((m) => m.name === "editor")?.clients, [
+    "copilot",
+  ]);
+  assert.deepEqual(
+    new Set(data.mcp.find((m) => m.name === "shared")?.clients),
+    new Set(["claude", "copilot"]),
+  );
+  assert.ok(data.mcp.some((m) => m.name === "personal" && m.scope === "user"));
+  assert.ok(!JSON.stringify(data).includes("SECRET"));
+  assert.ok(!JSON.stringify(data).includes("reviewer.agent.md"));
+  assert.ok(!JSON.stringify(data).includes("review.prompt.md"));
+});
 test("follows markdown, wikilinks, root-relative references, symlinks and nested context without collecting unrelated prose", async (t) => {
   const { root, write, scan } = await fixture(t);
   await write(
@@ -149,13 +242,13 @@ test("follows markdown, wikilinks, root-relative references, symlinks and nested
   );
   assert.deepEqual(
     new Set(required(data.nodes.find((n) => n.aliases.length === 2)).clients),
-    new Set(["cursor", "claude", "codex"]),
+    new Set(["cursor", "claude", "codex", "copilot"]),
   );
   assert.deepEqual(
     new Set(
       required(data.nodes.find((n) => n.path === "notes/detail.md")).clients,
     ),
-    new Set(["cursor", "claude", "codex"]),
+    new Set(["cursor", "claude", "codex", "copilot"]),
   );
   assert.equal(data.edges.filter((e) => e.kind === "scope").length, 1);
   assert.equal(data.edges.filter((e) => e.kind === "reference").length, 5);
@@ -177,7 +270,7 @@ test("separates user assets, groups identical copies and preserves client-specif
   const skill = required(data.skills.find((s) => s.scope === "project"));
   assert.deepEqual(
     new Set(skill.clients),
-    new Set(["cursor", "codex", "claude"]),
+    new Set(["cursor", "codex", "claude", "copilot"]),
   );
   assert.equal(skill.invocation.codex, "User only");
   assert.equal(skill.invocation.claude, "User only");
@@ -197,7 +290,7 @@ test("follows a skill directory symlink without loops or duplicate rows", async 
   assert.equal(data.skills.length, 1);
   assert.deepEqual(
     new Set(required(data.skills[0]).clients),
-    new Set(["cursor", "codex", "claude"]),
+    new Set(["cursor", "codex", "claude", "copilot"]),
   );
 });
 test("does not read external symlinks or follow remote links", async (t) => {
