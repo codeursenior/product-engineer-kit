@@ -1,8 +1,8 @@
 # Updating browser snapshots
 
 Visual comparisons run on Windows with the Chromium version in the lockfile.
-After an intentional UI change, run **Refresh browser snapshots** on the public
-mirror's `main` branch. The workflow captures every reference, reruns the strict
+After an intentional UI change, run **Refresh browser snapshots** on
+Elrond's `main` branch. The workflow captures every reference, reruns the strict
 comparisons, and uploads the images as the `browser-snapshots` artifact. It does
 not commit files or publish a package.
 
