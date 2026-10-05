@@ -23,7 +23,7 @@ export const icons: Record<Client, string> = {
   cursor: "/client-logos/cursor.png",
   claude: "/client-logos/claude.png",
   codex: "/client-logos/chatgpt.webp",
-  copilot: "",
+  copilot: "/client-logos/copilot.svg",
 };
 export const titles: Record<Tab, [string, string]> = {
   context: [

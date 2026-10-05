@@ -23,11 +23,7 @@ export class ScopeBadge {
     "[attr.aria-label]": "text()",
     "[title]": "text()",
   },
-  template: `@if (client() === "copilot") {
-      <span class="copilot-mark" aria-hidden="true">CP</span>
-    } @else {
-      <img [src]="icons[client()]" alt="" aria-hidden="true" />
-    }`,
+  template: `<img [src]="icons[client()]" alt="" aria-hidden="true" />`,
 })
 export class ClientIcon {
   readonly client = input.required<Client>();

@@ -80,6 +80,7 @@ test("serves the packaged UI and authenticated APIs without cross-origin or arbi
     ["cursor.png", "image/png"],
     ["claude.png", "image/png"],
     ["chatgpt.webp", "image/webp"],
+    ["copilot.svg", "image/svg+xml"],
   ]) {
     const response = await fetch(base + `client-logos/${name}`);
     assert.equal(response.status, 200);
