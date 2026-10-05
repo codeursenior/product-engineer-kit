@@ -4,6 +4,7 @@ import path from "node:path";
 import { discoverAssets } from "./scan/assets.js";
 import { collectFiles } from "./scan/collect.js";
 import { buildGraph } from "./scan/graph.js";
+import { discoverIdentity } from "./scan/identity.js";
 import { discoverMcp } from "./scan/mcp.js";
 import type { ScanEnvironment, ScanOptions, Snapshot } from "./scan/types.js";
 import { inside, slash } from "./scan/values.js";
@@ -55,6 +56,7 @@ export async function scanProject(
   return {
     data: {
       project: { name: path.basename(root), path: root },
+      agent: await discoverIdentity(root),
       scannedAt: new Date().toISOString(),
       nodes: [...context.values()],
       rules: [...rules.values()].sort((a, b) => a.name.localeCompare(b.name)),

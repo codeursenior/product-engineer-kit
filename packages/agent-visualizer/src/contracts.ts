@@ -52,6 +52,7 @@ export interface GraphEdge {
 }
 export interface ScanData {
   project: { name: string; path: string };
+  agent?: AgentIdentity;
   scannedAt: string;
   nodes: ContextNode[];
   rules: Rule[];
@@ -60,6 +61,11 @@ export interface ScanData {
   mcp: McpServer[];
   warnings: string[];
   limits: { includeUser: boolean; scannedFiles: number; truncated: boolean };
+}
+/** Optional Agent Visualizer convention, independent of coding-client settings. */
+export interface AgentIdentity {
+  name?: string;
+  avatar?: string;
 }
 export interface ContentResponse {
   text: string;

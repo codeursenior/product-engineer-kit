@@ -13,6 +13,12 @@ test("serves the packaged UI and authenticated APIs without cross-origin or arbi
     path.join(root, "AGENTS.md"),
     "# Context\n<script>alert(1)</script>",
   );
+  await fs.mkdir(path.join(root, ".agents"));
+  await fs.writeFile(path.join(root, ".agents/NAME.md"), "Atlas");
+  await fs.copyFile(
+    new URL("../public/client-logos/claude.png", import.meta.url),
+    path.join(root, ".agents/AVATAR.png"),
+  );
   const { server, url, token } = await startServer({
     root,
     includeUser: false,
@@ -65,6 +71,10 @@ test("serves the packaged UI and authenticated APIs without cross-origin or arbi
     await fetch(base + "api/scan", { headers })
   ).json();
   assert.equal(data.nodes.length, 1);
+  assert.equal(data.agent?.name, "Atlas");
+  assert.match(data.agent?.avatar ?? "", /^data:image\/png;base64,/);
+  assert.equal((await fetch(base + ".agents/AVATAR.png")).status, 404);
+  assert.equal((await fetch(base + ".agents/NAME.md")).status, 404);
   const content = await (
     await fetch(base + "api/content?id=" + required(data.nodes[0]).id, {
       headers,

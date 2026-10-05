@@ -36,6 +36,24 @@ npx @codeursenior/boyscout ui --port 4317 --no-open
 
 A random available loopback port is used by default. The terminal URL includes a session token. Keep that URL private while the viewer is running.
 
+## Optional agent identity
+
+Give the agent a name and avatar in the sidebar by adding either or both files to the selected project's root:
+
+```text
+.agents/
+  NAME.md
+  AVATAR.png
+```
+
+`NAME.md` contains the display name, for example `Atlas`. The first non-empty line is used; an optional Markdown heading prefix (`# Atlas`) is removed. Other Markdown is displayed as plain text. Names are limited to 100 characters, with no control characters, in a UTF-8 file of at most 4 KiB.
+
+Use `AVATAR.png` or `AVATAR.jpeg` for the image, up to 2 MiB. The file signature must match its extension. PNG takes priority when both files pass those checks. The image is cropped to a circle; if the browser cannot decode it, the default icon remains.
+
+These are optional, independent settings: without a valid name, the sidebar still says **boyscout**; without an avatar, it keeps its default icon. The workspace name and path stay unchanged. Click **Rescan** after adding, changing or removing either file.
+
+This is an internal Agent Visualizer convention, not an ecosystem standard or a configuration for other coding agents. Only `.agents/` directly under the selected root is used, with the exact filenames above; nested projects and home-directory identities are not inherited. Symlinks outside the selected project are ignored. Images are delivered with the authenticated scan, without an external image request or a public file route.
+
 ## What is discovered
 
 | Asset        | Project                                                                                                                                     | User                                                                                                                                      |

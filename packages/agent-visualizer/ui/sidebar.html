@@ -1,8 +1,22 @@
-<a class="brand" href="#"
-  ><img src="/favicon.svg" alt="" width="36" height="36" /><span
-    >boyscout<span class="brand-sub">Agent Visualizer</span></span
-  ></a
->
+<a class="brand" href="#">
+  @if (avatar(); as image) {
+  <img
+    class="agent-avatar"
+    [src]="image"
+    alt=""
+    width="36"
+    height="36"
+    (error)="failedAvatar.set(image)"
+  />
+  } @else {
+  <img src="/favicon.svg" alt="" width="36" height="36" />
+  }
+  <span class="brand-text"
+    ><span class="agent-name" [title]="state.data()?.agent?.name ?? 'boyscout'"
+      >{{ state.data()?.agent?.name ?? 'boyscout' }}</span
+    ><span class="brand-sub">Agent Visualizer</span></span
+  >
+</a>
 <div class="workspace">
   <span class="eyebrow">Workspace</span
   ><strong id="project-name"

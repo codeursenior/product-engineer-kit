@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from "@angular/core";
 import type { Tab } from "./models";
 import { WorkspaceState } from "./workspace-state";
 
@@ -10,6 +16,11 @@ import { WorkspaceState } from "./workspace-state";
 })
 export class Sidebar {
   readonly state = inject(WorkspaceState);
+  readonly failedAvatar = signal<string | undefined>(undefined);
+  readonly avatar = computed(() => {
+    const avatar = this.state.data()?.agent?.avatar;
+    return avatar !== this.failedAvatar() ? avatar : undefined;
+  });
   readonly tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "context", label: "Context", icon: "⌘" },
     { id: "rules", label: "Rules", icon: "▤" },
