@@ -1,0 +1,28 @@
+name: Refresh browser snapshots
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshots:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm exec --workspace @codeursenior/boyscout -- playwright install chromium
+      - name: Capture updated references
+        run: npm run test:e2e --workspace @codeursenior/boyscout -- --update-snapshots
+      - name: Verify the new references
+        run: npm run test:e2e --workspace @codeursenior/boyscout
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-snapshots
+          path: packages/agent-visualizer/test/browser/snapshots/*-win32.png
