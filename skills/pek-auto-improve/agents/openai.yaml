@@ -1,0 +1,6 @@
+interface:
+  display_name: "PEK Auto Improve"
+  short_description: "Turn session lessons into approved lasting improvements"
+  default_prompt: "Use $pek-auto-improve to review this session and propose lasting improvements before changing any files."
+policy:
+  allow_implicit_invocation: false

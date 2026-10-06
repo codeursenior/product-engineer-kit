@@ -46,6 +46,18 @@ Installe le skill pour toutes tes sessions Codex. Node.js 20 ou plus récent est
 
 [Voir PEK Grill Me sur skills.sh](https://skills.sh/codeursenior/product-engineer-kit/pek-grill-me) · [Installation et limites](skills/pek-grill-me/README.md)
 
+### PEK Auto Improve
+
+À la fin d’une session, retrouve les corrections et les blocages qui méritent d’être conservés dans tes skills ou le contexte de ton projet. Le skill propose des modifications précises et attend ta validation avant de les appliquer. Tu choisis ce que ton agent doit retenir pour les prochaines sessions.
+
+```bash
+npx skills add codeursenior/product-engineer-kit --skill pek-auto-improve -g -a codex
+```
+
+Lance ensuite `$pek-auto-improve` dans Codex. Le skill utilise la conversation et les fichiers accessibles à ton agent, sans dépendance aux autres outils du kit.
+
+[Voir PEK Auto Improve sur skills.sh](https://skills.sh/codeursenior/product-engineer-kit/pek-auto-improve) · [Installation et limites](skills/pek-auto-improve/README.md)
+
 ## Explorer la suite
 
 Retrouve les explications et les démonstrations sur la chaîne [CodeurSenior](https://www.youtube.com/@CodeurSenior).
