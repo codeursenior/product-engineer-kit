@@ -1,4 +1,4 @@
-import type { ScanData, Scope } from "../contracts.js";
+import type { Client, ScanData, Scope, TokenEntry } from "../contracts.js";
 
 export interface ScanOptions {
   home?: string;
@@ -11,6 +11,7 @@ export interface EditableFile {
   deletable: boolean;
 }
 export interface Snapshot {
+  tokenInventory: Record<Client, TokenEntry[]>;
   data: ScanData;
   content: Map<string, string>;
   editable: Map<string, EditableFile>;

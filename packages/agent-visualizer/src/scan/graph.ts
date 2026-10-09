@@ -1,27 +1,17 @@
 import path from "node:path";
 import type { ContextNode, GraphEdge } from "../contracts.js";
+import { referenceResolver } from "./references.js";
 import { links, ruleClient } from "./metadata.js";
 import type { FileEntry, ScanEnvironment } from "./types.js";
-import { inside, required, slash } from "./values.js";
+import { inside, required } from "./values.js";
 export function buildGraph(
   entries: FileEntry[],
   context: Map<string, ContextNode>,
   addContext: (entry: FileEntry) => void,
   env: ScanEnvironment,
 ): GraphEdge[] {
-  const { root, home } = env;
   const edges = new Map<string, GraphEdge>();
-  const byAlias = new Map<string, FileEntry>();
-  const byName = new Map<string, FileEntry[]>();
-  for (const entry of entries) {
-    for (const alias of entry.aliases) byAlias.set(alias, entry);
-    const name = path
-      .basename(entry.file)
-      .replace(/\.(md|mdc)$/i, "")
-      .toLowerCase();
-    if (!byName.has(name)) byName.set(name, []);
-    required(byName.get(name)).push(entry);
-  }
+  const resolveReference = referenceResolver(entries, env);
   // Follow references from context roots, never turn the entire codebase into a graph.
   const queue = entries.filter((entry) => context.has(entry.id));
   const visited = new Set<string>();
@@ -30,35 +20,7 @@ export function buildGraph(
     if (visited.has(entry.id)) continue;
     visited.add(entry.id);
     for (const link of links(entry.text)) {
-      let target;
-      try {
-        target = decodeURIComponent(link.target.split("#")[0] ?? "");
-      } catch {
-        continue;
-      }
-      if (!target || /^(https?:|mailto:|data:|file:|javascript:)/i.test(target))
-        continue;
-      let found;
-      const absolute = target.startsWith("~/")
-        ? path.join(home, target.slice(2))
-        : path.resolve(path.dirname(entry.file), target);
-      found = byAlias.get(absolute) || byAlias.get(`${absolute}.md`);
-      if (!found && !link.wiki) found = byAlias.get(path.resolve(root, target));
-      if (!found && link.wiki) {
-        const candidates = (
-          byName.get(
-            path.basename(target).replace(/\.md$/i, "").toLowerCase(),
-          ) || []
-        ).filter(
-          (e) =>
-            e.scope === entry.scope &&
-            (!target.includes("/") ||
-              e.aliases.some((a) =>
-                slash(a).endsWith(`${target.replace(/\.md$/i, "")}.md`),
-              )),
-        );
-        if (candidates.length === 1) found = candidates[0];
-      }
+      const found = resolveReference(entry, link);
       if (
         found &&
         path.basename(found.file) !== "SKILL.md" &&

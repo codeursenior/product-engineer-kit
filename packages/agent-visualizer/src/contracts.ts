@@ -89,3 +89,48 @@ export interface DeleteResponse {
 export interface ApiError {
   error: string;
 }
+
+export type ContextPortion = "startup" | "on-demand";
+export interface ContextMetrics {
+  tokens: number;
+  words: number;
+  bytes: number;
+  inputCost: number;
+}
+export interface TokenEntry extends ContextMetrics {
+  id: string;
+  name: string;
+  path: string;
+  scope: Scope;
+  portion: ContextPortion;
+  kind: "instruction" | "rule" | "document" | "skill-catalog" | "skill-body";
+}
+export interface ModelPrice {
+  id: string;
+  name: string;
+  inputPerMillion: number;
+  source: string;
+  verifiedAt: string;
+}
+export interface TokenEstimate {
+  client: Client;
+  model: ModelPrice;
+  models: ModelPrice[];
+  method: string;
+  entries: TokenEntry[];
+  startup: ContextMetrics;
+  onDemand: ContextMetrics;
+  includeUser: boolean;
+  warnings: string[];
+}
+export interface OptimizationCheck {
+  id: string;
+  label: string;
+  detected: boolean;
+  detail: string;
+  instructions: { label: string; command: string }[];
+  guide: string;
+}
+export interface OptimizationChecks {
+  checks: OptimizationCheck[];
+}

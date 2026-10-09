@@ -6,10 +6,11 @@ import type {
   Scope,
   Skill,
 } from "../src/contracts";
-export type Tab = "context" | "rules" | "skills" | "mcp";
+export type AssetTab = "context" | "rules" | "skills" | "mcp";
+export type Tab = AssetTab | "optimizer";
 export type Row = ContextNode | Rule | Skill | McpServer;
 export interface Selection {
-  tab: Tab;
+  tab: AssetTab;
   row: Row;
 }
 export const labels: Record<Client, string> = {
@@ -26,6 +27,10 @@ export const icons: Record<Client, string> = {
   copilot: "/client-logos/copilot.svg",
 };
 export const titles: Record<Tab, [string, string]> = {
+  optimizer: [
+    "Your context iceberg.",
+    "Estimate local context and the input cost of loading it once.",
+  ],
   context: [
     "See what your agent can find.",
     "Explore the files each coding agent can reach from its context.",

@@ -4,11 +4,12 @@ import { Detail } from "./detail";
 import { Filters } from "./filters";
 import { Graph } from "./graph";
 import { titles, type Row } from "./models";
+import { TokenOptimizer } from "./token-optimizer";
 import { Sidebar } from "./sidebar";
 import { WorkspaceState } from "./workspace-state";
 
 @Component({
-  imports: [Sidebar, Filters, AssetTable, Detail, Graph],
+  imports: [Sidebar, Filters, AssetTable, Detail, Graph, TokenOptimizer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "app-root",
   templateUrl: "./app.html",
@@ -21,7 +22,7 @@ export class App {
     void this.state.load();
   }
   select(row: Row): void {
-    this.state.selection.set({ tab: this.state.tab(), row });
+    this.state.selection.set({ tab: this.state.assetTab(), row });
   }
   key(event: KeyboardEvent): void {
     if (event.key === "Escape") this.state.selection.set(null);
@@ -53,6 +54,8 @@ export class App {
     )
       return "Try another scope, client, or search.";
     switch (this.state.tab()) {
+      case "optimizer":
+        return "No local context discovered for this agent.";
       case "context":
         return "Context appears here when your folder contains AGENTS.md, CLAUDE.md, .github/copilot-instructions.md, or linked knowledge files.";
       case "rules":

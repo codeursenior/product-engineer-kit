@@ -32,12 +32,16 @@
         </button>
       </div>
     </section>
+    @if (state.tab() !== 'optimizer') {
     <div appFilters class="toolbar"></div>
+    }
     <div id="notice" class="notice" [hidden]="!state.data()?.warnings?.length">
       {{ state.data()?.warnings?.join(' ') }}
     </div>
-    @if (!state.error() && state.data() && state.rows().length && state.tab()
-    === 'context' && state.view() === 'graph') {
+    @if (state.tab() === 'optimizer') {
+    <app-token-optimizer />
+    } @else if (!state.error() && state.data() && state.rows().length &&
+    state.tab() === 'context' && state.view() === 'graph') {
     <section
       appGraph
       id="canvas"
@@ -74,7 +78,7 @@
         appAssetTable
         class="table-wrap"
         [rows]="state.rows()"
-        [tab]="state.tab()"
+        [tab]="state.assetTab()"
         (selected)="select($event)"
       ></div>
       }

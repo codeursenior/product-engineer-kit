@@ -1,0 +1,212 @@
+<section class="optimizer" aria-label="Token Optimizer">
+  <div class="optimizer-controls">
+    <label for="optimizer-agent"
+      >Agent
+      <select
+        id="optimizer-agent"
+        #agentSelect
+        [value]="client()"
+        (change)="selectClient(agentSelect.value)"
+      >
+        @for (agent of clients; track agent) {
+        <option [value]="agent">{{ labels[agent] }}</option>
+        }
+      </select>
+    </label>
+    <label for="optimizer-model"
+      >Model for price estimate
+      <select
+        id="optimizer-model"
+        #modelSelect
+        [value]="model()"
+        (change)="model.set(modelSelect.value)"
+      >
+        @for (preset of estimate()?.models ?? []; track preset.id) {
+        <option [value]="preset.id">{{ preset.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
+  <p class="explanation">
+    Discoverable local context, not observed usage in a running conversation.
+    Project and user context belong to the selected agent only.
+  </p>
+  @if (loading()) {
+  <p role="status">Estimating context…</p>
+  } @else if (error()) {
+  <p role="alert">{{ error() }}</p>
+  } @else if (estimate(); as data) { @if (!data.includeUser) {
+  <p class="notice">
+    User context is excluded because this server was started with user discovery
+    disabled.
+  </p>
+  }
+  <div class="iceberg-panel">
+    <div class="iceberg-art">
+      <svg viewBox="0 0 320 330" role="img" aria-labelledby="iceberg-title">
+        <title id="iceberg-title">
+          Context iceberg: startup above water, on-demand below. Illustration is
+          not to scale.
+        </title>
+        <path class="ice-tip" d="M75 110 132 30 162 58 188 18 249 110Z" />
+        <path
+          class="ice-face"
+          d="M132 30 145 110 75 110Z M188 18 183 110 249 110Z"
+        />
+        <path
+          class="ice-base"
+          d="M52 118 270 118 247 223 189 310 136 275 88 211Z"
+        />
+        <path class="ice-facet" d="M52 118 183 118 189 310 136 275Z" />
+        <path class="waterline" d="M10 114H310" />
+      </svg>
+      <small>Illustration, not to scale</small>
+    </div>
+    <div class="portions" aria-live="polite">
+      <article class="portion startup">
+        <span class="eyebrow">Above water</span>
+        <h2>Estimated startup context</h2>
+        <p>Applicable instructions and skill catalog entries.</p>
+        <strong class="token-total"
+          >{{ data.startup.tokens | number }}
+          <span>estimated tokens</span></strong
+        >
+        <p>
+          {{ data.startup.words | number }} words · {{ data.startup.bytes |
+          number }} bytes
+        </p>
+        <strong class="cost"
+          >${{ data.startup.inputCost | number:'1.6-6' }}
+          <span>one-load input cost</span></strong
+        >
+      </article>
+      <article class="portion on-demand">
+        <span class="eyebrow">Below water</span>
+        <h2>On-demand context</h2>
+        <p>Linked documents, skill bodies and scoped instructions.</p>
+        <strong class="token-total"
+          >{{ data.onDemand.tokens | number }}
+          <span>estimated tokens</span></strong
+        >
+        <p>
+          {{ data.onDemand.words | number }} words · {{ data.onDemand.bytes |
+          number }} bytes
+        </p>
+        <strong class="cost"
+          >${{ data.onDemand.inputCost | number:'1.6-6' }}
+          <span>hypothetical one-load input cost</span></strong
+        >
+      </article>
+    </div>
+  </div>
+  <p class="explanation">
+    USD input prices, without caching discounts. The on-demand cost assumes all
+    available content is loaded once. Neither amount predicts session spending
+    or a subscription bill.
+  </p>
+  <details class="method">
+    <summary>Estimation method and pricing</summary>
+    <p>{{ data.method }}</p>
+    <p>
+      References count as text in their containing file. Their targets are
+      counted separately on demand. Skill catalog estimates use names and
+      descriptions; body estimates exclude frontmatter. Client-generated prompts
+      and remote content are excluded.
+    </p>
+    <p>
+      {{ data.model.name }}: ${{ data.model.inputPerMillion }} / million input
+      tokens.
+      <a [href]="data.model.source" target="_blank" rel="noreferrer"
+        >Official pricing</a
+      >, verified {{ data.model.verifiedAt }}. Presets are maintained by the
+      application and do not assert availability in every client.
+    </p>
+  </details>
+  <h2 class="section-title">Context breakdown</h2>
+  <div class="breakdown">
+    <table>
+      <caption>
+        Largest estimates first. Sizes describe the counted text.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">File or skill</th>
+          <th scope="col">Context</th>
+          <th scope="col">Tokens ≈</th>
+          <th scope="col">Words</th>
+          <th scope="col">Bytes</th>
+          <th scope="col">Input cost (USD)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of data.entries; track entry.id) {
+        <tr>
+          <th scope="row">
+            <strong>{{ entry.name }}</strong><small>{{ entry.path }}</small
+            ><small>{{ entry.scope }} · {{ entry.kind }}</small>
+          </th>
+          <td>{{ entry.portion === 'startup' ? 'Startup' : 'On demand' }}</td>
+          <td>{{ entry.tokens | number }}</td>
+          <td>{{ entry.words | number }}</td>
+          <td>{{ entry.bytes | number }}</td>
+          <td>${{ entry.inputCost | number:'1.6-6' }}</td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="6">
+            No local context discovered for {{ labels[data.client] }}.
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+  <section class="checklist" aria-labelledby="checklist-title">
+    <h2 id="checklist-title">Optimization checklist</h2>
+    <p>
+      Installation checks are detected locally. RTK does not reduce these static
+      file estimates.
+    </p>
+    @if (checking()) {
+    <p role="status">Checking installation…</p>
+    } @if (checkError()) {
+    <p role="alert">{{ checkError() }}</p>
+    <button
+      class="small-button check-again"
+      (click)="checkAgain()"
+      [disabled]="checking()"
+    >
+      Check again
+    </button>
+    } @for (check of checks(); track check.id) {
+    <article class="check-item">
+      <label
+        ><input type="checkbox" [checked]="check.detected" disabled /> {{
+        check.label }}</label
+      >
+      <p>{{ check.detail }}</p>
+      @if (!check.detected) {
+      <details>
+        <summary>Installation instructions</summary>
+        @for (instruction of check.instructions; track instruction.label) {
+        <p>{{ instruction.label }}</p>
+        <code>{{ instruction.command }}</code> }
+        <p>
+          <a [href]="check.guide" target="_blank" rel="noreferrer"
+            >Official installation guide</a
+          >
+        </p>
+      </details>
+      <button
+        class="small-button check-again"
+        (click)="checkAgain()"
+        [disabled]="checking()"
+      >
+        Check again
+      </button>
+      }
+    </article>
+    }
+  </section>
+</section>

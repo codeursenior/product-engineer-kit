@@ -117,3 +117,7 @@ Run `npx playwright install chromium` before browser tests. Visual baselines wer
 See [architecture and discovery notes](docs/architecture.md) and [release instructions](https://github.com/codeursenior/product-engineer-kit/blob/main/docs/releasing.md).
 
 MIT © Simon Dieny. Independent project, not affiliated with Cursor, Anthropic, or OpenAI.
+
+## Token Optimizer
+
+Open **Token Optimizer** to estimate one agent’s startup and on-demand context, compare one-load input costs using maintained model presets, and inspect the largest files and skills. The RTK checklist detects installation and provides manual installation instructions. These are static local estimates, not session usage or spending. See [the estimation method and limits](docs/token-optimizer.md).

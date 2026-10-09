@@ -38,7 +38,9 @@
     [attr.aria-current]="state.tab() === tab.id ? 'page' : 'false'"
     (click)="state.selectTab(tab.id)"
   >
-    <span class="nav-icon">{{ tab.icon }}</span>{{ tab.label }}<span
+    <span class="nav-icon" aria-hidden="true">{{ tab.icon }}</span>{{ tab.label
+    }}<span
+      [hidden]="tab.id === 'optimizer'"
       [id]="'count-' + tab.id"
       class="count"
       >{{ count(tab.id) }}</span

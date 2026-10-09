@@ -2,6 +2,9 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 import type {
+  Client,
+  TokenEstimate,
+  OptimizationChecks,
   ContentResponse,
   DeleteResponse,
   FileResponse,
@@ -49,6 +52,15 @@ export class WorkspaceApi {
   }
   scan(refresh = false): Promise<ScanData> {
     return this.request("GET", `/api/scan${refresh ? "?refresh=1" : ""}`);
+  }
+  estimate(client: Client, model: string): Promise<TokenEstimate> {
+    return this.request(
+      "GET",
+      `/api/token-estimate?client=${client}&model=${encodeURIComponent(model)}`,
+    );
+  }
+  optimizationChecks(): Promise<OptimizationChecks> {
+    return this.request("GET", "/api/optimization-checks");
   }
   content(id: string): Promise<ContentResponse> {
     return this.request("GET", `/api/content?id=${encodeURIComponent(id)}`);

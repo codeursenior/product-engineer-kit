@@ -12,6 +12,8 @@ import {
 } from "./http/security.js";
 import type { ScanOptions } from "./scan/types.js";
 import { scanProject } from "./scanner.js";
+import { optimizationChecks } from "./optimization-checks.js";
+import { estimateTokens } from "./token-estimator.js";
 
 export interface ServerOptions extends ScanOptions {
   root: string;
@@ -30,6 +32,7 @@ export async function startServer({
 }: ServerOptions): Promise<LocalServer> {
   let snapshot = await scanProject(root, options);
   let refresh: Promise<void> | undefined;
+  let checking: ReturnType<typeof optimizationChecks> | undefined;
   const files = new FileOperations();
   const token = randomBytes(24).toString("hex");
   const assets = await browserAssets(
@@ -82,6 +85,23 @@ export async function startServer({
         }
         if (req.method !== "GET")
           return send(405, { error: "Method not allowed." });
+        if (url.pathname === "/api/optimization-checks") {
+          checking ??= optimizationChecks(snapshot.data.project.path).finally(
+            () => {
+              checking = undefined;
+            },
+          );
+          return send(200, await checking);
+        }
+        if (url.pathname === "/api/token-estimate")
+          return send(
+            200,
+            estimateTokens(
+              snapshot,
+              url.searchParams.get("client"),
+              url.searchParams.get("model"),
+            ),
+          );
         if (url.pathname === "/api/scan") {
           if (url.searchParams.has("refresh")) {
             refresh ??= scanProject(root, options)

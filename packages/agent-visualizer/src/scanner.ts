@@ -8,6 +8,8 @@ import { discoverIdentity } from "./scan/identity.js";
 import { discoverMcp } from "./scan/mcp.js";
 import type { ScanEnvironment, ScanOptions, Snapshot } from "./scan/types.js";
 import { inside, slash } from "./scan/values.js";
+import { contextInventory } from "./token-estimator.js";
+import type { ScanData } from "./contracts.js";
 
 /** Inventory only: never executes instructions, hooks, skills or MCP commands. */
 export async function scanProject(
@@ -53,19 +55,21 @@ export async function scanProject(
     await discoverAssets(entries, env);
   const edges = buildGraph(entries, context, addContext, env);
   const mcp = await discoverMcp(projectConfigs, env);
+  const data: ScanData = {
+    project: { name: path.basename(root), path: root },
+    agent: await discoverIdentity(root),
+    scannedAt: new Date().toISOString(),
+    nodes: [...context.values()],
+    rules: [...rules.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    edges,
+    skills: [...skills.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    mcp,
+    warnings: [...new Set(env.warnings)],
+    limits: { includeUser, scannedFiles: inspected, truncated: capped },
+  };
   return {
-    data: {
-      project: { name: path.basename(root), path: root },
-      agent: await discoverIdentity(root),
-      scannedAt: new Date().toISOString(),
-      nodes: [...context.values()],
-      rules: [...rules.values()].sort((a, b) => a.name.localeCompare(b.name)),
-      edges,
-      skills: [...skills.values()].sort((a, b) => a.name.localeCompare(b.name)),
-      mcp,
-      warnings: [...new Set(env.warnings)],
-      limits: { includeUser, scannedFiles: inspected, truncated: capped },
-    },
+    data,
+    tokenInventory: contextInventory(entries, data, env),
     content,
     editable,
   };

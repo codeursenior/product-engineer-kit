@@ -8,6 +8,8 @@
 
 `src/contracts.ts` defines browser-safe JSON shapes shared by the server and UI. Internal snapshot maps and real filesystem write targets live separately in `src/scan/types.ts`. These are internal contracts, not a published library API.
 
+`src/token-estimator.ts` classifies local context per client and computes static volumes and one-load input costs. `src/optimization-checks.ts` runs fixed, bounded RTK identity probes; it never executes workspace-supplied commands or installs software. See [Token Optimizer](token-optimizer.md) for estimation assumptions, pricing sources and discovery limits.
+
 The Angular UI uses standalone OnPush components and signals. `WorkspaceState` owns inventory, navigation, filters, theme and selection; `WorkspaceApi` owns authenticated HTTP requests. Components render the sidebar, filters, tables, graph, and detail editor. Angular text bindings display untrusted content without HTML interpretation. The session token moves from the URL fragment to tab session storage and is removed from the visible URL.
 
 The detail component owns its edit draft and revision. A request sequence prevents late previews or writes from updating a different selection. The graph component delegates only its SVG subtree to the typed D3 renderer. Simulation nodes and links are copies of API data. Initial positions, layout forces and bounded warm-up are preserved; cleanup stops simulations and removes listeners when the graph is replaced or destroyed.

@@ -7,7 +7,7 @@ import {
 import { ClientIcon, ScopeBadge } from "./badges";
 import {
   type Row,
-  type Tab,
+  type AssetTab,
   clientNames,
   conditions,
   description,
@@ -23,20 +23,20 @@ import {
 })
 export class AssetTable {
   readonly rows = input.required<Row[]>();
-  readonly tab = input.required<Tab>();
+  readonly tab = input.required<AssetTab>();
   readonly selected = output<Row>();
   readonly paths = paths;
   readonly description = description;
   readonly conditions = conditions;
   readonly invocation = invocation;
   readonly clients = clientNames;
-  readonly headers: Record<Tab, string[]> = {
+  readonly headers: Record<AssetTab, string[]> = {
     context: ["File", "Type", "Lines", "Scope", "Clients"],
     rules: ["Rule", "Conditions", "Scope", "Clients"],
     skills: ["Skill", "Invocation", "Scope", "Clients"],
     mcp: ["Server", "Connection", "Transport", "Scope", "Clients"],
   };
-  readonly help: Record<Tab, string> = {
+  readonly help: Record<AssetTab, string> = {
     context:
       "Client icons show entry points and linked documents that each agent can discover. They do not confirm a file loaded in a session. Unlinked knowledge has no client entry point.",
     rules:
