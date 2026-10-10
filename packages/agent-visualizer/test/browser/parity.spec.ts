@@ -37,9 +37,9 @@ for (const theme of ["light", "dark"]) {
       await expect(page.locator("#canvas")).not.toContainText("Mapping your");
       if (view === "Context")
         await expect(page.locator("svg.graph")).toBeVisible();
-      await expect
-        .soft(page)
-        .toHaveScreenshot(`${theme}-${view.replaceAll(" ", "-")}.png`);
+      await expect(page).toHaveScreenshot(
+        `${theme}-${view.replaceAll(" ", "-")}.png`,
+      );
     });
   }
 }
