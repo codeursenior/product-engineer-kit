@@ -10,11 +10,15 @@
   @if (row(); as row) {
   <span appScope [assetScope]="row.scope"></span>
   <h2>{{ row.name }}</h2>
+  @if (state.selection()?.tab === 'context') { @for (path of paths(row); track
+  path) {
+  <p class="mono source-path">{{ path }}</p>
+  } } @else {
   <p>{{ description(row) }}</p>
   <h3>Source {{ paths(row).length > 1 ? 'paths' : 'path' }}</h3>
   @for (path of paths(row); track path) {
   <p class="mono source-path">{{ path }}</p>
-  }
+  } }
   <h3>Client discovery</h3>
   @for (client of clients; track client) {
   <div class="client-line">

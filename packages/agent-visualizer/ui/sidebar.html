@@ -4,12 +4,12 @@
     class="agent-avatar"
     [src]="image"
     alt=""
-    width="36"
-    height="36"
+    width="198"
+    height="198"
     (error)="failedAvatar.set(image)"
   />
   } @else {
-  <img src="/favicon.svg" alt="" width="36" height="36" />
+  <img src="/favicon.svg" alt="" width="198" height="198" />
   }
   <span class="brand-text"
     ><span class="agent-name" [title]="state.data()?.agent?.name ?? 'boyscout'"
@@ -26,9 +26,8 @@
     class="mono"
     [title]="state.data()?.project?.path ?? ''"
     >{{ state.data()?.project?.path }}</span
-  ><span class="local-label"><i></i> Local session</span>
+  >
 </div>
-<div class="nav-label">Explore</div>
 <nav aria-label="Views">
   @for (tab of tabs; track tab.id) {
   <button
@@ -68,9 +67,4 @@
   >
     {{ state.theme() === 'dark' ? '☀' : '☾' }}
   </button>
-</div>
-<div class="sidebar-footer">
-  <span class="safe-dot"></span> Local workspace<span class="version"
-    >v0.1</span
-  >
 </div>

@@ -71,9 +71,7 @@ export class Detail {
   description(row: Row): string {
     return (
       description(row) ||
-      ("kind" in row
-        ? `${row.kind} · ${row.bytes.toLocaleString()} bytes`
-        : "MCP server configuration")
+      ("kind" in row ? row.path : "MCP server configuration")
     );
   }
   ruleConditions(row: Row): string {

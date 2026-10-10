@@ -61,14 +61,18 @@ button:disabled {
   position: sticky;
   top: 0;
   height: 100vh;
+  overflow-y: auto;
 }
 .brand {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
   color: #25342b;
   text-decoration: none;
-  padding: 0 12px;
+  padding: 0;
+  flex-shrink: 0;
+  text-align: center;
   font-weight: 750;
   font-size: 24px;
   letter-spacing: -1px;
@@ -82,9 +86,15 @@ button:disabled {
 }
 .brand img {
   flex-shrink: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .brand-text {
   min-width: 0;
+  max-width: 100%;
 }
 .agent-name {
   display: block;
@@ -121,9 +131,9 @@ button:disabled {
 .workspace .mono {
   font-size: 10px;
   color: #84907e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
 }
 .local-label {
   font-size: 10px;
@@ -868,7 +878,12 @@ td.name p {
   .brand {
     font-size: 20px;
   }
-  .workspace,
+  .workspace {
+    margin: 24px 0;
+  }
+  .brand img {
+    max-width: 198px;
+  }
   .nav-label,
   .sidebar-note,
   .sidebar-footer {
