@@ -37,28 +37,37 @@ for (const theme of ["light", "dark"]) {
       await expect(page.locator("#canvas")).not.toContainText("Mapping your");
       if (view === "Context")
         await expect(page.locator("svg.graph")).toBeVisible();
-      await expect(page).toHaveScreenshot(
-        `${theme}-${view.replaceAll(" ", "-")}.png`,
-      );
+      await expect
+        .soft(page)
+        .toHaveScreenshot(`${theme}-${view.replaceAll(" ", "-")}.png`);
     });
   }
 }
 
-test("files, preview, editing and responsive layout", async ({ page }) => {
-  await open(page);
-  await page.locator("#list-view").click();
-  await expect(page).toHaveScreenshot("files.png");
-  await page
-    .getByRole("button", { name: "architecture.md", exact: true })
-    .click();
-  await expect(page.locator("#detail pre")).toContainText("<script>");
-  await expect(page).toHaveScreenshot("preview.png");
-  await page.getByRole("button", { name: "Edit file", exact: true }).click();
-  await expect(page).toHaveScreenshot("edit.png");
-  await page.getByRole("button", { name: "Cancel", exact: true }).click();
-  await page.keyboard.press("Escape");
-  for (const width of [900, 640]) {
+for (const view of ["files", "preview", "edit"] as const) {
+  test(view, async ({ page }) => {
+    await open(page);
+    await page.locator("#list-view").click();
+    if (view !== "files") {
+      await page
+        .getByRole("button", { name: "architecture.md", exact: true })
+        .click();
+      await expect(page.locator("#detail pre")).toContainText("<script>");
+    }
+    if (view === "edit") {
+      await page
+        .getByRole("button", { name: "Edit file", exact: true })
+        .click();
+    }
+    await expect(page).toHaveScreenshot(`${view}.png`);
+  });
+}
+
+for (const width of [900, 640]) {
+  test(`files at ${width}px`, async ({ page }) => {
+    await open(page);
+    await page.locator("#list-view").click();
     await page.setViewportSize({ width, height: 1000 });
     await expect(page).toHaveScreenshot(`files-${width}.png`);
-  }
-});
+  });
+}
