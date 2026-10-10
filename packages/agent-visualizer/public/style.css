@@ -876,13 +876,14 @@ td.name p {
   }
   nav {
     display: flex;
+    flex-wrap: wrap;
     margin-top: 16px;
   }
   .sidebar-rescan {
     margin: 12px 0 0;
   }
   .nav-item {
-    flex: 1;
+    flex: 1 1 140px;
     font-size: 11px;
     padding: 10px 6px;
     gap: 5px;

@@ -2,15 +2,12 @@ import { DecimalPipe } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   signal,
 } from "@angular/core";
-import type {
-  Client,
-  OptimizationCheck,
-  TokenEstimate,
-} from "../src/contracts";
+import type { Client, TokenEstimate } from "../src/contracts";
 import { WorkspaceApi } from "./api";
 import { labels, message } from "./models";
 import { WorkspaceState } from "./workspace-state";
@@ -30,11 +27,13 @@ export class TokenOptimizer {
   readonly client = signal<Client>("codex");
   readonly model = signal("gpt-5.3-codex");
   readonly estimate = signal<TokenEstimate | null>(null);
-  readonly checks = signal<OptimizationCheck[]>([]);
+  readonly startupEntries = computed(() =>
+    (this.estimate()?.entries ?? []).filter(
+      (entry) => entry.portion === "startup",
+    ),
+  );
   readonly loading = signal(false);
-  readonly checking = signal(false);
   readonly error = signal("");
-  readonly checkError = signal("");
   constructor() {
     effect((onCleanup) => {
       this.state.data(); // A successful rescan invalidates the estimate.
@@ -58,22 +57,9 @@ export class TokenOptimizer {
           if (current) this.loading.set(false);
         });
     });
-    void this.checkAgain();
   }
   selectClient(value: string): void {
     const client = this.clients.find((client) => client === value);
     if (client) this.client.set(client);
-  }
-  async checkAgain(): Promise<void> {
-    if (this.checking()) return;
-    this.checking.set(true);
-    this.checkError.set("");
-    try {
-      this.checks.set((await this.api.optimizationChecks()).checks);
-    } catch (error) {
-      this.checkError.set(message(error));
-    } finally {
-      this.checking.set(false);
-    }
   }
 }

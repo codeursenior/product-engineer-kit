@@ -27,10 +27,6 @@
       </select>
     </label>
   </div>
-  <p class="explanation">
-    Discoverable local context, not observed usage in a running conversation.
-    Project and user context belong to the selected agent only.
-  </p>
   @if (loading()) {
   <p role="status">Estimating context…</p>
   } @else if (error()) {
@@ -45,8 +41,7 @@
     <div class="iceberg-art">
       <svg viewBox="0 0 320 330" role="img" aria-labelledby="iceberg-title">
         <title id="iceberg-title">
-          Context iceberg: startup above water, on-demand below. Illustration is
-          not to scale.
+          Context iceberg: startup above water, on-demand below.
         </title>
         <path class="ice-tip" d="M75 110 132 30 162 58 188 18 249 110Z" />
         <path
@@ -60,7 +55,6 @@
         <path class="ice-facet" d="M52 118 183 118 189 310 136 275Z" />
         <path class="waterline" d="M10 114H310" />
       </svg>
-      <small>Illustration, not to scale</small>
     </div>
     <div class="portions" aria-live="polite">
       <article class="portion startup">
@@ -99,11 +93,6 @@
       </article>
     </div>
   </div>
-  <p class="explanation">
-    USD input prices, without caching discounts. The on-demand cost assumes all
-    available content is loaded once. Neither amount predicts session spending
-    or a subscription bill.
-  </p>
   <details class="method">
     <summary>Estimation method and pricing</summary>
     <p>{{ data.method }}</p>
@@ -126,7 +115,7 @@
   <div class="breakdown">
     <table>
       <caption>
-        Largest estimates first. Sizes describe the counted text.
+        Startup context only. Largest estimates first.
       </caption>
       <thead>
         <tr>
@@ -134,27 +123,25 @@
           <th scope="col">Context</th>
           <th scope="col">Tokens ≈</th>
           <th scope="col">Words</th>
-          <th scope="col">Bytes</th>
           <th scope="col">Input cost (USD)</th>
         </tr>
       </thead>
       <tbody>
-        @for (entry of data.entries; track entry.id) {
+        @for (entry of startupEntries(); track entry.id) {
         <tr>
           <th scope="row">
             <strong>{{ entry.name }}</strong><small>{{ entry.path }}</small
             ><small>{{ entry.scope }} · {{ entry.kind }}</small>
           </th>
-          <td>{{ entry.portion === 'startup' ? 'Startup' : 'On demand' }}</td>
+          <td>Startup</td>
           <td>{{ entry.tokens | number }}</td>
           <td>{{ entry.words | number }}</td>
-          <td>{{ entry.bytes | number }}</td>
           <td>${{ entry.inputCost | number:'1.6-6' }}</td>
         </tr>
         } @empty {
         <tr>
-          <td colspan="6">
-            No local context discovered for {{ labels[data.client] }}.
+          <td colspan="5">
+            No startup context discovered for {{ labels[data.client] }}.
           </td>
         </tr>
         }
@@ -162,51 +149,4 @@
     </table>
   </div>
   }
-  <section class="checklist" aria-labelledby="checklist-title">
-    <h2 id="checklist-title">Optimization checklist</h2>
-    <p>
-      Installation checks are detected locally. RTK does not reduce these static
-      file estimates.
-    </p>
-    @if (checking()) {
-    <p role="status">Checking installation…</p>
-    } @if (checkError()) {
-    <p role="alert">{{ checkError() }}</p>
-    <button
-      class="small-button check-again"
-      (click)="checkAgain()"
-      [disabled]="checking()"
-    >
-      Check again
-    </button>
-    } @for (check of checks(); track check.id) {
-    <article class="check-item">
-      <label
-        ><input type="checkbox" [checked]="check.detected" disabled /> {{
-        check.label }}</label
-      >
-      <p>{{ check.detail }}</p>
-      @if (!check.detected) {
-      <details>
-        <summary>Installation instructions</summary>
-        @for (instruction of check.instructions; track instruction.label) {
-        <p>{{ instruction.label }}</p>
-        <code>{{ instruction.command }}</code> }
-        <p>
-          <a [href]="check.guide" target="_blank" rel="noreferrer"
-            >Official installation guide</a
-          >
-        </p>
-      </details>
-      <button
-        class="small-button check-again"
-        (click)="checkAgain()"
-        [disabled]="checking()"
-      >
-        Check again
-      </button>
-      }
-    </article>
-    }
-  </section>
 </section>

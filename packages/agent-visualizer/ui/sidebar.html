@@ -40,7 +40,7 @@
   >
     <span class="nav-icon" aria-hidden="true">{{ tab.icon }}</span>{{ tab.label
     }}<span
-      [hidden]="tab.id === 'optimizer'"
+      [hidden]="tab.id === 'optimizer' || tab.id === 'checklist'"
       [id]="'count-' + tab.id"
       class="count"
       >{{ count(tab.id) }}</span

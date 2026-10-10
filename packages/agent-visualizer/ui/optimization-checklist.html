@@ -1,0 +1,47 @@
+<section class="checklist" aria-labelledby="checklist-title">
+  <h2 id="checklist-title">Optimization checklist</h2>
+  <p>
+    Installation checks are detected locally. RTK does not reduce these static
+    file estimates.
+  </p>
+  @if (checking()) {
+  <p role="status">Checking installation…</p>
+  } @if (checkError()) {
+  <p role="alert">{{ checkError() }}</p>
+  <button
+    class="small-button check-again"
+    (click)="checkAgain()"
+    [disabled]="checking()"
+  >
+    Check again
+  </button>
+  } @for (check of checks(); track check.id) {
+  <article class="check-item">
+    <label
+      ><input type="checkbox" [checked]="check.detected" disabled /> {{
+      check.label }}</label
+    >
+    <p>{{ check.detail }}</p>
+    @if (!check.detected) {
+    <details>
+      <summary>Installation instructions</summary>
+      @for (instruction of check.instructions; track instruction.label) {
+      <p>{{ instruction.label }}</p>
+      <code>{{ instruction.command }}</code> }
+      <p>
+        <a [href]="check.guide" target="_blank" rel="noreferrer"
+          >Official installation guide</a
+        >
+      </p>
+    </details>
+    <button
+      class="small-button check-again"
+      (click)="checkAgain()"
+      [disabled]="checking()"
+    >
+      Check again
+    </button>
+    }
+  </article>
+  }
+</section>

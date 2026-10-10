@@ -4,7 +4,7 @@ Status: implemented. The implementation request approved the confirmed decisions
 
 ## Confirmed decisions
 
-- Add a Token Optimizer tab with a static context estimate represented as an iceberg.
+- Place Token Optimizer after MCP servers in the navigation, with a static context estimate represented as an iceberg. Keep the optimization checklist in its own following tab.
 - Above water: applicable startup instruction contents and skill catalog entries, including names and descriptions.
 - Below water: linked documents, skill bodies, and instructions applicable only in specific subfolders.
 - Count a reference's text in its containing instruction file. Do not automatically include the referenced document's contents in the startup estimate.
@@ -16,8 +16,8 @@ Status: implemented. The implementation request approved the confirmed decisions
 - Include an extensible checklist starting with "Install RTK". Its checkbox reflects detected installation status, not a user's manual declaration.
 - When RTK is detected, show the checkbox checked and disabled.
 - When RTK is missing, show the checkbox unchecked and provide installation instructions with a "Check again" button. Do not install RTK from the application. Check and disable the checkbox only after detection succeeds.
-- Show a breakdown by file or skill, sorted by token count from largest to smallest, with word count, size, estimated input cost, and startup/on-demand classification.
-- Show context metrics and price estimates for both iceberg portions.
+- Show only above-water (startup) entries in the breakdown by file or skill, sorted by token count from largest to smallest, with word count and estimated input cost. Omit the byte-size column.
+- Show context metrics and price estimates for both iceberg portions. Keep the visualization free of the illustration caption and repeated context/pricing caveats; retain the estimation method and official pricing in the expandable details.
 - Exclude quality scores and rewrite suggestions from V1.
 
 ## Implementation research
@@ -53,4 +53,4 @@ Presets are pricing scenarios, not a promise that each client exposes each model
 
 Detection requires both a valid `rtk --version` response and the `Rust Token Killer` identity in `rtk -h`, as declared in [RTK's CLI source](https://github.com/rtk-ai/rtk/blob/master/src/main.rs). Short help avoids opening or modifying an analytics database. Each process has a three-second timeout and a 64 KiB output limit. Relative PATH entries and paths inside the scanned project are excluded. Concurrent HTTP checks share one probe. Installation detection does not assert hook configuration or apply a discount to context totals.
 
-The checklist is an array of detected checks, initially RTK only. An unchecked disabled checkbox cannot be marked manually. Installation commands and the official guide are displayed when detection fails; Check again probes the server environment anew.
+The dedicated Optimization checklist tab loads an array of detected checks, initially RTK only. Token Optimizer does not run installation probes, and the checklist does not request token estimates. An unchecked disabled checkbox cannot be marked manually. Installation commands and the official guide are displayed when detection fails; Check again probes the server environment anew.

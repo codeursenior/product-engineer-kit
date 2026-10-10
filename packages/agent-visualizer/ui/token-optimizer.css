@@ -28,7 +28,6 @@ p {
   line-height: 1.6;
   font-size: 13px;
 }
-.explanation,
 .method {
   color: var(--muted);
   max-width: 900px;
@@ -147,30 +146,6 @@ tbody small {
 td {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-}
-.checklist {
-  margin-top: 32px;
-}
-.check-item {
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-.check-item label {
-  font-weight: 600;
-}
-.check-item input {
-  accent-color: var(--green);
-}
-.check-again {
-  margin-top: 14px;
-}
-code {
-  display: block;
-  padding: 10px;
-  background: #7c918515;
-  border-radius: 6px;
-  overflow-wrap: anywhere;
 }
 a {
   color: inherit;

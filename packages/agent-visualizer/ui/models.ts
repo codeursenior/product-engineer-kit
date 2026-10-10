@@ -7,7 +7,7 @@ import type {
   Skill,
 } from "../src/contracts";
 export type AssetTab = "context" | "rules" | "skills" | "mcp";
-export type Tab = AssetTab | "optimizer";
+export type Tab = AssetTab | "optimizer" | "checklist";
 export type Row = ContextNode | Rule | Skill | McpServer;
 export interface Selection {
   tab: AssetTab;
@@ -30,6 +30,10 @@ export const titles: Record<Tab, [string, string]> = {
   optimizer: [
     "Your context iceberg.",
     "Estimate local context and the input cost of loading it once.",
+  ],
+  checklist: [
+    "Optimize your workflow.",
+    "Check local tools and follow recommended installation steps.",
   ],
   context: [
     "See what your agent can find.",

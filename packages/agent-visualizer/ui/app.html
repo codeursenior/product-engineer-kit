@@ -32,7 +32,7 @@
         </button>
       </div>
     </section>
-    @if (state.tab() !== 'optimizer') {
+    @if (state.tab() !== 'optimizer' && state.tab() !== 'checklist') {
     <div appFilters class="toolbar"></div>
     }
     <div id="notice" class="notice" [hidden]="!state.data()?.warnings?.length">
@@ -40,6 +40,8 @@
     </div>
     @if (state.tab() === 'optimizer') {
     <app-token-optimizer />
+    } @else if (state.tab() === 'checklist') {
+    <app-optimization-checklist />
     } @else if (!state.error() && state.data() && state.rows().length &&
     state.tab() === 'context' && state.view() === 'graph') {
     <section

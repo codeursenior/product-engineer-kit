@@ -16,7 +16,7 @@ export class WorkspaceState {
   readonly tab = signal<Tab>("context");
   readonly assetTab = computed(() => {
     const tab = this.tab();
-    return tab === "optimizer" ? "context" : tab;
+    return tab === "optimizer" || tab === "checklist" ? "context" : tab;
   });
   readonly scope = signal<Scope | "all">("all");
   readonly client = signal<Client | "all">("all");
@@ -31,7 +31,7 @@ export class WorkspaceState {
   readonly rows = computed(() => {
     const data = this.data();
     const tab = this.tab();
-    if (tab === "optimizer") return [];
+    if (tab === "optimizer" || tab === "checklist") return [];
     const rows: Row[] = data
       ? tab === "context"
         ? data.nodes
@@ -50,6 +50,7 @@ export class WorkspaceState {
   readonly summary = computed(() => {
     if (this.error()) return "Session unavailable";
     if (!this.data()) return "Reading local assets";
+    if (this.tab() === "checklist") return "Local installation checks";
     if (this.tab() === "optimizer")
       return "Static local estimates · One selected agent";
     const rows = this.rows();

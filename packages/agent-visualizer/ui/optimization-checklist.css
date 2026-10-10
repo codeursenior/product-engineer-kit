@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+h2 {
+  margin: 8px 0;
+  font-size: 19px;
+  letter-spacing: -0.4px;
+}
+p {
+  line-height: 1.6;
+  font-size: 13px;
+}
+summary {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 0;
+}
+.checklist {
+  padding: 24px 40px 32px;
+}
+.check-item {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.check-item label {
+  font-weight: 600;
+}
+.check-item input {
+  accent-color: var(--green);
+}
+.check-again {
+  margin-top: 14px;
+}
+code {
+  display: block;
+  padding: 10px;
+  background: #7c918515;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+}
+a {
+  color: inherit;
+}
+@media (max-width: 750px) {
+  .checklist {
+    padding: 20px;
+  }
+}

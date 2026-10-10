@@ -4,12 +4,21 @@ import { Detail } from "./detail";
 import { Filters } from "./filters";
 import { Graph } from "./graph";
 import { titles, type Row } from "./models";
+import { OptimizationChecklist } from "./optimization-checklist";
 import { TokenOptimizer } from "./token-optimizer";
 import { Sidebar } from "./sidebar";
 import { WorkspaceState } from "./workspace-state";
 
 @Component({
-  imports: [Sidebar, Filters, AssetTable, Detail, Graph, TokenOptimizer],
+  imports: [
+    Sidebar,
+    Filters,
+    AssetTable,
+    Detail,
+    Graph,
+    TokenOptimizer,
+    OptimizationChecklist,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "app-root",
   templateUrl: "./app.html",
@@ -54,6 +63,8 @@ export class App {
     )
       return "Try another scope, client, or search.";
     switch (this.state.tab()) {
+      case "checklist":
+        return "No optimization checks available.";
       case "optimizer":
         return "No local context discovered for this agent.";
       case "context":

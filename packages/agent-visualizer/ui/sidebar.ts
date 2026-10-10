@@ -25,11 +25,12 @@ export class Sidebar {
     { id: "context", label: "Context", icon: "⌘" },
     { id: "rules", label: "Rules", icon: "▤" },
     { id: "skills", label: "Skills", icon: "✧" },
-    { id: "optimizer", label: "Token Optimizer", icon: "≈" },
     { id: "mcp", label: "MCP servers", icon: "⎇" },
+    { id: "optimizer", label: "Token Optimizer", icon: "≈" },
+    { id: "checklist", label: "Optimization checklist", icon: "☷" },
   ];
   count(tab: Tab): number {
-    if (tab === "optimizer") return 0;
+    if (tab === "optimizer" || tab === "checklist") return 0;
     const data = this.state.data();
     return data ? (tab === "context" ? data.nodes : data[tab]).length : 0;
   }

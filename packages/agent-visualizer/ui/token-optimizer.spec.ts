@@ -8,7 +8,7 @@ import { expect, it } from "vitest";
 import type { TokenEstimate } from "../src/contracts";
 import { TokenOptimizer } from "./token-optimizer";
 
-it("shows one agent's iceberg, reprices on selection and checks installation through detection", async () => {
+it("shows startup entries only and reprices the selected agent iceberg", async () => {
   TestBed.configureTestingModule({
     providers: [provideHttpClient(), provideHttpClientTesting()],
   });
@@ -35,43 +35,58 @@ it("shows one agent's iceberg, reprices on selection and checks installation thr
       },
     ],
     method: "Local heuristic",
-    entries: [],
+    entries: [
+      {
+        id: "startup",
+        name: "AGENTS.md",
+        path: "AGENTS.md",
+        scope: "project",
+        kind: "instruction",
+        portion: "startup",
+        tokens: 100,
+        words: 50,
+        bytes: 400,
+        inputCost: 0.000175,
+      },
+      {
+        id: "on-demand",
+        name: "linked-guide.md",
+        path: "docs/linked-guide.md",
+        scope: "project",
+        kind: "document",
+        portion: "on-demand",
+        tokens: 1000,
+        words: 500,
+        bytes: 4000,
+        inputCost: 0.00175,
+      },
+    ],
     startup: { tokens: 100, words: 50, bytes: 400, inputCost: 0.000175 },
     onDemand: { tokens: 1000, words: 500, bytes: 4000, inputCost: 0.00175 },
     includeUser: true,
     warnings: [],
   };
-  const checklist = {
-    checks: [
-      {
-        id: "rtk",
-        label: "Install RTK",
-        detected: false,
-        detail: "Not detected",
-        guide: "https://example.com",
-        instructions: [
-          { label: "Install", command: "brew install rtk-ai/tap/rtk" },
-        ],
-      },
-    ],
-  };
   await fixture.whenStable();
   http
     .expectOne("/api/token-estimate?client=codex&model=gpt-5.3-codex")
     .flush(estimate);
-  http.expectOne("/api/optimization-checks").flush(checklist);
+  http.expectNone("/api/optimization-checks");
   await fixture.whenStable();
   await expect
     .poll(() => root.textContent)
     .toContain("Estimated startup context");
   expect(root.textContent).toContain("On-demand context");
   expect(root.querySelector("svg")).not.toBeNull();
-  const checkbox = root.querySelector<HTMLInputElement>(
-    'input[type="checkbox"]',
-  )!;
-  expect(checkbox.checked).toBe(false);
-  expect(checkbox.disabled).toBe(true);
-  expect(root.textContent).toContain("brew install");
+  expect(root.querySelector("tbody")?.textContent).toContain("AGENTS.md");
+  expect(root.querySelector("tbody")?.textContent).not.toContain(
+    "linked-guide.md",
+  );
+  expect(root.querySelectorAll("thead th").length).toBe(5);
+  expect(root.querySelector("thead")?.textContent).not.toContain("Bytes");
+  expect(root.textContent).not.toContain("Optimization checklist");
+  expect(root.textContent).not.toContain("not to scale");
+  expect(root.textContent).not.toContain("Discoverable local context");
+  expect(root.textContent).not.toContain("USD input prices");
   const agent = root.querySelector<HTMLSelectElement>("#optimizer-agent")!;
   expect([...agent.options].map((option) => option.value)).toEqual([
     "codex",
@@ -98,14 +113,16 @@ it("shows one agent's iceberg, reprices on selection and checks installation thr
     });
   await fixture.whenStable();
   await expect.poll(() => root.textContent).toContain("0.000200");
-  root.querySelector<HTMLButtonElement>(".check-again")!.click();
+  fixture.componentInstance.estimate.set({
+    ...estimate,
+    entries: [estimate.entries[1]!],
+  });
   await fixture.whenStable();
-  http
-    .expectOne("/api/optimization-checks")
-    .flush({ checks: [{ ...checklist.checks[0], detected: true }] });
-  await fixture.whenStable();
-  await expect.poll(() => checkbox.checked).toBe(true);
-  expect(checkbox.disabled).toBe(true);
-  expect(root.querySelector(".check-again")).toBeNull();
+  expect(root.querySelector("tbody")?.textContent).toContain(
+    "No startup context discovered",
+  );
+  expect(root.querySelector("tbody")?.textContent).not.toContain(
+    "linked-guide.md",
+  );
   http.verify();
 });
