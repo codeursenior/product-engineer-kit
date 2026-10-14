@@ -1,7 +1,7 @@
 {
   "name": "@codeursenior/pek",
   "version": "0.1.7",
-  "description": "Agent Visualizer: explore your AI context, skills and MCP configuration in a local dashboard.",
+  "description": "Agent Visualizer by Product Engineer Kit: explore local AI instructions, rules, skills and MCP configuration.",
   "type": "module",
   "bin": {
     "pek": "dist/cli.js"
@@ -34,6 +34,8 @@
     "format": "prettier --write ."
   },
   "keywords": [
+    "product-engineer-kit",
+    "agent-audit",
     "agents",
     "codex",
     "copilot",
