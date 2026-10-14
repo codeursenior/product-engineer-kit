@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -49,7 +49,7 @@ if (!archive) {
   archive = path.resolve(".local", result[0].filename);
 }
 archive = path.resolve(archive);
-const directory = await fs.mkdtemp(path.join(os.tmpdir(), "boyscout-package-"));
+const directory = await fs.mkdtemp(path.join(os.tmpdir(), "pek-package-"));
 let child: ReturnType<typeof spawn> | undefined;
 try {
   await fs.writeFile(path.join(directory, "package.json"), '{"private":true}');
@@ -64,18 +64,18 @@ try {
     ],
     directory,
   );
-  const installed = path.join(directory, "node_modules/@codeursenior/boyscout");
+  const installed = path.join(directory, "node_modules/@codeursenior/pek");
   const cli = path.join(installed, "dist/cli.js");
   const pkg: {
     version: string;
-    bin: { boyscout: string };
+    bin: { pek: string };
     dependencies: Record<string, string>;
   } = JSON.parse(
     await fs.readFile(path.join(installed, "package.json"), "utf8"),
   );
-  assert.equal(pkg.bin.boyscout, "dist/cli.js");
+  assert.equal(pkg.bin.pek, "dist/cli.js");
   assert.equal(
-    npm(["exec", "--offline", "--", "boyscout", "--version"], directory).trim(),
+    npm(["exec", "--offline", "--", "pek", "--version"], directory).trim(),
     pkg.version,
   );
   assert.ok((await fs.readFile(cli, "utf8")).startsWith("#!/usr/bin/env node"));
@@ -86,12 +86,53 @@ try {
     }).trim(),
     pkg.version,
   );
-  assert.match(
-    execFileSync(process.execPath, [cli, "--help"], {
+  for (const args of [[], ["--help"], ["-h"], ["audit", "agent", "--help"]]) {
+    const result = spawnSync(process.execPath, [cli, ...args], {
       cwd: directory,
       encoding: "utf8",
-    }),
-    /boyscout ui/,
+    });
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Agent Visualizer · Product Engineer Kit/);
+    assert.match(result.stdout, /pek audit agent/);
+    for (const option of ["--port", "--no-open", "--project-only", "--version"])
+      assert.ok(result.stdout.includes(option));
+  }
+  for (const args of [
+    ["audit"],
+    ["audit", "agents"],
+    ["ui"],
+    ["agent"],
+    ["audit", "agent", "one", "two"],
+  ]) {
+    const result = spawnSync(process.execPath, [cli, ...args], {
+      cwd: directory,
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 1, args.join(" "));
+    assert.match(result.stderr, /Expected: pek audit agent/);
+  }
+  for (const args of [
+    ["--port", "-1"],
+    ["--port", "65536"],
+    ["--port", "1.5"],
+    ["--port", "invalid"],
+    ["--port"],
+    ["--unknown"],
+  ]) {
+    const result = spawnSync(
+      process.execPath,
+      [cli, "audit", "agent", ...args],
+      {
+        cwd: directory,
+        encoding: "utf8",
+      },
+    );
+    assert.equal(result.status, 1, args.join(" "));
+    assert.ok(result.stderr.trim());
+  }
+  assert.equal(
+    execFileSync(process.execPath, [cli, "-v"], { encoding: "utf8" }).trim(),
+    pkg.version,
   );
   assert.ok(
     !Object.keys(pkg.dependencies).some((name) =>
@@ -105,60 +146,83 @@ try {
   const fixture = path.join(directory, "fixture");
   await fs.mkdir(fixture);
   await fs.writeFile(path.join(fixture, "AGENTS.md"), "# Packaged fixture");
-  child = spawn(
-    process.execPath,
-    [cli, "ui", fixture, "--project-only", "--no-open"],
-    { cwd: directory, stdio: ["ignore", "pipe", "pipe"], windowsHide: true },
-  );
-  const running = child;
-  const url = await new Promise<string>((resolve, reject) => {
-    const timer = setTimeout(
-      () => reject(new Error("Packaged CLI did not start")),
-      15000,
+  for (const explicitFolder of [true, false]) {
+    child = spawn(
+      process.execPath,
+      [
+        cli,
+        "audit",
+        "agent",
+        ...(explicitFolder ? [fixture] : []),
+        "--project-only",
+        "--no-open",
+        "--port",
+        "0",
+      ],
+      {
+        cwd: explicitFolder ? directory : fixture,
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsHide: true,
+      },
     );
-    let output = "";
-    running.once("error", (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
-    running.once("exit", (code) => {
-      clearTimeout(timer);
-      reject(new Error(`Packaged CLI exited: ${code}`));
-    });
-    running.stdout?.on("data", (chunk: Buffer) => {
-      output += chunk.toString();
-      const match = output.match(/http:\/\/127\.0\.0\.1:\d+\/#token=[a-f0-9]+/);
-      if (match?.[0]) {
+    const running = child;
+    const url = await new Promise<string>((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error("Packaged CLI did not start")),
+        15000,
+      );
+      let output = "";
+      running.once("error", (error) => {
         clearTimeout(timer);
-        resolve(match[0]);
-      }
+        reject(error);
+      });
+      running.once("exit", (code) => {
+        clearTimeout(timer);
+        reject(new Error(`Packaged CLI exited: ${code}`));
+      });
+      running.stdout?.on("data", (chunk: Buffer) => {
+        output += chunk.toString();
+        const match = output.match(
+          /http:\/\/127\.0\.0\.1:\d+\/#token=[a-f0-9]+/,
+        );
+        if (match?.[0]) {
+          clearTimeout(timer);
+          resolve(match[0]);
+        }
+      });
     });
-  });
-  const location = new URL(url),
-    token = new URLSearchParams(location.hash.slice(1)).get("token");
-  const response = await fetch(location.origin);
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  assert.match(html, /app-root/);
-  for (const match of html.matchAll(
-    /(?:src|href)="([^"]+\.(?:js|css|svg))"/g,
-  )) {
-    const asset = match[1];
-    if (!asset) continue;
-    const response = await fetch(new URL(asset, location.origin));
-    assert.equal(response.status, 200, asset);
-    assert.ok((await response.arrayBuffer()).byteLength > 0);
+    const location = new URL(url),
+      token = new URLSearchParams(location.hash.slice(1)).get("token");
+    const response = await fetch(location.origin);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /app-root/);
+    for (const match of html.matchAll(
+      /(?:src|href)="([^"]+\.(?:js|css|svg))"/g,
+    )) {
+      const asset = match[1];
+      if (!asset) continue;
+      const response = await fetch(new URL(asset, location.origin));
+      assert.equal(response.status, 200, asset);
+      assert.ok((await response.arrayBuffer()).byteLength > 0);
+    }
+    assert.equal((await fetch(location.origin + "/api/scan")).status, 401);
+    const scan: { nodes: { name: string }[] } = await (
+      await fetch(location.origin + "/api/scan", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+    ).json();
+    assert.deepEqual(
+      scan.nodes.map((node) => node.name),
+      ["AGENTS.md"],
+    );
+    const exited = new Promise<void>((resolve) =>
+      running.once("exit", () => resolve()),
+    );
+    running.kill();
+    await exited;
+    child = undefined;
   }
-  assert.equal((await fetch(location.origin + "/api/scan")).status, 401);
-  const scan: { nodes: { name: string }[] } = await (
-    await fetch(location.origin + "/api/scan", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-  ).json();
-  assert.deepEqual(
-    scan.nodes.map((node) => node.name),
-    ["AGENTS.md"],
-  );
   console.log(
     `Packed CLI smoke passed on ${process.platform} ${process.version}`,
   );

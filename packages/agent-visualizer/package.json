@@ -1,10 +1,10 @@
 {
-  "name": "@codeursenior/boyscout",
+  "name": "@codeursenior/pek",
   "version": "0.1.7",
   "description": "Agent Visualizer: explore your AI context, skills and MCP configuration in a local dashboard.",
   "type": "module",
   "bin": {
-    "boyscout": "dist/cli.js"
+    "pek": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -19,7 +19,7 @@
     "build": "tsx scripts/clean.ts && npm run build:server && ng build",
     "build:server": "tsc -p tsconfig.json",
     "prestart": "npm run build",
-    "start": "node dist/cli.js ui",
+    "start": "node dist/cli.js audit agent",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json && ngc -p tsconfig.app.json --noEmit",
     "lint": "eslint . && prettier --check .",
     "test": "npm run test:server && npm run test:ui",

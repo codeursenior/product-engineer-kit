@@ -2,15 +2,21 @@
 
 **See the context behind your coding agent.**
 
-Agent Visualizer, distributed as Boyscout, opens a local dashboard for the instructions, knowledge, skills, and MCP configurations inside a folder. Inspired by the clarity of an Obsidian graph, with separate views for project and user assets.
+Agent Visualizer, part of Product Engineer Kit, opens a local dashboard for the instructions, knowledge, skills, and MCP configurations inside a folder. Inspired by the clarity of an Obsidian graph, with separate views for project and user assets.
 
 ```bash
-npx @codeursenior/boyscout ui
+npx @codeursenior/pek audit agent
 ```
 
 Requires Node.js 20 or newer. Run the command in the folder you want to explore. Your default browser opens automatically. Press Ctrl+C in the terminal to stop the server.
 
-To check the installed release, run `npx --prefer-online @codeursenior/boyscout@latest --version`. The `--prefer-online` option asks npm to check the registry even when it has cached package data.
+To check the installed release, run `npx --prefer-online @codeursenior/pek@latest --version`. The `--prefer-online` option asks npm to check the registry even when it has cached package data.
+
+The `audit agent` command inventories local agent configuration and estimates context size. It does not assign a quality score or prove what an agent loaded in a live session.
+
+## Migrating from Boyscout
+
+Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek audit agent [folder]`. The folder and options stay the same. The existing Boyscout package is left available, without deprecation or removal; existing installations keep their published behavior. New releases use the `pek` executable.
 
 ## Explore
 
@@ -29,9 +35,9 @@ Open a context file or skill to edit its text in the side panel. Choose a source
 Use Delete file in the same panel to remove a context or skill file permanently. The confirmation shows the exact source path. Deletion is refused if the file changed after opening it, or if the scan found multiple paths to the same file. Symlinks cannot be deleted from the viewer. The workspace is rescanned after deletion.
 
 ```bash
-npx @codeursenior/boyscout ui /path/to/project
-npx @codeursenior/boyscout ui --project-only
-npx @codeursenior/boyscout ui --port 4317 --no-open
+npx @codeursenior/pek audit agent /path/to/project
+npx @codeursenior/pek audit agent --project-only
+npx @codeursenior/pek audit agent --port 4317 --no-open
 ```
 
 A random available loopback port is used by default. The terminal URL includes a session token. Keep that URL private while the viewer is running.
@@ -112,7 +118,7 @@ From this package directory:
 
 Run `npx playwright install chromium` before browser tests. Visual baselines were captured from the original UI on Windows with the locked Chromium version. CI runs comparisons on Windows; Linux and macOS run unit/integration and package compatibility checks. Keep screenshots in the same rendering environment when updating baselines, and review each changed image. Tests use synthetic project and home directories, never the contributor's agent configuration.
 
-`npm start -- /path/to/project` builds before starting. After source changes, stop and restart it to rebuild both halves. End users running the published `boyscout` command need no build step. Development tooling and smoke-test runners stay outside the npm archive.
+`npm start -- /path/to/project` builds before starting. After source changes, stop and restart it to rebuild both halves. End users running the published `pek audit agent` command need no build step. Development tooling and smoke-test runners stay outside the npm archive.
 
 See [architecture and discovery notes](docs/architecture.md) and [release instructions](https://github.com/codeursenior/product-engineer-kit/blob/main/docs/releasing.md).
 

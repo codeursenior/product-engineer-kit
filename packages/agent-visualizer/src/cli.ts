@@ -6,9 +6,9 @@ import { parseArgs } from "node:util";
 import { errorCode, record } from "./scan/values.js";
 import { startServer } from "./server.js";
 
-const help = `Agent Visualizer · Boyscout
+const help = `Agent Visualizer · Product Engineer Kit
 
-Usage: npx @codeursenior/boyscout ui [folder] [options]
+Usage: npx @codeursenior/pek audit agent [folder] [options]
 
 Explore context, skills and MCP configuration in your default browser.
 
@@ -42,14 +42,18 @@ try {
   } else if (values.help || !positionals.length) {
     console.log(help);
   } else {
-    if (positionals[0] !== "ui" || positionals.length > 2)
+    if (
+      positionals[0] !== "audit" ||
+      positionals[1] !== "agent" ||
+      positionals.length > 3
+    )
       throw new Error(
-        "Expected: boyscout ui [folder]. Use --help for options.",
+        "Expected: pek audit agent [folder]. Use --help for options.",
       );
     const port = values.port === undefined ? 0 : Number(values.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535)
       throw new Error("Port must be an integer between 0 and 65535.");
-    const root = path.resolve(positionals[1] || process.cwd());
+    const root = path.resolve(positionals[2] || process.cwd());
     console.log(`\n  Agent Visualizer\n  Scanning ${root} ...`);
     const { server, url } = await startServer({
       root,

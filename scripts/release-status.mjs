@@ -10,8 +10,7 @@ const packageDirectory = path.join(
   "packages",
   "agent-visualizer",
 );
-const registryUrl =
-  "https://registry.npmjs.org/@codeursenior%2fboyscout/latest";
+const registryUrl = "https://registry.npmjs.org/@codeursenior%2fpek/latest";
 
 function tarString(bytes) {
   return bytes.toString("utf8").replace(/\0.*$/s, "");
@@ -132,7 +131,7 @@ function localPackageFiles() {
         npmCli,
         "pack",
         "--workspace",
-        "@codeursenior/boyscout",
+        "@codeursenior/pek",
         "--dry-run",
         "--json",
         "--ignore-scripts",
@@ -163,19 +162,19 @@ function localPackageFiles() {
   );
 }
 
-async function publishedPackage() {
-  const response = await fetch(registryUrl);
+export async function publishedPackage(fetchRegistry = fetch) {
+  const response = await fetchRegistry(registryUrl);
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`npm registry returned ${response.status}`);
   const metadata = await response.json();
   if (
-    metadata.name !== "@codeursenior/boyscout" ||
+    metadata.name !== "@codeursenior/pek" ||
     !metadata.version ||
     !metadata.dist?.tarball
   ) {
-    throw new Error("npm registry returned incomplete Boyscout metadata");
+    throw new Error("npm registry returned incomplete PEK metadata");
   }
-  const archiveResponse = await fetch(metadata.dist.tarball);
+  const archiveResponse = await fetchRegistry(metadata.dist.tarball);
   if (!archiveResponse.ok)
     throw new Error(`npm archive returned ${archiveResponse.status}`);
   const files = unpackFiles(Buffer.from(await archiveResponse.arrayBuffer()));

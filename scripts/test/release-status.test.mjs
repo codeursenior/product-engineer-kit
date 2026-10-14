@@ -5,7 +5,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
-import { compareFiles, nextVersion, unpackFiles } from "../release-status.mjs";
+import {
+  compareFiles,
+  nextVersion,
+  publishedPackage,
+  unpackFiles,
+} from "../release-status.mjs";
 
 const kitDirectory = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -13,14 +18,14 @@ test("version-only metadata and line endings do not require a release", () => {
   const published = new Map([
     [
       "package.json",
-      Buffer.from('{"name":"@codeursenior/boyscout","version":"0.1.0"}'),
+      Buffer.from('{"name":"@codeursenior/pek","version":"0.1.0"}'),
     ],
     ["dist/cli.js", Buffer.from("current code\n")],
   ]);
   const local = new Map([
     [
       "package.json",
-      Buffer.from('{"version":"0.1.1","name":"@codeursenior/boyscout"}'),
+      Buffer.from('{"version":"0.1.1","name":"@codeursenior/pek"}'),
     ],
     ["dist/cli.js", Buffer.from("current code\r\n")],
   ]);
@@ -37,7 +42,7 @@ test("the real npm archive excludes tests and includes the built UI", () => {
       process.env.npm_execpath,
       "pack",
       "--workspace",
-      "@codeursenior/boyscout",
+      "@codeursenior/pek",
       "--dry-run",
       "--json",
       "--ignore-scripts",
@@ -96,4 +101,36 @@ test("CLI reports the version in its own package manifest", () => {
     encoding: "utf8",
   }).trim();
   assert.equal(actual, expected);
+});
+
+test("a missing PEK package keeps the local version for first publication and retries", async () => {
+  const published = await publishedPackage(async (url) => {
+    assert.equal(url, "https://registry.npmjs.org/@codeursenior%2fpek/latest");
+    return new Response(null, { status: 404 });
+  });
+  assert.equal(published, null);
+  assert.equal(nextVersion("0.1.7", published?.version), "0.1.7");
+  assert.deepEqual(
+    compareFiles(new Map([["dist/cli.js", Buffer.from("code")]]), new Map()),
+    ["dist/cli.js"],
+  );
+});
+
+test("registry failures and another package's metadata cannot trigger first publication", async () => {
+  for (const status of [401, 403, 500]) {
+    await assert.rejects(
+      publishedPackage(async () => new Response(null, { status })),
+      new RegExp(`npm registry returned ${status}`),
+    );
+  }
+  await assert.rejects(
+    publishedPackage(async () =>
+      Response.json({
+        name: "@codeursenior/boyscout",
+        version: "0.1.7",
+        dist: { tarball: "https://registry.npmjs.org/old.tgz" },
+      }),
+    ),
+    /incomplete PEK metadata/,
+  );
 });

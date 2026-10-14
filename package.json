@@ -11,7 +11,7 @@
     "test": "npm test --workspaces --if-present && node --test skills/pek-grill-me/test/*.test.mjs scripts/test/*.test.mjs",
     "check": "npm run check --workspaces --if-present && node --test skills/pek-grill-me/test/*.test.mjs scripts/test/*.test.mjs",
     "release:status": "node scripts/release-status.mjs",
-    "start": "npm run start --workspace @codeursenior/boyscout --",
+    "start": "npm run start --workspace @codeursenior/pek --",
     "format": "npm run format --workspaces --if-present && prettier --write README.md docs skills package.json .github"
   },
   "devDependencies": {
