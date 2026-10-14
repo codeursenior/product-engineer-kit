@@ -22,7 +22,7 @@ The local fallback `./scripts/sync-product-engineer-kit.sh` validates and pushes
 
 ## First publication as PEK
 
-`@codeursenior/pek` is a new npm identity. Keep Agent Visualizer as the product name and retain the current version for the first PEK publication. The root manifest remains private. Do not unpublish or deprecate `@codeursenior/boyscout`; its existing releases remain available.
+`@codeursenior/pek` is a new npm identity. Keep Agent Visualizer as the product name and retain the current version for the first PEK publication. The root manifest remains private. The legacy `@codeursenior/boyscout` distribution is no longer maintained; use PEK for all new releases. See the retirement procedure below for the old npm identity.
 
 Before the first release, check `npm view @codeursenior/pek name version --json` and `npm whoami`. A registry 404 means no public package was found; it does not establish the caller's right to publish in the scope. Confirm that the npm account can publish under `@codeursenior`. Authentication and registry failures other than 404 must be resolved, not treated as a missing package.
 
@@ -38,6 +38,14 @@ npx @codeursenior/pek audit agent
 ```
 
 Verify that [the npm package page](https://www.npmjs.com/package/@codeursenior/pek) displays Agent Visualizer, the `audit agent` examples, and the public kit repository and documentation links. The package README and metadata generate this page. An archive tested locally or uploaded as a workflow artifact is not a published npm release.
+
+## Retiring the legacy Boyscout package
+
+The legacy package is intended for removal, without a compatibility guarantee. Check the [current npm unpublish policy](https://docs.npmjs.com/policies/unpublish/), package versions, owners and weekly downloads before running `npm unpublish @codeursenior/boyscout --force` as an authorized owner. Keep this operation separate from PEK publication and its trusted publisher.
+
+On October 14, 2026, npm rejected the authenticated removal with HTTP 422. The package had one owner, no declared public dependents and 392 weekly downloads. Packages older than 72 hours must have fewer than 300 weekly downloads, no public dependents and a single owner to qualify for removal under the current policy. Recheck eligibility before retrying.
+
+All eight versions, `0.1.0` through `0.1.7`, remain published and were deprecated with this message: `This package is no longer maintained. Use npx @codeursenior/pek audit agent instead.` Deprecation displays a migration warning but leaves the old command usable. Verify both the registry's `deprecated` fields and an invocation with a fresh test cache; do not describe deprecation as removal. Removing the package from npm cannot disable copies already installed or cached on users' machines.
 
 ## One-time configuration
 

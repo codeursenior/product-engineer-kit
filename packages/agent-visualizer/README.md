@@ -16,7 +16,7 @@ The `audit agent` command inventories local agent configuration and estimates co
 
 ## Migrating from Boyscout
 
-Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek audit agent [folder]`. The folder and options stay the same. The existing Boyscout package is left available, without deprecation or removal; existing installations keep their published behavior. New releases use the `pek` executable.
+Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek audit agent [folder]`. The folder and options stay the same. All published Boyscout versions are deprecated with a migration message pointing to PEK. Deprecation leaves the old command usable; use PEK for new installations and updates. Already installed or cached copies may continue to run even after the package is removed from npm.
 
 ## Explore
 
