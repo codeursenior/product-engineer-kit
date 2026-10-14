@@ -42,7 +42,7 @@ Verify that [the npm package page](https://www.npmjs.com/package/@codeursenior/p
 ## One-time configuration
 
 1. Enable GitHub Actions in Elrond and allow its `GITHUB_TOKEN` to push the automatic version commit to `main` (`contents: write`). Each local clone must pull that commit before its next push.
-2. Add an Elrond Actions secret named `KIT_MIRROR_TOKEN`: a fine-grained GitHub token with **Contents: Read and write** on `codeursenior/product-engineer-kit` only. The private workflow uses it only for the mirror push. Keep all credentials outside the repository.
+2. Add an Elrond Actions secret named `KIT_MIRROR_TOKEN`: a fine-grained GitHub token with **Contents: Read and write** and **Workflows: Read and write** on `codeursenior/product-engineer-kit` only. Workflow permission is required when the exported subtree changes `.github/workflows/ci.yml`; a classic token needs the `workflow` scope as well as repository access. The private workflow uses it only for the mirror push. Keep all credentials outside the repository.
 3. In the npm settings for `@codeursenior/pek`, configure a GitHub Actions trusted publisher for owner `codeursenior`, repository `product-engineer-kit`, workflow filename `ci.yml`, with direct `npm publish` allowed and no environment name. The publish job runs on a GitHub-hosted runner with `id-token: write` and npm 11.5.1.
 4. Run the private workflow once to catch up the current code. Confirm the version commit, mirror push, public checks, and new npm `latest` before relying on the automation.
 
