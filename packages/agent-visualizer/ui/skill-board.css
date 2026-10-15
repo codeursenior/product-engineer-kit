@@ -1,0 +1,236 @@
+:host {
+  --board-reference: #406b9e;
+  --board-drawing: #a45b16;
+  --board-paper: #fffdf9;
+  --board-ink: #26332d;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 18px 42px 0;
+  color: var(--board-ink);
+}
+.board-tools,
+.board-actions,
+.board-legend,
+.board-selection,
+.board-zoom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.board-tools {
+  justify-content: space-between;
+  gap: 16px;
+}
+button,
+input,
+select {
+  border: 1px solid var(--line);
+  background: var(--board-paper);
+  color: inherit;
+  border-radius: 4px;
+  padding: 8px 11px;
+  font-size: 12px;
+}
+input {
+  width: 240px;
+  max-width: 100%;
+}
+select {
+  max-width: 200px;
+}
+button.active {
+  outline: 2px solid var(--board-drawing);
+}
+.board-legend {
+  font-size: 11px;
+}
+.board-legend span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.board-legend i {
+  display: inline-block;
+  width: 25px;
+  border-top: 2px solid var(--board-reference);
+}
+.board-legend .drawing-sample {
+  border-color: var(--board-drawing);
+  border-top-style: dashed;
+}
+.board-selection {
+  min-height: 58px;
+  padding: 8px 0;
+  font-size: 12px;
+}
+.board-selection strong {
+  overflow-wrap: anywhere;
+}
+.board-selection label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.board-save {
+  margin-left: auto;
+  max-width: 390px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.board-viewport {
+  position: relative;
+  height: max(480px, calc(100vh - 510px));
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--board-paper);
+}
+.board-surface {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+  background-image: radial-gradient(#dce1d8 0.8px, transparent 0.8px);
+  background-size: 22px 22px;
+  cursor: grab;
+}
+.board-surface:active {
+  cursor: grabbing;
+}
+.board-reference,
+.board-drawing {
+  fill: none;
+  stroke-width: 2;
+}
+.board-reference {
+  stroke: var(--board-reference);
+}
+.reference-head {
+  fill: var(--board-reference);
+}
+.board-drawing {
+  stroke: var(--board-drawing);
+  stroke-dasharray: 7 4;
+  pointer-events: none;
+}
+.drawing-head {
+  fill: var(--board-drawing);
+}
+.arrow-hit {
+  stroke: transparent;
+  stroke-width: 18;
+  fill: none;
+  cursor: pointer;
+}
+.board-arrow.chosen .board-drawing {
+  stroke-width: 4;
+}
+.board-card {
+  cursor: move;
+}
+.board-card rect {
+  fill: var(--board-paper);
+  stroke: #769274;
+  stroke-width: 1.5;
+}
+.board-card.user rect {
+  stroke: #9781b1;
+}
+.board-card-name {
+  color: var(--board-ink);
+  font-weight: 650;
+  font-size: 13px;
+  line-height: 19px;
+  overflow-wrap: anywhere;
+}
+.board-card-scope {
+  fill: #536450;
+  font-size: 10px;
+}
+.board-card.user .board-card-scope {
+  fill: #7c629a;
+}
+.board-card.chosen rect,
+.board-card.connection-source rect,
+.board-card:focus-visible rect {
+  stroke-width: 3;
+}
+.board-card.connection-source rect {
+  stroke: var(--board-drawing);
+}
+.board-title {
+  cursor: move;
+}
+.board-title text {
+  fill: var(--board-ink);
+  font-size: 25px;
+  font-weight: 650;
+}
+.board-title.chosen text,
+.board-title:focus-visible text {
+  text-decoration: underline;
+  text-decoration-color: var(--board-drawing);
+}
+.board-endpoint {
+  fill: var(--board-paper);
+  stroke: var(--board-drawing);
+  stroke-width: 3;
+  cursor: crosshair;
+}
+.board-zoom {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  gap: 0;
+}
+.board-zoom button {
+  border-radius: 0;
+}
+.board-hint {
+  margin: 10px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.board-empty {
+  position: absolute;
+  top: 90px;
+  left: 30px;
+  font-size: 13px;
+}
+:host-context([data-theme="dark"]) {
+  --board-paper: #252b27;
+  --board-ink: #e2e8dd;
+  --board-reference: #85b3eb;
+  --board-drawing: #edb06a;
+}
+:host-context([data-theme="dark"]) .board-surface {
+  background-image: radial-gradient(#495149 0.8px, transparent 0.8px);
+}
+:host-context([data-theme="dark"]) .board-card-scope {
+  fill: #a4bd9d;
+}
+:host-context([data-theme="dark"]) .board-card.user .board-card-scope {
+  fill: #c4acd9;
+}
+@media (max-width: 900px) {
+  :host {
+    margin: 18px 20px 0;
+  }
+  .board-save {
+    margin-left: 0;
+  }
+}
+@media (max-width: 640px) {
+  :host {
+    margin: 16px 12px 0;
+  }
+  .board-actions {
+    align-items: stretch;
+  }
+  .board-viewport {
+    height: 520px;
+  }
+}

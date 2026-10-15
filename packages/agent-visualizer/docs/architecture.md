@@ -14,6 +14,8 @@ The Angular UI uses standalone OnPush components and signals. `WorkspaceState` o
 
 The detail component owns its edit draft and revision. A request sequence prevents late previews or writes from updating a different selection. The graph component delegates only its SVG subtree to the typed D3 renderer. Simulation nodes and links are copies of API data. Initial positions, layout forces and bounded warm-up are preserved; cleanup stops simulations and removes listeners when the graph is replaced or destroyed.
 
+The Skills whiteboard is a separate Angular SVG view. `scan/skill-graph.ts` resolves explicit links, paths and invocations against the indexed skill inventory, without reading arbitrary targets or inferring relations from prose. The API returns these read-only skill edges separately from context edges. Ambiguous invocations are left unconnected. `skill-board-model.ts` reconciles browser-saved placements against stable source-file identities, keeping content edits independent of placement and appending added skills beside the composition. Manual arrows and titles live only in project-keyed localStorage. Read-only source edges are rebuilt from each scan and never saved as drawings. Invalid or blocked browser storage produces a visible status; unreadable saved data is not overwritten. The CLI uses port 4242 to keep the browser origin stable; the programmatic server continues to accept ephemeral ports.
+
 ## Extending and testing
 
 - Add filesystem discovery behavior to the relevant scan module, with a synthetic fixture in the backend tests. Test normalization and reference rules as pure functions when possible; retain real filesystem tests for symlinks, scope boundaries, and limits.

@@ -126,6 +126,59 @@ async function fixture(t: TestContext) {
   return { root, home, write, scan };
 }
 
+test("maps only explicit skill references and refreshes them without changing files", async (t) => {
+  const { root, write, scan } = await fixture(t);
+  const file = (name: string) =>
+    path.join(root, `.agents/skills/${name}/SKILL.md`);
+  const original = [
+    "---",
+    "name: publish",
+    "---",
+    "[Review](../review/SKILL.md)",
+    "Read `.agents/skills/prepare/SKILL.md`.",
+    "Then /finish and `$check`.",
+    "Do not use unused. https://example.invalid/unused",
+  ].join("\n");
+  await write(file("publish"), original);
+  for (const name of ["review", "prepare", "finish", "check", "unused"])
+    await write(file(name), `---\nname: ${name}\n---\nInstructions`);
+  const relations = (data: Awaited<ReturnType<typeof scan>>["data"]) =>
+    data.skillEdges
+      .map((edge) => [
+        data.skills.find((skill) => skill.id === edge.source)?.name,
+        data.skills.find((skill) => skill.id === edge.target)?.name,
+      ])
+      .sort();
+  assert.deepEqual(relations((await scan()).data), [
+    ["publish", "check"],
+    ["publish", "finish"],
+    ["publish", "prepare"],
+    ["publish", "review"],
+  ]);
+  assert.equal(await fs.readFile(file("publish"), "utf8"), original);
+  await write(file("publish"), "---\nname: publish\n---\n/unused");
+  assert.deepEqual(relations((await scan()).data), [["publish", "unused"]]);
+});
+
+test("leaves homonymous invocations unconnected until an explicit path resolves them", async (t) => {
+  const { root, home, write, scan } = await fixture(t);
+  const source = path.join(root, ".agents/skills/publish/SKILL.md");
+  await write(source, "---\nname: publish\n---\n/review");
+  for (const base of [root, home])
+    await write(
+      path.join(base, ".agents/skills/review/SKILL.md"),
+      "---\nname: review\n---\nReview",
+    );
+  assert.deepEqual((await scan()).data.skillEdges, []);
+  await write(source, "---\nname: publish\n---\n[Review](../review/SKILL.md)");
+  const { data } = await scan();
+  assert.equal(data.skillEdges.length, 1);
+  const target = data.skills.find(
+    (skill) => skill.id === data.skillEdges[0]?.target,
+  );
+  assert.equal(target?.scope, "project");
+});
+
 test("discovers Copilot VS Code context, rules, skills, and MCP without agent or prompt files", async (t) => {
   const { root, home, write, scan } = await fixture(t);
   await write(

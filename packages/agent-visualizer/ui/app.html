@@ -31,8 +31,29 @@
           ☷ Files
         </button>
       </div>
+      @if (state.tab() === 'skills') {
+      <div class="view-switch" role="group" aria-label="Skills view">
+        <button
+          id="skills-list-view"
+          [class.selected]="state.skillsView() === 'list'"
+          [attr.aria-pressed]="state.skillsView() === 'list'"
+          (click)="state.skillsView.set('list')"
+        >
+          Table
+        </button>
+        <button
+          id="skills-board-view"
+          [class.selected]="state.skillsView() === 'board'"
+          [attr.aria-pressed]="state.skillsView() === 'board'"
+          (click)="state.skillsView.set('board')"
+        >
+          Whiteboard
+        </button>
+      </div>
+      }
     </section>
-    @if (state.tab() !== 'optimizer' && state.tab() !== 'checklist') {
+    @if (state.tab() !== 'optimizer' && state.tab() !== 'checklist' &&
+    !state.whiteboard()) {
     <div appFilters class="toolbar"></div>
     }
     <div id="notice" class="notice" [hidden]="!state.data()?.warnings?.length">
@@ -42,6 +63,13 @@
     <app-token-optimizer />
     } @else if (state.tab() === 'checklist') {
     <app-optimization-checklist />
+    } @else if (state.whiteboard() && !state.error() && state.data(); as data) {
+    <app-skill-board
+      [project]="data.project.path"
+      [skills]="data.skills"
+      [edges]="data.skillEdges"
+      (selected)="select($event)"
+    />
     } @else if (!state.error() && state.data() && state.rows().length &&
     state.tab() === 'context' && state.view() === 'graph') {
     <section

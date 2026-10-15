@@ -12,7 +12,7 @@ Usage: npx @codeursenior/pek audit agent [folder] [options]
 
 Explore context, skills and MCP configuration in your default browser.
 
-  --port <number>   Choose a port (default: an available port)
+  --port <number>   Choose a port (default: 4242; 0 for an available port)
   --no-open         Print the URL without opening a browser
   --project-only    Skip user-level assets
   --help, -h        Show this help
@@ -50,7 +50,7 @@ try {
       throw new Error(
         "Expected: pek audit agent [folder]. Use --help for options.",
       );
-    const port = values.port === undefined ? 0 : Number(values.port);
+    const port = values.port === undefined ? 4242 : Number(values.port);
     if (!Number.isInteger(port) || port < 0 || port > 65535)
       throw new Error("Port must be an integer between 0 and 65535.");
     const root = path.resolve(positionals[2] || process.cwd());
@@ -93,7 +93,7 @@ try {
   }
 } catch (error) {
   console.error(
-    `\n  ${errorCode(error) === "EADDRINUSE" ? "Port is in use. Choose another --port or omit it." : error instanceof Error ? error.message : String(error)}\n`,
+    `\n  ${errorCode(error) === "EADDRINUSE" ? "Port is in use (default: 4242). Close the other instance or choose --port <number>. Whiteboards are stored separately for each browser and port." : error instanceof Error ? error.message : String(error)}\n`,
   );
   process.exitCode = 1;
 }

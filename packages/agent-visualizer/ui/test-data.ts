@@ -47,6 +47,7 @@ export function scanData(): ScanData {
     edges: [],
     rules: [],
     skills: [skill],
+    skillEdges: [],
     mcp: [],
     warnings: [],
     limits: { includeUser: true, scannedFiles: 3, truncated: false },

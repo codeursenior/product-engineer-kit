@@ -23,6 +23,7 @@ Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek aud
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.
 - **Rules:** searchable list of dedicated Cursor, Claude Code, and GitHub Copilot instruction files, with source paths, declared file conditions, client discovery, and previews. Metadata does not prove a rule loaded in a session.
 - **Skills:** names, descriptions, invocation policy, source paths, and discovery indicators for Cursor, Claude Code, Codex, and GitHub Copilot in VS Code. Identical copies in the same scope are grouped, retaining their paths.
+- **Skills Whiteboard:** switch from Table to Whiteboard to arrange every skill as a draggable card, connect your workflow with arrows, and add movable text titles. Solid blue arrows show explicit references in SKILL.md and cannot be edited. Dashed amber arrows are your local drawings: select one to delete it, drag its endpoints onto other cards, or change its From and To menus. All skills stay visible, including unused ones. Select a card and choose Open skill to inspect it; arrow keys move focused cards and titles. Pan, zoom and Fit skills help navigate larger inventories.
 - **MCP servers:** names, configuration sources, transport, and client indicators. The tool reads configuration without launching servers or transmitting credentials.
 - **Project and User:** green and purple distinguish assets in the selected folder from assets in supported home-directory locations. Scope filters work in all views.
 
@@ -40,7 +41,9 @@ npx @codeursenior/pek audit agent --project-only
 npx @codeursenior/pek audit agent --port 4317 --no-open
 ```
 
-A random available loopback port is used by default. The terminal URL includes a session token. Keep that URL private while the viewer is running.
+The default loopback port is **4242**, a nod to the answer in The Hitchhiker's Guide to the Galaxy. If it is occupied, close the other instance or pass `--port <number>`; the CLI does not silently change ports. Use `--port 0` to request an available port. The terminal URL includes a session token. Keep that URL private while the viewer is running.
+
+Whiteboard positions, manual arrows and titles are automatically saved in **localStorage for each project**. They are local to this browser and port, and are lost if you clear its site data. Use the same browser and port to restore your board at the next launch. Switching between Table and Whiteboard keeps the composition. List filters do not hide cards on the whiteboard. Inventory and source arrows update only at startup or Rescan; added skills appear beside the existing layout, while removed skills and their attached arrows leave the board. Editing a skill's content preserves its position. No skill files are changed or executed by whiteboard drawings. File-based sharing such as `skill-map.json` is not implemented.
 
 ## Optional agent identity
 

@@ -22,6 +22,10 @@ export class WorkspaceState {
   readonly client = signal<Client | "all">("all");
   readonly search = signal("");
   readonly view = signal<"graph" | "list">("graph");
+  readonly skillsView = signal<"list" | "board">("list");
+  readonly whiteboard = computed(
+    () => this.tab() === "skills" && this.skillsView() === "board",
+  );
   readonly loading = signal(false);
   readonly error = signal("");
   readonly selection = signal<Selection | null>(null);
@@ -53,7 +57,7 @@ export class WorkspaceState {
     if (this.tab() === "checklist") return "Local installation checks";
     if (this.tab() === "optimizer")
       return "Static local estimates · One selected agent";
-    const rows = this.rows();
+    const rows = this.whiteboard() ? (this.data()?.skills ?? []) : this.rows();
     const project = rows.filter((row) => row.scope === "project").length;
     const noun =
       this.tab() === "context"

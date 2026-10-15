@@ -6,6 +6,7 @@ import { collectFiles } from "./scan/collect.js";
 import { buildGraph } from "./scan/graph.js";
 import { discoverIdentity } from "./scan/identity.js";
 import { discoverMcp } from "./scan/mcp.js";
+import { skillGraph } from "./scan/skill-graph.js";
 import type { ScanEnvironment, ScanOptions, Snapshot } from "./scan/types.js";
 import { inside, slash } from "./scan/values.js";
 import { contextInventory } from "./token-estimator.js";
@@ -63,6 +64,7 @@ export async function scanProject(
     rules: [...rules.values()].sort((a, b) => a.name.localeCompare(b.name)),
     edges,
     skills: [...skills.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    skillEdges: skillGraph(entries, [...skills.values()], env),
     mcp,
     warnings: [...new Set(env.warnings)],
     limits: { includeUser, scannedFiles: inspected, truncated: capped },

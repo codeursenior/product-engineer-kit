@@ -7,6 +7,7 @@ import { titles, type Row } from "./models";
 import { OptimizationChecklist } from "./optimization-checklist";
 import { TokenOptimizer } from "./token-optimizer";
 import { Sidebar } from "./sidebar";
+import { SkillBoard } from "./skill-board";
 import { WorkspaceState } from "./workspace-state";
 
 @Component({
@@ -18,6 +19,7 @@ import { WorkspaceState } from "./workspace-state";
     Graph,
     TokenOptimizer,
     OptimizationChecklist,
+    SkillBoard,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: "app-root",

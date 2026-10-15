@@ -50,6 +50,10 @@ export interface GraphEdge {
   target: string;
   kind: "reference" | "scope";
 }
+export interface SkillEdge {
+  source: string;
+  target: string;
+}
 export interface ScanData {
   project: { name: string; path: string };
   agent?: AgentIdentity;
@@ -58,6 +62,7 @@ export interface ScanData {
   rules: Rule[];
   edges: GraphEdge[];
   skills: Skill[];
+  skillEdges: SkillEdge[];
   mcp: McpServer[];
   warnings: string[];
   limits: { includeUser: boolean; scannedFiles: number; truncated: boolean };
