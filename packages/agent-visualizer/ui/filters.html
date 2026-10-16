@@ -9,19 +9,21 @@
   </button>
   <button
     data-scope="project"
+    title="Shared with your team"
     [class.selected]="state.scope() === 'project'"
     [attr.aria-pressed]="state.scope() === 'project'"
     (click)="state.scope.set('project')"
   >
-    <i class="dot project"></i>Project (shared with your team)
+    <i class="dot project"></i>Project
   </button>
   <button
     data-scope="user"
+    title="Not shared with your team"
     [class.selected]="state.scope() === 'user'"
     [attr.aria-pressed]="state.scope() === 'user'"
     (click)="state.scope.set('user')"
   >
-    <i class="dot user"></i>On Your Machine (not shared with your team)
+    <i class="dot user"></i>On Your Machine
   </button>
 </div>
 <div class="filters">

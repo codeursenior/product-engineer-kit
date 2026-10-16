@@ -22,6 +22,13 @@ test("graph gestures, filters, keyboard focus, themes, and session reload", asyn
   await page.getByRole("button", { name: /^Context/ }).click();
   const graph = page.locator("svg.graph");
   await expect(graph).toBeVisible();
+  await expect(page.locator("#summary")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Project", exact: true }),
+  ).toHaveAttribute("title", "Shared with your team");
+  await expect(
+    page.getByRole("button", { name: "On Your Machine", exact: true }),
+  ).toHaveAttribute("title", "Not shared with your team");
   const group = graph.locator(":scope > g");
   const before = await group.getAttribute("transform");
   await page.getByRole("button", { name: "Zoom in", exact: true }).click();
@@ -72,9 +79,8 @@ test("graph gestures, filters, keyboard focus, themes, and session reload", asyn
   expect(page.url()).not.toContain("token=");
   await page.getByRole("button", { name: /^Context/ }).click();
   await page.locator('[data-scope="user"]').click();
-  await expect(page.locator("#summary")).toHaveText(
-    "1 files · 0 project · 1 user",
-  );
+  await expect(page.locator("#summary")).toHaveCount(0);
+  await expect(page.locator(".graph-node")).toHaveCount(1);
   await page.getByRole("button", { name: "Claude Code", exact: true }).click();
   await expect(page.locator("#canvas")).toContainText("No matching assets");
   expect(errors).toEqual([]);

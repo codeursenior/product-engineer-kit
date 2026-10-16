@@ -1641,3 +1641,7 @@ tbody tr:hover {
   color: #fff;
   text-decoration: underline;
 }
+
+.main-footer #updated {
+  margin-left: auto;
+}
