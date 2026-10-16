@@ -73,7 +73,7 @@ test("graph gestures, filters, keyboard focus, themes, and session reload", asyn
   await expect(page.locator("#summary")).toHaveText(
     "1 files · 0 project · 1 user",
   );
-  await page.locator("#client-filter").selectOption("claude");
+  await page.getByRole("button", { name: "Claude Code", exact: true }).click();
   await expect(page.locator("#canvas")).toContainText("No matching assets");
   expect(errors).toEqual([]);
   expect(external).toEqual([]);

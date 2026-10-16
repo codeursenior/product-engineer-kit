@@ -7,7 +7,7 @@ import {
   inject,
   signal,
 } from "@angular/core";
-import type { Client, TokenEstimate } from "../src/contracts";
+import type { TokenEstimate } from "../src/contracts";
 import { WorkspaceApi } from "./api";
 import { labels, message } from "./models";
 import { WorkspaceState } from "./workspace-state";
@@ -22,9 +22,8 @@ import { WorkspaceState } from "./workspace-state";
 export class TokenOptimizer {
   private readonly api = inject(WorkspaceApi);
   private readonly state = inject(WorkspaceState);
-  readonly clients: Client[] = ["codex", "claude", "cursor", "copilot"];
   readonly labels = labels;
-  readonly client = signal<Client>("codex");
+  readonly client = this.state.client;
   readonly model = signal("gpt-5.3-codex");
   readonly estimate = signal<TokenEstimate | null>(null);
   readonly startupEntries = computed(() =>
@@ -43,6 +42,12 @@ export class TokenOptimizer {
       onCleanup(() => {
         current = false;
       });
+      if (client === "all") {
+        this.estimate.set(null);
+        this.loading.set(false);
+        this.error.set("");
+        return;
+      }
       this.loading.set(true);
       this.error.set("");
       void this.api
@@ -57,9 +62,5 @@ export class TokenOptimizer {
           if (current) this.loading.set(false);
         });
     });
-  }
-  selectClient(value: string): void {
-    const client = this.clients.find((client) => client === value);
-    if (client) this.client.set(client);
   }
 }

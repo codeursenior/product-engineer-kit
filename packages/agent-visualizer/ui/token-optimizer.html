@@ -1,24 +1,13 @@
 <section class="optimizer" aria-label="Token Optimizer">
+  @if (client() !== 'all') {
   <div class="optimizer-controls">
-    <label for="optimizer-agent"
-      >Agent
-      <select
-        id="optimizer-agent"
-        #agentSelect
-        [value]="client()"
-        (change)="selectClient(agentSelect.value)"
-      >
-        @for (agent of clients; track agent) {
-        <option [value]="agent">{{ labels[agent] }}</option>
-        }
-      </select>
-    </label>
     <label for="optimizer-model"
       >Model for price estimate
       <select
         id="optimizer-model"
         #modelSelect
         [value]="model()"
+        [disabled]="loading() || !estimate()"
         (change)="model.set(modelSelect.value)"
       >
         @for (preset of estimate()?.models ?? []; track preset.id) {
@@ -27,7 +16,9 @@
       </select>
     </label>
   </div>
-  @if (loading()) {
+  } @if (client() === 'all') {
+  <p role="status">Select an agent below the avatar to estimate its context.</p>
+  } @else if (loading()) {
   <p role="status">Estimating context…</p>
   } @else if (error()) {
   <p role="alert">{{ error() }}</p>

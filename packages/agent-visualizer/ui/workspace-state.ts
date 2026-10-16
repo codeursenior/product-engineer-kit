@@ -1,13 +1,37 @@
-import { Injectable, computed, inject, signal } from "@angular/core";
+import { Injectable, computed, effect, inject, signal } from "@angular/core";
 import type { Client, ScanData, Scope } from "../src/contracts";
 import { WorkspaceApi } from "./api";
 import {
+  clientNames,
   filterRows,
   message,
   type Row,
   type Selection,
   type Tab,
 } from "./models";
+
+const filterStorageKey = "pek:filters:v1";
+function savedFilters(): { client: Client | "all"; scope: Scope | "all" } {
+  try {
+    const saved: unknown = JSON.parse(
+      localStorage.getItem(filterStorageKey) ?? "null",
+    );
+    if (saved && typeof saved === "object") {
+      const value = saved as Record<string, unknown>;
+      return {
+        client:
+          clientNames.find((client) => client === value["client"]) ?? "all",
+        scope:
+          value["scope"] === "project" || value["scope"] === "user"
+            ? value["scope"]
+            : "all",
+      };
+    }
+  } catch {
+    /* Ignore unavailable or invalid browser preferences. */
+  }
+  return { client: "all", scope: "all" };
+}
 
 @Injectable({ providedIn: "root" })
 export class WorkspaceState {
@@ -18,8 +42,13 @@ export class WorkspaceState {
     const tab = this.tab();
     return tab === "optimizer" || tab === "checklist" ? "context" : tab;
   });
-  readonly scope = signal<Scope | "all">("all");
-  readonly client = signal<Client | "all">("all");
+  private readonly savedFilters = savedFilters();
+  readonly scope = signal<Scope | "all">(this.savedFilters.scope);
+  readonly client = signal<Client | "all">(this.savedFilters.client);
+  readonly filterStorageError = signal("");
+  readonly boardSkills = computed(() =>
+    filterRows(this.data()?.skills ?? [], "all", this.client(), ""),
+  );
   readonly search = signal("");
   readonly view = signal<"graph" | "list">("graph");
   readonly skillsView = signal<"list" | "board">("list");
@@ -56,8 +85,10 @@ export class WorkspaceState {
     if (!this.data()) return "Reading local assets";
     if (this.tab() === "checklist") return "Local installation checks";
     if (this.tab() === "optimizer")
-      return "Static local estimates · One selected agent";
-    const rows = this.whiteboard() ? (this.data()?.skills ?? []) : this.rows();
+      return this.client() === "all"
+        ? "Select an agent to estimate context"
+        : "Static local estimates · One selected agent";
+    const rows = this.whiteboard() ? this.boardSkills() : this.rows();
     const project = rows.filter((row) => row.scope === "project").length;
     const noun =
       this.tab() === "context"
@@ -69,6 +100,17 @@ export class WorkspaceState {
   });
   constructor() {
     document.documentElement.dataset["theme"] = this.theme();
+    effect(() => {
+      const filters = { client: this.client(), scope: this.scope() };
+      try {
+        localStorage.setItem(filterStorageKey, JSON.stringify(filters));
+        this.filterStorageError.set("");
+      } catch {
+        this.filterStorageError.set(
+          "Filters could not be saved in this browser.",
+        );
+      }
+    });
   }
   async load(refresh = false): Promise<void> {
     this.loading.set(true);
@@ -85,8 +127,11 @@ export class WorkspaceState {
   }
   selectTab(tab: Tab): void {
     this.tab.set(tab);
-    this.client.set("all");
     this.search.set("");
+    this.selection.set(null);
+  }
+  toggleClient(client: Client): void {
+    this.client.update((selected) => (selected === client ? "all" : client));
     this.selection.set(null);
   }
   toggleTheme(): void {

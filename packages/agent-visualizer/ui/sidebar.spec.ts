@@ -14,6 +14,7 @@ function element<T extends HTMLElement>(selector: string): T {
   return node;
 }
 beforeEach(async () => {
+  localStorage.clear();
   scan.mockReset().mockResolvedValue(scanData());
   TestBed.configureTestingModule({
     providers: [{ provide: WorkspaceApi, useValue: { scan } }],
@@ -59,4 +60,29 @@ it("renders an avatar alone, falls back on image failure, and refreshes the iden
   await fixture.whenStable();
   expect(element(".agent-name").textContent).toBe("boyscout");
   expect(element(".brand img").getAttribute("src")).toBe("/favicon.svg");
+});
+
+it("uses one global agent toggle and links the author below the brand", async () => {
+  const codex = element<HTMLButtonElement>('[aria-label="Codex"]');
+  const claude = element<HTMLButtonElement>('[aria-label="Claude Code"]');
+  codex.click();
+  await fixture.whenStable();
+  expect(codex.getAttribute("aria-pressed")).toBe("true");
+  expect(element(".agent-filter-label").textContent).toBe("Codex");
+  element<HTMLButtonElement>('[data-tab="skills"]').click();
+  await fixture.whenStable();
+  expect(state.client()).toBe("codex");
+  claude.click();
+  await fixture.whenStable();
+  expect(codex.getAttribute("aria-pressed")).toBe("false");
+  expect(claude.getAttribute("aria-pressed")).toBe("true");
+  claude.click();
+  await fixture.whenStable();
+  expect(state.client()).toBe("all");
+  expect(element(".agent-filter-label").textContent).toBe("All agents");
+  expect(element<HTMLAnchorElement>(".brand-credit").href).toBe(
+    "https://codeursenior.substack.com/",
+  );
+  expect(element(".workspace").textContent).not.toContain("Workspace");
+  expect(element("#project-path").textContent).toBe("/example");
 });

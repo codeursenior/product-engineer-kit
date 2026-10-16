@@ -1,25 +1,58 @@
-<a class="brand" href="#">
-  @if (avatar(); as image) {
-  <img
-    class="agent-avatar"
-    [src]="image"
-    alt=""
-    width="198"
-    height="198"
-    (error)="failedAvatar.set(image)"
-  />
-  } @else {
-  <img src="/favicon.svg" alt="" width="198" height="198" />
-  }
+<div class="brand">
+  <a
+    class="agent-portrait"
+    href="#"
+    [attr.aria-label]="state.data()?.agent?.name ?? 'boyscout'"
+  >
+    @if (avatar(); as image) {
+    <img
+      class="agent-avatar"
+      [src]="image"
+      alt=""
+      width="198"
+      height="198"
+      (error)="failedAvatar.set(image)"
+    />
+    } @else {
+    <img src="/favicon.svg" alt="" width="198" height="198" />
+    }
+  </a>
+  <div class="agent-filter" role="group" aria-label="Filter by agent">
+    <div class="agent-filter-icons">
+      @for (client of clients; track client) {
+      <button
+        type="button"
+        class="client-icon"
+        [class]="'client-icon client-icon--' + client"
+        [class.selected]="state.client() === client"
+        [attr.aria-label]="labels[client]"
+        [attr.aria-pressed]="state.client() === client"
+        [title]="labels[client] + (state.client() === client ? ' · Click again to show all agents' : '')"
+        (click)="state.toggleClient(client)"
+      >
+        <img [src]="icons[client]" alt="" width="22" height="22" />
+      </button>
+      }
+    </div>
+    <span class="agent-filter-label">{{ selectedClientLabel() }}</span>
+    @if (state.filterStorageError()) {
+    <span role="status">{{ state.filterStorageError() }}</span> }
+  </div>
   <span class="brand-text"
     ><span class="agent-name" [title]="state.data()?.agent?.name ?? 'boyscout'"
       >{{ state.data()?.agent?.name ?? 'boyscout' }}</span
     ><span class="brand-sub">Agent Visualizer</span></span
   >
-</a>
+  <a
+    class="brand-credit"
+    href="https://codeursenior.substack.com/"
+    target="_blank"
+    rel="noreferrer"
+    >par @codeursenior</a
+  >
+</div>
 <div class="workspace">
-  <span class="eyebrow">Workspace</span
-  ><strong id="project-name"
+  <strong id="project-name"
     >{{ state.data()?.project?.name ?? 'Loading workspace' }}</strong
   ><span
     id="project-path"

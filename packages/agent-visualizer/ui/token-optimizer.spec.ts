@@ -4,15 +4,20 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
-import { expect, it } from "vitest";
+import { beforeEach, expect, it } from "vitest";
 import type { TokenEstimate } from "../src/contracts";
+import { WorkspaceState } from "./workspace-state";
 import { TokenOptimizer } from "./token-optimizer";
+
+beforeEach(() => localStorage.clear());
 
 it("shows startup entries only and reprices the selected agent iceberg", async () => {
   TestBed.configureTestingModule({
     providers: [provideHttpClient(), provideHttpClientTesting()],
   });
   const http = TestBed.inject(HttpTestingController);
+  const state = TestBed.inject(WorkspaceState);
+  state.toggleClient("codex");
   const fixture = TestBed.createComponent(TokenOptimizer);
   const root: HTMLElement = fixture.nativeElement;
   const model = {
@@ -87,15 +92,8 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   expect(root.textContent).not.toContain("not to scale");
   expect(root.textContent).not.toContain("Discoverable local context");
   expect(root.textContent).not.toContain("USD input prices");
-  const agent = root.querySelector<HTMLSelectElement>("#optimizer-agent")!;
-  expect([...agent.options].map((option) => option.value)).toEqual([
-    "codex",
-    "claude",
-    "cursor",
-    "copilot",
-  ]);
-  agent.value = "claude";
-  agent.dispatchEvent(new Event("change"));
+  expect(root.querySelector("#optimizer-agent")).toBeNull();
+  state.toggleClient("claude");
   await fixture.whenStable();
   http
     .expectOne((request) => request.url.includes("client=claude"))
@@ -124,5 +122,22 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   expect(root.querySelector("tbody")?.textContent).not.toContain(
     "linked-guide.md",
   );
+  state.toggleClient("claude");
+  await fixture.whenStable();
+  expect(root.textContent).toContain("Select an agent below the avatar");
+  expect(root.querySelector("tbody")).toBeNull();
+  http.verify();
+});
+
+it("asks for an agent without requesting a combined estimate in all mode", async () => {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  const http = TestBed.inject(HttpTestingController);
+  const fixture = TestBed.createComponent(TokenOptimizer);
+  await fixture.whenStable();
+  const root: HTMLElement = fixture.nativeElement;
+  expect(root.textContent).toContain("Select an agent below the avatar");
+  http.expectNone((request) => request.url.includes("token-estimate"));
   http.verify();
 });

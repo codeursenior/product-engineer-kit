@@ -77,7 +77,10 @@
   <strong>{{ item.name }}</strong>
   <button type="button" (click)="selected.emit(item)">Open skill</button>
   } @else {
-  <span>All skills stay visible, including those outside your workflow.</span>
+  <span
+    >{{ client() === 'all' ? 'All agents · All skills' : 'Skills discoverable by
+    the selected agent' }}</span
+  >
   }
   <span class="board-save" role="status"
     >{{ state().restoreError || storageError() || 'Saved locally for this
@@ -131,7 +134,7 @@
       >
         <title>Explicit reference from SKILL.md (read only)</title>
       </path>
-      } @for (edge of board().arrows; track edge.id) {
+      } @for (edge of drawings(); track edge.id) {
       <g
         class="board-arrow"
         data-board-item="arrow"
@@ -221,7 +224,9 @@
   </div>
   @if (!cards().length) {
   <p class="board-empty">
-    Add a SKILL.md in an agent skills folder, then Rescan.
+    {{ skills().length ? 'No skills found for the selected agent. Select another
+    agent or click it again to show all.' : 'Add a SKILL.md in an agent skills
+    folder, then Rescan.' }}
   </p>
   }
 </div>

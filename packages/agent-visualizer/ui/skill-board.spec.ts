@@ -1,5 +1,6 @@
 import { TestBed } from "@angular/core/testing";
 import { beforeEach, expect, it, vi } from "vitest";
+import { boardStorageKey } from "./skill-board-model";
 import { SkillBoard } from "./skill-board";
 import { skill } from "./test-data";
 
@@ -146,4 +147,51 @@ it("keeps both cards when identical copies become different skills", async () =>
   fixture.destroy();
   const reopened = await open();
   expect(reopened.element.querySelectorAll(".board-card")).toHaveLength(1);
+});
+
+it("filters skills and both arrow types without losing saved positions or drawings", async () => {
+  const { fixture, element } = await open();
+  const other = {
+    ...structuredClone(skill),
+    id: "claude-skill",
+    name: "claude-only",
+    clients: ["claude"] as const,
+    editTargets: [
+      {
+        id: "claude-file",
+        path: ".claude/skills/only/SKILL.md",
+        deletable: true,
+      },
+    ],
+  };
+  fixture.componentRef.setInput("skills", [
+    structuredClone(skill),
+    { ...other, clients: [...other.clients] },
+  ]);
+  fixture.componentRef.setInput("edges", [
+    { source: skill.id, target: other.id },
+  ]);
+  await fixture.whenStable();
+  const board = fixture.componentInstance;
+  const first = board.cards().find((card) => card.skill.id === skill.id)!;
+  const second = board.cards().find((card) => card.skill.id === other.id)!;
+  board.toggleConnect();
+  board.choose("skill", first.key);
+  board.choose("skill", second.key);
+  await fixture.whenStable();
+  const saved = localStorage.getItem(boardStorageKey("/example"));
+  expect(element.querySelectorAll(".board-arrow")).toHaveLength(1);
+  expect(element.querySelectorAll(".board-reference")).toHaveLength(1);
+  fixture.componentRef.setInput("client", "codex");
+  await fixture.whenStable();
+  expect(element.querySelectorAll(".board-card")).toHaveLength(1);
+  expect(element.querySelectorAll(".board-arrow")).toHaveLength(0);
+  expect(element.querySelectorAll(".board-reference")).toHaveLength(0);
+  expect(localStorage.getItem(boardStorageKey("/example"))).toBe(saved);
+  fixture.componentRef.setInput("client", "all");
+  await fixture.whenStable();
+  expect(element.querySelectorAll(".board-card")).toHaveLength(2);
+  expect(element.querySelectorAll(".board-arrow")).toHaveLength(1);
+  expect(element.querySelectorAll(".board-reference")).toHaveLength(1);
+  expect(board.cards().find((card) => card.key === first.key)?.x).toBe(first.x);
 });

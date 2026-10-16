@@ -10,7 +10,7 @@ import {
   output,
   signal,
 } from "@angular/core";
-import type { Skill, SkillEdge } from "../src/contracts";
+import type { Client, Skill, SkillEdge } from "../src/contracts";
 import {
   anchor,
   boardStorageKey,
@@ -38,6 +38,7 @@ export class SkillBoard {
   readonly ends = ["source", "target"] as const;
   readonly project = input.required<string>();
   readonly skills = input.required<Skill[]>();
+  readonly client = input<Client | "all">("all");
   readonly edges = input.required<SkillEdge[]>();
   readonly selected = output<Skill>();
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -85,7 +86,10 @@ export class SkillBoard {
       const skill = this.skills().find((skill) =>
         skill.editTargets.some((file) => node.files.includes(file.id)),
       );
-      return skill ? [{ ...node, skill }] : [];
+      const client = this.client();
+      return skill && (client === "all" || skill.clients.includes(client))
+        ? [{ ...node, skill }]
+        : [];
     }),
   );
   readonly automatic = computed(() =>
@@ -97,8 +101,14 @@ export class SkillBoard {
         : [];
     }),
   );
+  readonly drawings = computed(() => {
+    const keys = new Set(this.cards().map((card) => card.key));
+    return this.board().arrows.filter(
+      (arrow) => keys.has(arrow.source) && keys.has(arrow.target),
+    );
+  });
   readonly arrow = computed(() =>
-    this.board().arrows.find(
+    this.drawings().find(
       (arrow) =>
         this.selection()?.kind === "arrow" && arrow.id === this.selection()?.id,
     ),
@@ -247,7 +257,7 @@ export class SkillBoard {
   private svg(): SVGSVGElement | null {
     return this.element.nativeElement.querySelector("svg.board-surface");
   }
-  private client(event: PointerEvent): Point {
+  private screenPoint(event: PointerEvent): Point {
     return { x: event.clientX, y: event.clientY };
   }
   private world(event: PointerEvent): Point {
@@ -268,7 +278,7 @@ export class SkillBoard {
     this.gesture = {
       kind,
       id,
-      start: this.client(event),
+      start: this.screenPoint(event),
       origin: { x: item.x, y: item.y },
     };
     this.svg()?.setPointerCapture(event.pointerId);
@@ -294,7 +304,7 @@ export class SkillBoard {
       return;
     this.gesture = {
       kind: "pan",
-      start: this.client(event),
+      start: this.screenPoint(event),
       origin: this.pan(),
     };
     this.svg()?.setPointerCapture(event.pointerId);
@@ -403,7 +413,7 @@ export class SkillBoard {
     this.zoom(event.deltaY > 0 ? 0.9 : 1.1);
   }
   fit(): void {
-    const items = [...this.board().nodes, ...this.board().titles];
+    const items = [...this.cards(), ...this.board().titles];
     if (!items.length) return;
     const left = Math.min(...items.map((item) => item.x)) - 40;
     const top = Math.min(...items.map((item) => item.y)) - 40;

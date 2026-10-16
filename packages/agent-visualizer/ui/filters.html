@@ -25,19 +25,6 @@
   </button>
 </div>
 <div class="filters">
-  <select
-    id="client-filter"
-    aria-label="Filter by client"
-    [value]="state.client()"
-    #clientFilter
-    (change)="client(clientFilter.value)"
-  >
-    <option value="all">All clients</option>
-    <option value="cursor">Cursor</option>
-    <option value="claude">Claude Code</option>
-    <option value="codex">Codex</option>
-    <option value="copilot">GitHub Copilot</option>
-  </select>
   <label class="search"
     >⌕<input
       id="search"

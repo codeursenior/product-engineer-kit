@@ -14,13 +14,16 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto(session.url);
+  await page.getByRole("button", { name: "Codex", exact: true }).click();
   await page
     .getByRole("button", { name: "Token Optimizer", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Estimated startup context" }),
   ).toBeVisible();
-  await expect(page.locator("#optimizer-agent")).toHaveValue("codex");
+  await expect(
+    page.getByRole("button", { name: "Codex", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#optimizer-model")).toHaveValue("gpt-5.3-codex");
   await expect(page.getByRole("checkbox", { name: "Install RTK" })).toHaveCount(
     0,
@@ -43,7 +46,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     path: ".local/token-optimizer-light.png",
     fullPage: true,
   });
-  await page.locator("#optimizer-agent").selectOption("claude");
+  await page.getByRole("button", { name: "Claude Code", exact: true }).click();
   await expect(page.locator("tbody")).toContainText("review");
   await expect(page.locator("tbody")).not.toContainText("style.md");
   await expect(page.locator("tbody")).not.toContainText("AGENTS.md");
@@ -106,5 +109,29 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await expect(
     page.getByRole("textbox", { name: "Search assets" }),
   ).toBeVisible();
+  const claude = page.getByRole("button", { name: "Claude Code", exact: true });
+  await expect(claude).toHaveAttribute("aria-pressed", "true");
+  await page.reload();
+  await expect(claude).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Skills", exact: false }).click();
+  await page.getByRole("button", { name: "Whiteboard", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Skill review", exact: true }),
+  ).toBeVisible();
+  await expect(claude).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("button", { name: "Token Optimizer", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Estimated startup context" }),
+  ).toBeVisible();
+  await claude.click();
+  await expect(claude).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("status")).toContainText(
+    "Select an agent below the avatar",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Estimated startup context" }),
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });

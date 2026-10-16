@@ -24,16 +24,16 @@ it("combines scope, client and text filters and reports the visible counts", asy
   state.client.set("claude");
   expect(state.rows()).toEqual([]);
 });
-it("resets search, client and selection on a tab change while retaining scope and view", async () => {
+it("resets search and selection on a tab change while retaining agent, scope and view", async () => {
   const state = TestBed.inject(WorkspaceState);
   await state.load();
   state.scope.set("project");
   state.view.set("list");
   state.search.set("missing");
-  state.client.set("cursor");
+  state.client.set("codex");
   state.selectTab("skills");
   expect(state.search()).toBe("");
-  expect(state.client()).toBe("all");
+  expect(state.client()).toBe("codex");
   expect(state.scope()).toBe("project");
   expect(state.view()).toBe("list");
   expect(state.rows()).toHaveLength(1);
@@ -63,4 +63,51 @@ it("persists the theme and restores it in a new state service", () => {
     providers: [{ provide: WorkspaceApi, useValue: { scan } }],
   });
   expect(TestBed.inject(WorkspaceState).theme()).toBe("dark");
+});
+
+it("persists agent and scope across reloads and allows returning to all agents", () => {
+  const state = TestBed.inject(WorkspaceState);
+  state.toggleClient("codex");
+  state.scope.set("user");
+  TestBed.tick();
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({
+    providers: [{ provide: WorkspaceApi, useValue: { scan } }],
+  });
+  const restored = TestBed.inject(WorkspaceState);
+  expect(restored.client()).toBe("codex");
+  expect(restored.scope()).toBe("user");
+  restored.toggleClient("claude");
+  expect(restored.client()).toBe("claude");
+  restored.toggleClient("claude");
+  expect(restored.client()).toBe("all");
+  TestBed.tick();
+  expect(JSON.parse(localStorage.getItem("pek:filters:v1")!).client).toBe(
+    "all",
+  );
+});
+it("falls back to all for corrupt or unsupported saved filters", () => {
+  localStorage.setItem("pek:filters:v1", "{broken");
+  expect(TestBed.inject(WorkspaceState).client()).toBe("all");
+  TestBed.resetTestingModule();
+  localStorage.setItem(
+    "pek:filters:v1",
+    JSON.stringify({ client: "unknown", scope: "missing" }),
+  );
+  TestBed.configureTestingModule({
+    providers: [{ provide: WorkspaceApi, useValue: { scan } }],
+  });
+  const state = TestBed.inject(WorkspaceState);
+  expect(state.client()).toBe("all");
+  expect(state.scope()).toBe("all");
+});
+it("filters the whiteboard summary by the global agent", async () => {
+  const state = TestBed.inject(WorkspaceState);
+  await state.load();
+  state.selectTab("skills");
+  state.skillsView.set("board");
+  state.toggleClient("claude");
+  expect(state.summary()).toBe("0 skills · 0 project · 0 user");
+  state.toggleClient("codex");
+  expect(state.summary()).toBe("1 skills · 1 project · 0 user");
 });

@@ -67,6 +67,7 @@
     <app-skill-board
       [project]="data.project.path"
       [skills]="data.skills"
+      [client]="state.client()"
       [edges]="data.skillEdges"
       (selected)="select($event)"
     />

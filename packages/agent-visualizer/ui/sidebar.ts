@@ -5,7 +5,14 @@ import {
   inject,
   signal,
 } from "@angular/core";
-import type { Tab } from "./models";
+import {
+  clientNames,
+  icons,
+  labels,
+  filterRows,
+  type Row,
+  type Tab,
+} from "./models";
 import { WorkspaceState } from "./workspace-state";
 
 @Component({
@@ -16,6 +23,13 @@ import { WorkspaceState } from "./workspace-state";
 })
 export class Sidebar {
   readonly state = inject(WorkspaceState);
+  readonly clients = clientNames;
+  readonly icons = icons;
+  readonly labels = labels;
+  readonly selectedClientLabel = computed(() => {
+    const client = this.state.client();
+    return client === "all" ? "All agents" : labels[client];
+  });
   readonly failedAvatar = signal<string | undefined>(undefined);
   readonly avatar = computed(() => {
     const avatar = this.state.data()?.agent?.avatar;
@@ -32,7 +46,14 @@ export class Sidebar {
   count(tab: Tab): number {
     if (tab === "optimizer" || tab === "checklist") return 0;
     const data = this.state.data();
-    return data ? (tab === "context" ? data.nodes : data[tab]).length : 0;
+    return data
+      ? filterRows<Row>(
+          tab === "context" ? data.nodes : data[tab],
+          "all",
+          this.state.client(),
+          "",
+        ).length
+      : 0;
   }
   refresh(): void {
     this.state.selection.set(null);
