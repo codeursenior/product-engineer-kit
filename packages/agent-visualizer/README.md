@@ -20,6 +20,8 @@ Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek aud
 
 ## Explore
 
+Rules and Optimization checklist are temporarily hidden from navigation.
+
 - **Agent filter:** select one client using the icons below the avatar. The same selection applies to Context, Rules, Skills (including Whiteboard), MCP servers, and Token Optimizer. Click the selected icon again to show all agents. Agent and project/user scope filters are restored from localStorage in this browser.
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.
 - **Rules:** searchable list of dedicated Cursor, Claude Code, and GitHub Copilot instruction files, with source paths, declared file conditions, client discovery, and previews. Metadata does not prove a rule loaded in a session.

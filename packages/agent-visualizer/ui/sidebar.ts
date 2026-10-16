@@ -26,10 +26,6 @@ export class Sidebar {
   readonly clients = clientNames;
   readonly icons = icons;
   readonly labels = labels;
-  readonly selectedClientLabel = computed(() => {
-    const client = this.state.client();
-    return client === "all" ? "All agents" : labels[client];
-  });
   readonly failedAvatar = signal<string | undefined>(undefined);
   readonly avatar = computed(() => {
     const avatar = this.state.data()?.agent?.avatar;
@@ -37,11 +33,9 @@ export class Sidebar {
   });
   readonly tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "context", label: "Context", icon: "⌘" },
-    { id: "rules", label: "Rules", icon: "▤" },
     { id: "skills", label: "Skills", icon: "✧" },
     { id: "mcp", label: "MCP servers", icon: "⎇" },
     { id: "optimizer", label: "Token Optimizer", icon: "≈" },
-    { id: "checklist", label: "Optimization checklist", icon: "☷" },
   ];
   count(tab: Tab): number {
     if (tab === "optimizer" || tab === "checklist") return 0;

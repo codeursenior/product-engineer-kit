@@ -62,13 +62,13 @@ it("renders an avatar alone, falls back on image failure, and refreshes the iden
   expect(element(".brand img").getAttribute("src")).toBe("/favicon.svg");
 });
 
-it("uses one global agent toggle and links the author below the brand", async () => {
+it("uses named agent toggles and links the author below the sidebar controls", async () => {
   const codex = element<HTMLButtonElement>('[aria-label="Codex"]');
   const claude = element<HTMLButtonElement>('[aria-label="Claude Code"]');
   codex.click();
   await fixture.whenStable();
   expect(codex.getAttribute("aria-pressed")).toBe("true");
-  expect(element(".agent-filter-label").textContent).toBe("Codex");
+  expect(codex.title).toBe("Codex");
   element<HTMLButtonElement>('[data-tab="skills"]').click();
   await fixture.whenStable();
   expect(state.client()).toBe("codex");
@@ -79,7 +79,13 @@ it("uses one global agent toggle and links the author below the brand", async ()
   claude.click();
   await fixture.whenStable();
   expect(state.client()).toBe("all");
-  expect(element(".agent-filter-label").textContent).toBe("All agents");
+  const root: HTMLElement = fixture.nativeElement;
+  expect(root.querySelector(".agent-filter-label")).toBeNull();
+  expect(root.querySelector('[data-tab="rules"]')).toBeNull();
+  expect(root.querySelector('[data-tab="checklist"]')).toBeNull();
+  expect(element(".sidebar-rescan").nextElementSibling).toBe(
+    element(".brand-credit"),
+  );
   expect(element<HTMLAnchorElement>(".brand-credit").href).toBe(
     "https://codeursenior.substack.com/",
   );

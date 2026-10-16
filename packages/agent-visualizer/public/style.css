@@ -1566,11 +1566,11 @@ tbody tr:hover {
 .agent-filter-icons {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
 }
 .agent-filter .client-icon {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   border: 2px solid transparent;
   background: #f7f5f1;
@@ -1586,17 +1586,22 @@ tbody tr:hover {
   box-shadow: 0 0 0 2px #b5d3a340;
 }
 .agent-filter .client-icon img {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border-radius: 0;
   aspect-ratio: auto;
 }
 .agent-filter .client-icon--codex img {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
+}
+.sidebar-rescan {
+  margin-bottom: 10px;
 }
 .brand-credit {
-  margin-top: -6px;
+  align-self: center;
+  text-align: center;
+  margin: 0;
   color: #b9c0b8;
   font-size: 11px;
   font-weight: 450;

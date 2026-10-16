@@ -33,11 +33,9 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   const nav = page.getByRole("navigation", { name: "Views" });
   await expect(nav.getByRole("button")).toHaveText([
     /Context/,
-    /Rules/,
     /Skills/,
     /MCP servers/,
     /Token Optimizer/,
-    /Optimization checklist/,
   ]);
   await expect(
     page.getByRole("textbox", { name: "Search assets" }),
@@ -81,30 +79,12 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     path: ".local/token-optimizer-mobile.png",
     fullPage: true,
   });
-  await page
-    .getByRole("button", { name: "Optimization checklist", exact: true })
-    .click();
   await expect(
-    page.getByRole("checkbox", { name: "Install RTK" }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("heading", { name: "Estimated startup context" }),
+    nav.getByRole("button", { name: "Rules", exact: false }),
   ).toHaveCount(0);
   await expect(
-    page.getByRole("textbox", { name: "Search assets" }),
+    nav.getByRole("button", { name: "Optimization checklist", exact: true }),
   ).toHaveCount(0);
-  await expect(page.locator("#summary")).toHaveText(
-    "Local installation checks",
-  );
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBe(true);
-  await page.screenshot({
-    path: ".local/optimization-checklist-mobile.png",
-    fullPage: true,
-  });
   await page.getByRole("button", { name: "Context", exact: false }).click();
   await expect(
     page.getByRole("textbox", { name: "Search assets" }),

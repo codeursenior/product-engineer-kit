@@ -27,14 +27,13 @@
         [class.selected]="state.client() === client"
         [attr.aria-label]="labels[client]"
         [attr.aria-pressed]="state.client() === client"
-        [title]="labels[client] + (state.client() === client ? ' · Click again to show all agents' : '')"
+        [title]="labels[client]"
         (click)="state.toggleClient(client)"
       >
-        <img [src]="icons[client]" alt="" width="22" height="22" />
+        <img [src]="icons[client]" alt="" width="18" height="18" />
       </button>
       }
     </div>
-    <span class="agent-filter-label">{{ selectedClientLabel() }}</span>
     @if (state.filterStorageError()) {
     <span role="status">{{ state.filterStorageError() }}</span> }
   </div>
@@ -42,13 +41,6 @@
     ><span class="agent-name" [title]="state.data()?.agent?.name ?? 'boyscout'"
       >{{ state.data()?.agent?.name ?? 'boyscout' }}</span
     ><span class="brand-sub">Agent Visualizer</span></span
-  >
-  <a
-    class="brand-credit"
-    href="https://codeursenior.substack.com/"
-    target="_blank"
-    rel="noreferrer"
-    >par @codeursenior</a
   >
 </div>
 <div class="workspace">
@@ -101,3 +93,11 @@
     {{ state.theme() === 'dark' ? '☀' : '☾' }}
   </button>
 </div>
+
+<a
+  class="brand-credit"
+  href="https://codeursenior.substack.com/"
+  target="_blank"
+  rel="noreferrer"
+  >Par @codeursenior</a
+>
