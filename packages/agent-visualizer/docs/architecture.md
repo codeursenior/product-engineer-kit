@@ -36,7 +36,7 @@ Behavior was checked against official documentation on 2026-09-30. Runtime behav
 - [Codex MCP](https://developers.openai.com/codex/mcp/): TOML server definitions and project/user configuration.
 - [Claude Code skills](https://code.claude.com/docs/en/skills): `.claude/skills`, invocation metadata, and nested discovery.
 - [Claude Code MCP](https://code.claude.com/docs/en/mcp): `.mcp.json` plus user and project-local entries in `~/.claude.json`.
-- [Cursor skills](https://cursor.com/docs/skills): `.agents/skills`, `.cursor/skills`, and compatibility with Claude/Codex directories.
+- [Cursor skills](https://cursor.com/docs/skills): `.agents/skills`, `.cursor/skills`, and compatibility with Claude/Codex directories. Exclude Codex internal `.codex/skills/.system/` skills from Cursor discovery; [Cursor identified this import as a bug](https://forum.cursor.com/t/i-installed-codex-and-cursor-is-adding-to-the-system-prompt-codex-specific-skills/155112).
 - [Cursor MCP](https://cursor.com/docs/context/model-context-protocol): `.cursor/mcp.json` project/user configuration.
 - [Cursor rules](https://cursor.com/docs/context/rules): `.cursor/rules` and legacy `.cursorrules`.
 - [Cursor rules help](https://prod.cursor.com/help/customization/rules): project-root `AGENTS.md` and `CLAUDE.md` are both read by Cursor.

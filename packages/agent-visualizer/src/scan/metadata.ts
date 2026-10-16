@@ -17,6 +17,8 @@ export const ruleClient = (file: string): Client | null => {
   return null;
 };
 export const toolsForSkill = (p: string): Client[] => {
+  // Bundled Codex skills are not part of Cursor's third-party skill import.
+  if (/(^|\/)\.codex\/skills\/\.system\//.test(p)) return ["codex"];
   const result: Client[] = [];
   if (/(^|\/)\.(agents|cursor|claude|codex)\/skills\//.test(p))
     result.push("cursor");

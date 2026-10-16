@@ -73,3 +73,21 @@ describe("metadata normalization", () => {
     ]);
   });
 });
+
+it("keeps Codex internal system skills exclusive without disabling shared legacy skills", () => {
+  for (const name of [
+    "imagegen",
+    "openai-docs",
+    "review-agent",
+    "skill-creator",
+    "skill-installer",
+  ]) {
+    expect(
+      toolsForSkill(`/home/.codex/skills/.system/${name}/SKILL.md`),
+    ).toEqual(["codex"]);
+  }
+  expect(toolsForSkill("/home/.codex/skills/review/SKILL.md")).toEqual([
+    "cursor",
+    "codex",
+  ]);
+});

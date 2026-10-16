@@ -420,3 +420,33 @@ test("does not guess ambiguous wikilinks", async (t) => {
   await write(path.join(root, "b/Note.md"), "B");
   assert.equal((await scan()).data.edges.length, 0);
 });
+
+test("attributes bundled Codex system skills only to Codex while keeping ordinary skills shared", async (t) => {
+  const { home, write, scan } = await fixture(t);
+  const names = [
+    "imagegen",
+    "openai-docs",
+    "review-agent",
+    "skill-creator",
+    "skill-installer",
+  ];
+  for (const name of names)
+    await write(
+      path.join(home, `.codex/skills/.system/${name}/SKILL.md`),
+      `---\nname: ${name}\n---\nInternal skill`,
+    );
+  await write(
+    path.join(home, ".codex/skills/shared/SKILL.md"),
+    "---\nname: shared\n---\nShared skill",
+  );
+  const { data } = await scan();
+  for (const name of names)
+    assert.deepEqual(
+      required(data.skills.find((skill) => skill.name === name)).clients,
+      ["codex"],
+    );
+  assert.deepEqual(
+    required(data.skills.find((skill) => skill.name === "shared")).clients,
+    ["cursor", "codex"],
+  );
+});
