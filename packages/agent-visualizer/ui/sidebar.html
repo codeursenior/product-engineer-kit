@@ -2,7 +2,8 @@
   <a
     class="agent-portrait"
     href="#"
-    [attr.aria-label]="state.data()?.agent?.name ?? 'boyscout'"
+    [attr.aria-label]="'Home · ' + agentName()"
+    (click)="state.selectTab('optimizer')"
   >
     @if (avatar(); as image) {
     <img
@@ -37,21 +38,24 @@
     @if (state.filterStorageError()) {
     <span role="status">{{ state.filterStorageError() }}</span> }
   </div>
-  <span class="brand-text"
-    ><span class="agent-name" [title]="state.data()?.agent?.name ?? 'boyscout'"
-      >{{ state.data()?.agent?.name ?? 'boyscout' }}</span
-    ><span class="brand-sub">Agent Visualizer</span></span
-  >
-</div>
-<div class="workspace">
-  <strong id="project-name"
-    >{{ state.data()?.project?.name ?? 'Loading workspace' }}</strong
-  ><span
-    id="project-path"
-    class="mono"
-    [title]="state.data()?.project?.path ?? ''"
-    >{{ state.data()?.project?.path }}</span
-  >
+  <div class="brand-text">
+    <a
+      class="agent-name"
+      href="#"
+      [title]="agentName()"
+      (click)="state.selectTab('optimizer')"
+      >{{ agentName() }}</a
+    >
+    <span class="brand-sub">Agent Visualizer</span>
+    <a
+      id="project-path"
+      class="factory-path mono"
+      href="#"
+      [title]="state.data()?.project?.path ?? ''"
+      (click)="state.selectTab('optimizer')"
+      >{{ state.data()?.project?.path }}</a
+    >
+  </div>
 </div>
 <nav aria-label="Views">
   @for (tab of tabs; track tab.id) {

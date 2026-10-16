@@ -20,7 +20,7 @@ Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek aud
 
 ## Explore
 
-Rules and Optimization checklist are temporarily hidden from navigation.
+Token Optimizer is the home page. Return to it by clicking the avatar, agent name, or factory path. Rules and Optimization checklist are temporarily hidden from navigation.
 
 - **Agent filter:** select one client using the icons below the avatar. The same selection applies to Context, Rules, Skills (including Whiteboard), MCP servers, and Token Optimizer. Click the selected icon again to show all agents. Agent and project/user scope filters are restored from localStorage in this browser.
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.
@@ -62,7 +62,7 @@ Give the agent a name and avatar in the sidebar by adding either or both files t
 
 Use `AVATAR.png` or `AVATAR.jpeg` for the image, up to 2 MiB. The file signature must match its extension. PNG takes priority when both files pass those checks. The image is cropped to a circle; if the browser cannot decode it, the default icon remains.
 
-These are optional, independent settings: without a valid name, the sidebar still says **boyscout**; without an avatar, it keeps its default icon. The workspace name and path stay unchanged. Click **Rescan** after adding, changing or removing either file.
+These are optional, independent settings: without a valid name, the sidebar uses the scanned folder name with its first letter capitalized; without an avatar, it keeps its default icon. The factory path appears below Agent Visualizer. Click **Rescan** after adding, changing or removing either file.
 
 This is an internal Agent Visualizer convention, not an ecosystem standard or a configuration for other coding agents. Only `.agents/` directly under the selected root is used, with the exact filenames above; nested projects and home-directory identities are not inherited. Symlinks outside the selected project are ignored. Images are delivered with the authenticated scan, without an external image request or a public file route.
 
@@ -132,4 +132,4 @@ MIT © Simon Dieny. Independent project, not affiliated with Cursor, Anthropic, 
 
 ## Token Optimizer
 
-Select an agent below the avatar, then open **Token Optimizer** to estimate that agent’s startup and on-demand context, compare one-load input costs using maintained model presets, and inspect the largest files and skills. The RTK checklist detects installation and provides manual installation instructions. These are static local estimates, not session usage or spending. See [the estimation method and limits](docs/token-optimizer.md).
+Select an agent below the avatar, then return to the home page to estimate that agent’s startup and on-demand context, compare one-load input costs using maintained model presets, and inspect the largest files and skills. The RTK checklist detects installation and provides manual installation instructions. These are static local estimates, not session usage or spending. See [the estimation method and limits](docs/token-optimizer.md).

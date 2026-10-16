@@ -26,6 +26,14 @@ export class Sidebar {
   readonly clients = clientNames;
   readonly icons = icons;
   readonly labels = labels;
+  readonly agentName = computed(() => {
+    const data = this.state.data();
+    if (data?.agent?.name) return data.agent.name;
+    const folder = data?.project.name;
+    return folder
+      ? folder.charAt(0).toUpperCase() + folder.slice(1)
+      : "Loading…";
+  });
   readonly failedAvatar = signal<string | undefined>(undefined);
   readonly avatar = computed(() => {
     const avatar = this.state.data()?.agent?.avatar;
@@ -35,7 +43,6 @@ export class Sidebar {
     { id: "context", label: "Context", icon: "⌘" },
     { id: "skills", label: "Skills", icon: "✧" },
     { id: "mcp", label: "MCP servers", icon: "⎇" },
-    { id: "optimizer", label: "Token Optimizer", icon: "≈" },
   ];
   count(tab: Tab): number {
     if (tab === "optimizer" || tab === "checklist") return 0;

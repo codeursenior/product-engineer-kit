@@ -19,6 +19,7 @@ test("graph gestures, filters, keyboard focus, themes, and session reload", asyn
       external.push(req.url());
   });
   await page.goto(session.url);
+  await page.getByRole("button", { name: /^Context/ }).click();
   const graph = page.locator("svg.graph");
   await expect(graph).toBeVisible();
   const group = graph.locator(":scope > g");
@@ -67,8 +68,9 @@ test("graph gestures, filters, keyboard focus, themes, and session reload", asyn
   await page.getByRole("button", { name: "Switch to dark mode" }).click();
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await expect(page.locator("#project-name")).toHaveText("project");
+  await expect(page.locator(".agent-name")).toHaveText("Project");
   expect(page.url()).not.toContain("token=");
+  await page.getByRole("button", { name: /^Context/ }).click();
   await page.locator('[data-scope="user"]').click();
   await expect(page.locator("#summary")).toHaveText(
     "1 files · 0 project · 1 user",
@@ -89,7 +91,8 @@ test("edit, revision conflict, delete confirmation, and rescan use the real file
   const original = await fs.readFile(target, "utf8");
   try {
     await page.goto(session.url);
-    await expect(page.locator("#project-name")).toHaveText("project");
+    await page.getByRole("button", { name: /^Context/ }).click();
+    await expect(page.locator(".agent-name")).toHaveText("Project");
     await page.locator("#list-view").click();
     await page
       .getByRole("button", { name: "architecture.md", exact: true })

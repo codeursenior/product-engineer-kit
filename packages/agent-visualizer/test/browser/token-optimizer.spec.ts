@@ -14,10 +14,14 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto(session.url);
+  await expect(
+    page.getByRole("heading", { name: "Your context iceberg.", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Token Optimizer", exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Codex", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Token Optimizer", exact: true })
-    .click();
+  await page.locator(".agent-portrait").click();
   await expect(
     page.getByRole("heading", { name: "Estimated startup context" }),
   ).toBeVisible();
@@ -35,7 +39,6 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     /Context/,
     /Skills/,
     /MCP servers/,
-    /Token Optimizer/,
   ]);
   await expect(
     page.getByRole("textbox", { name: "Search assets" }),
@@ -99,12 +102,18 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     page.getByRole("button", { name: "Skill review", exact: true }),
   ).toBeVisible();
   await expect(claude).toHaveAttribute("aria-pressed", "true");
-  await page
-    .getByRole("button", { name: "Token Optimizer", exact: true })
-    .click();
+  await page.locator(".agent-portrait").click();
   await expect(
     page.getByRole("heading", { name: "Estimated startup context" }),
   ).toBeVisible();
+  for (const selector of [".agent-portrait", ".agent-name", "#project-path"]) {
+    await page.getByRole("button", { name: /^Context/ }).click();
+    await page.locator(selector).click();
+    await expect(
+      page.getByRole("heading", { name: "Your context iceberg.", exact: true }),
+    ).toBeVisible();
+    await expect(claude).toHaveAttribute("aria-pressed", "true");
+  }
   await claude.click();
   await expect(claude).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("status")).toContainText(

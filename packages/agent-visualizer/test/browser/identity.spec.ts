@@ -11,7 +11,7 @@ test("optional identity renders local images and refreshes independently with sa
   const name = path.join(session.root, ".agents/NAME.md");
   const png = path.join(session.root, ".agents/AVATAR.png");
   const jpeg = path.join(session.root, ".agents/AVATAR.jpeg");
-  const avatar = page.locator(".brand img");
+  const avatar = page.locator(".agent-portrait img");
   const label = page.locator(".agent-name");
   const rescan = async () => {
     await page.getByRole("button", { name: "Rescan" }).click();
@@ -19,7 +19,7 @@ test("optional identity renders local images and refreshes independently with sa
   };
   try {
     await page.goto(session.url);
-    await expect(label).toHaveText("boyscout");
+    await expect(label).toHaveText("Project");
     await expect(avatar).toHaveAttribute("src", "/favicon.svg");
     await fs.writeFile(name, "# Atlas");
     await rescan();
@@ -39,7 +39,7 @@ test("optional identity renders local images and refreshes independently with sa
     await fs.unlink(png);
     await fs.copyFile("public/mountain-context.jpg", jpeg);
     await rescan();
-    await expect(label).toHaveText("boyscout");
+    await expect(label).toHaveText("Project");
     await expect(avatar).toHaveAttribute("src", /^data:image\/jpeg;base64,/);
     await expect
       .poll(() => avatar.evaluate((img: HTMLImageElement) => img.naturalWidth))
@@ -50,9 +50,9 @@ test("optional identity renders local images and refreshes independently with sa
     await fs.unlink(png);
     await fs.unlink(jpeg);
     await rescan();
-    await expect(label).toHaveText("boyscout");
+    await expect(label).toHaveText("Project");
     await expect(avatar).toHaveAttribute("src", "/favicon.svg");
-    await expect(page.locator("#project-name")).toHaveText("project");
+    await expect(page.locator("#project-name")).toHaveCount(0);
   } finally {
     for (const file of [name, png, jpeg]) await fs.rm(file, { force: true });
     const url = new URL(session.url);

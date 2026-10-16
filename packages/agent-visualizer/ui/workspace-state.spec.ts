@@ -15,6 +15,7 @@ beforeEach(() => {
 it("combines scope, client and text filters and reports the visible counts", async () => {
   const state = TestBed.inject(WorkspaceState);
   await state.load();
+  state.selectTab("context");
   expect(state.rows()).toHaveLength(2);
   state.scope.set("project");
   state.client.set("codex");

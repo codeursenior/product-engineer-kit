@@ -24,10 +24,11 @@ beforeEach(async () => {
   fixture = TestBed.createComponent(Sidebar);
   await fixture.whenStable();
 });
-it("preserves the default brand and workspace when identity is absent", () => {
-  expect(element(".agent-name").textContent).toBe("boyscout");
+it("uses the capitalized folder name when identity is absent", () => {
+  expect(element(".agent-name").textContent).toBe("Example");
   expect(element(".brand img").getAttribute("src")).toBe("/favicon.svg");
-  expect(element("#project-name").textContent).toBe("example");
+  const root: HTMLElement = fixture.nativeElement;
+  expect(root.querySelector("#project-name")).toBeNull();
 });
 it("renders a name as text independently from the avatar", async () => {
   const name = "<img src=x onerror=alert(1)>";
@@ -41,7 +42,7 @@ it("renders an avatar alone, falls back on image failure, and refreshes the iden
   const avatar = "data:image/png;base64,aW1hZ2U=";
   state.data.set({ ...scanData(), agent: { avatar } });
   await fixture.whenStable();
-  expect(element(".agent-name").textContent).toBe("boyscout");
+  expect(element(".agent-name").textContent).toBe("Example");
   expect(element(".brand img").getAttribute("src")).toBe(avatar);
   element(".brand img").dispatchEvent(new Event("error"));
   await fixture.whenStable();
@@ -58,7 +59,7 @@ it("renders an avatar alone, falls back on image failure, and refreshes the iden
   expect(element(".agent-name").textContent).toBe("Atlas");
   element("#refresh").click();
   await fixture.whenStable();
-  expect(element(".agent-name").textContent).toBe("boyscout");
+  expect(element(".agent-name").textContent).toBe("Example");
   expect(element(".brand img").getAttribute("src")).toBe("/favicon.svg");
 });
 
@@ -89,6 +90,21 @@ it("uses named agent toggles and links the author below the sidebar controls", a
   expect(element<HTMLAnchorElement>(".brand-credit").href).toBe(
     "https://codeursenior.substack.com/",
   );
-  expect(element(".workspace").textContent).not.toContain("Workspace");
+  expect(element(".brand-text").textContent).not.toContain("Workspace");
   expect(element("#project-path").textContent).toBe("/example");
+});
+
+it("opens the home page from avatar, name and path while retaining the selected agent", async () => {
+  expect(state.tab()).toBe("optimizer");
+  state.toggleClient("codex");
+  for (const selector of [".agent-portrait", ".agent-name", "#project-path"]) {
+    state.selectTab("skills");
+    await fixture.whenStable();
+    element<HTMLAnchorElement>(selector).click();
+    await fixture.whenStable();
+    expect(state.tab()).toBe("optimizer");
+    expect(state.client()).toBe("codex");
+  }
+  const root: HTMLElement = fixture.nativeElement;
+  expect(root.querySelector('[data-tab="optimizer"]')).toBeNull();
 });

@@ -21,7 +21,8 @@ async function open(page: Page) {
     await route.fulfill({ response, json: body });
   });
   await page.goto(session.url);
-  await expect(page.locator("#project-name")).toHaveText("project");
+  await expect(page.locator(".agent-name")).toHaveText("Project");
+  await page.getByRole("button", { name: /^Context/ }).click();
 }
 
 for (const theme of ["light", "dark"]) {

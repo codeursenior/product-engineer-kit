@@ -37,7 +37,7 @@ function savedFilters(): { client: Client | "all"; scope: Scope | "all" } {
 export class WorkspaceState {
   private readonly api = inject(WorkspaceApi);
   readonly data = signal<ScanData | null>(null);
-  readonly tab = signal<Tab>("context");
+  readonly tab = signal<Tab>("optimizer");
   readonly assetTab = computed(() => {
     const tab = this.tab();
     return tab === "optimizer" || tab === "checklist" ? "context" : tab;
