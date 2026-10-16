@@ -30,6 +30,15 @@
     <span><i class="reference-sample"></i>From SKILL.md (read only)</span>
     <span><i class="drawing-sample"></i>Your arrows</span>
   </div>
+  <button
+    type="button"
+    class="board-fullscreen"
+    [attr.aria-pressed]="fullscreen()"
+    (click)="toggleFullscreen()"
+    [title]="fullscreen() ? 'Exit fullscreen (Esc)' : 'Fullscreen'"
+  >
+    {{ fullscreen() ? 'Exit fullscreen' : 'Fullscreen' }}
+  </button>
 </div>
 <div class="board-selection">
   @if (arrow(); as edge) {
@@ -75,7 +84,7 @@
   <button type="button" (click)="remove()">Delete title</button>
   } @else if (skill(); as item) {
   <strong>{{ item.name }}</strong>
-  <button type="button" (click)="selected.emit(item)">Open skill</button>
+  <button type="button" (click)="openSkill(item)">Open skill</button>
   } @else {
   <span
     >{{ client() === 'all' ? 'All agents · All skills' : 'Skills discoverable by

@@ -33,6 +33,13 @@ type Gesture =
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: "./skill-board.html",
   styleUrl: "./skill-board.css",
+  host: {
+    "[class.fullscreen]": "fullscreen()",
+    "[attr.role]": "fullscreen() ? 'dialog' : null",
+    "[attr.aria-modal]": "fullscreen() ? 'true' : null",
+    "[attr.aria-label]": "fullscreen() ? 'Skills whiteboard fullscreen' : null",
+    "(keydown)": "fullscreenKey($event)",
+  },
 })
 export class SkillBoard {
   readonly ends = ["source", "target"] as const;
@@ -43,6 +50,7 @@ export class SkillBoard {
   readonly selected = output<Skill>();
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly storageError = signal("");
+  readonly fullscreen = signal(false);
   readonly state = linkedSignal<
     { project: string; skills: Skill[] },
     { project: string; data: BoardData; restoreError: string }
@@ -136,6 +144,14 @@ export class SkillBoard {
   );
 
   constructor() {
+    effect((onCleanup) => {
+      if (!this.fullscreen()) return;
+      const overflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      onCleanup(() => {
+        document.body.style.overflow = overflow;
+      });
+    });
     effect(() => {
       const state = this.state();
       if (state.restoreError) return;
@@ -151,6 +167,41 @@ export class SkillBoard {
         );
       }
     });
+  }
+  toggleFullscreen(): void {
+    this.fullscreen.update((value) => !value);
+  }
+  exitFullscreen(): void {
+    this.fullscreen.set(false);
+    this.element.nativeElement
+      .querySelector<HTMLButtonElement>(".board-fullscreen")
+      ?.focus();
+  }
+  openSkill(skill: Skill): void {
+    if (this.fullscreen()) this.exitFullscreen();
+    this.selected.emit(skill);
+  }
+  fullscreenKey(event: KeyboardEvent): void {
+    if (!this.fullscreen()) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      this.escape();
+      this.exitFullscreen();
+    }
+    if (event.key !== "Tab") return;
+    const controls = this.element.nativeElement.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], [tabindex="0"]',
+    );
+    const first = controls[0],
+      last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
   }
   private change(update: (data: BoardData) => BoardData): void {
     this.state.update((state) => ({ ...state, data: update(state.data) }));

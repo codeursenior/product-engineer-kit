@@ -109,6 +109,28 @@ test("compose, reconnect, rescan and restore a skill whiteboard without editing 
       initialTitlePosition ?? "",
     );
     const titlePosition = await title.getAttribute("transform");
+    const viewport = await page.locator(".board-viewport").boundingBox();
+    await page.getByRole("button", { name: "Fullscreen", exact: true }).click();
+    const fullscreen = page.getByRole("dialog", {
+      name: "Skills whiteboard fullscreen",
+    });
+    await expect(fullscreen).toBeVisible();
+    const expanded = await page.locator(".board-viewport").boundingBox();
+    expect(expanded!.width).toBeGreaterThan(viewport!.width);
+    expect(expanded!.height).toBeGreaterThan(viewport!.height);
+    await expect(source).toHaveAttribute("transform", position ?? "");
+    await expect(title).toHaveAttribute("transform", titlePosition ?? "");
+    await expect(page.locator(".board-drawing")).toHaveCount(1);
+    await page
+      .getByRole("button", { name: "Exit fullscreen", exact: true })
+      .click();
+    await expect(fullscreen).toHaveCount(0);
+    await page.getByRole("button", { name: "Fullscreen", exact: true }).click();
+    await page.keyboard.press("Escape");
+    await expect(fullscreen).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Fullscreen", exact: true }),
+    ).toBeFocused();
     await page.reload();
     await openBoard();
     await expect(source).toHaveAttribute("transform", position ?? "");

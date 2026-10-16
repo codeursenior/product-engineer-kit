@@ -195,3 +195,14 @@ it("filters skills and both arrow types without losing saved positions or drawin
   expect(element.querySelectorAll(".board-reference")).toHaveLength(1);
   expect(board.cards().find((card) => card.key === first.key)?.x).toBe(first.x);
 });
+
+it("restores page scrolling when a fullscreen board is destroyed", async () => {
+  const overflow = document.body.style.overflow;
+  const { fixture, element } = await open();
+  element.querySelector<HTMLButtonElement>(".board-fullscreen")!.click();
+  await fixture.whenStable();
+  expect(element.getAttribute("aria-modal")).toBe("true");
+  expect(document.body.style.overflow).toBe("hidden");
+  fixture.destroy();
+  expect(document.body.style.overflow).toBe(overflow);
+});

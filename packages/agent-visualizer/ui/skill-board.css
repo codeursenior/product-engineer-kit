@@ -234,3 +234,28 @@ button.active {
     height: 520px;
   }
 }
+
+.board-legend {
+  margin-left: auto;
+}
+:host(.fullscreen) {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  height: 100dvh;
+  overflow: auto;
+  background: var(--board-paper);
+}
+:host(.fullscreen) .board-tools,
+:host(.fullscreen) .board-selection,
+:host(.fullscreen) .board-hint {
+  flex-shrink: 0;
+}
+:host(.fullscreen) .board-viewport {
+  flex: 1;
+  min-height: 200px;
+  height: auto;
+}
