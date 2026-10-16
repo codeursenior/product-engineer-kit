@@ -26,6 +26,7 @@
         class="client-icon"
         [class]="'client-icon client-icon--' + client"
         [class.selected]="state.client() === client"
+        [class.dimmed]="state.client() !== 'all' && state.client() !== client"
         [attr.aria-label]="labels[client]"
         [attr.aria-pressed]="state.client() === client"
         [title]="labels[client]"

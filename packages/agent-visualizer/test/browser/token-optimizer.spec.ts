@@ -20,6 +20,11 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await expect(
     page.getByRole("button", { name: "Token Optimizer", exact: true }),
   ).toHaveCount(0);
+  await expect(page.locator(".agent-filter .dimmed")).toHaveCount(0);
+  await expect(page.locator(".agent-filter .client-icon").first()).toHaveCSS(
+    "opacity",
+    "1",
+  );
   await page.getByRole("button", { name: "Codex", exact: true }).click();
   await page.locator(".agent-portrait").click();
   await expect(
@@ -97,6 +102,12 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await page.reload();
   await expect(claude).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Skills", exact: false }).click();
+  await expect(
+    page.getByRole("button", { name: "Files", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Table", exact: true }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Whiteboard", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Skill review", exact: true }),
@@ -116,6 +127,11 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   }
   await claude.click();
   await expect(claude).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator(".agent-filter .dimmed")).toHaveCount(0);
+  await expect(page.locator(".agent-filter .client-icon").first()).toHaveCSS(
+    "opacity",
+    "1",
+  );
   await expect(page.getByRole("status")).toContainText(
     "Select an agent below the avatar",
   );
