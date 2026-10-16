@@ -191,3 +191,49 @@ test("compose, reconnect, rescan and restore a skill whiteboard without editing 
     });
   }
 });
+
+test("wheel zoom stays under the pointer and remains gradual", async ({
+  page,
+}) => {
+  const session: { url: string } = JSON.parse(
+    await fs.readFile(".local/browser/session.json", "utf8"),
+  );
+  await page.goto(session.url);
+  await page.getByRole("button", { name: /^Skills/ }).click();
+  await page.getByRole("button", { name: "Whiteboard", exact: true }).click();
+  await page.getByRole("button", { name: "Fullscreen", exact: true }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Skills whiteboard fullscreen" }),
+  ).toBeVisible();
+  const surface = page.locator(".board-surface");
+  const group = surface.locator(":scope > g");
+  const matrix = () =>
+    group.evaluate((node: SVGGElement) => {
+      const value = node.transform.baseVal.consolidate()!.matrix;
+      return { scale: value.a, x: value.e, y: value.f };
+    });
+  const box = (await surface.boundingBox())!;
+  const pointer = {
+    x: Math.round(box.x + box.width * 0.2),
+    y: Math.round(box.y + box.height * 0.25),
+  };
+  const point = { x: pointer.x - box.x, y: pointer.y - box.y };
+  const before = await matrix();
+  const world = {
+    x: (point.x - before.x) / before.scale,
+    y: (point.y - before.y) / before.scale,
+  };
+  await page.mouse.move(pointer.x, pointer.y);
+  await page.mouse.wheel(0, 80);
+  await expect
+    .poll(async () => (await matrix()).scale)
+    .toBeLessThan(before.scale);
+  const after = await matrix();
+  expect(after.scale).toBeGreaterThan(before.scale * 0.8);
+  expect(world.x * after.scale + after.x).toBeCloseTo(point.x, 2);
+  expect(world.y * after.scale + after.y).toBeCloseTo(point.y, 2);
+  await page.mouse.wheel(0, -80);
+  await expect
+    .poll(async () => (await matrix()).scale)
+    .toBeCloseTo(before.scale, 8);
+});

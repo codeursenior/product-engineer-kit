@@ -445,11 +445,11 @@ export class SkillBoard {
     this.source.set(null);
     this.selection.set(null);
   }
-  zoom(factor: number): void {
+  zoom(factor: number, anchor?: Point): void {
     const svg = this.svg();
     const next = Math.max(0.05, Math.min(3, this.scale() * factor));
     const ratio = next / this.scale();
-    const center = {
+    const center = anchor ?? {
       x: (svg?.clientWidth ?? 800) / 2,
       y: (svg?.clientHeight ?? 500) / 2,
     };
@@ -461,7 +461,21 @@ export class SkillBoard {
   }
   wheel(event: WheelEvent): void {
     event.preventDefault();
-    this.zoom(event.deltaY > 0 ? 0.9 : 1.1);
+    if (!event.deltaY) return;
+    const svg = this.svg();
+    const rect = svg?.getBoundingClientRect();
+    const unit =
+      event.deltaMode === 1
+        ? 16
+        : event.deltaMode === 2
+          ? svg?.clientHeight || 500
+          : 1;
+    // Trackpads emit many tiny events. Scale by distance, not event count.
+    const delta = Math.max(-100, Math.min(100, event.deltaY * unit));
+    this.zoom(Math.exp(-delta * 0.001), {
+      x: event.clientX - (rect?.left ?? 0),
+      y: event.clientY - (rect?.top ?? 0),
+    });
   }
   fit(): void {
     const items = [...this.cards(), ...this.board().titles];

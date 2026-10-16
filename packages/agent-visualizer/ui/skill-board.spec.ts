@@ -206,3 +206,78 @@ it("restores page scrolling when a fullscreen board is destroyed", async () => {
   fixture.destroy();
   expect(document.body.style.overflow).toBe(overflow);
 });
+
+it("keeps the point under the cursor fixed while zooming", async () => {
+  const { fixture, element } = await open();
+  const svg = element.querySelector<SVGSVGElement>(".board-surface")!;
+  vi.spyOn(svg, "getBoundingClientRect").mockReturnValue(
+    new DOMRect(120, 80, 800, 500),
+  );
+  vi.spyOn(svg, "clientWidth", "get").mockReturnValue(800);
+  vi.spyOn(svg, "clientHeight", "get").mockReturnValue(500);
+  const board = fixture.componentInstance;
+  const point = { x: 160, y: 110 };
+  const world = {
+    x: (point.x - board.pan().x) / board.scale(),
+    y: (point.y - board.pan().y) / board.scale(),
+  };
+  svg.dispatchEvent(
+    new WheelEvent("wheel", {
+      deltaY: 20,
+      clientX: 280,
+      clientY: 190,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await fixture.whenStable();
+  expect(world.x * board.scale() + board.pan().x).toBeCloseTo(point.x, 8);
+  expect(world.y * board.scale() + board.pan().y).toBeCloseTo(point.y, 8);
+});
+
+it("keeps a burst of small trackpad deltas gradual and ignores horizontal-only scroll", async () => {
+  const { fixture, element } = await open();
+  const svg = element.querySelector<SVGSVGElement>(".board-surface")!;
+  for (let i = 0; i < 40; i++) {
+    svg.dispatchEvent(
+      new WheelEvent("wheel", { deltaY: 2, bubbles: true, cancelable: true }),
+    );
+  }
+  await fixture.whenStable();
+  const scale = fixture.componentInstance.scale();
+  expect(scale).toBeGreaterThan(0.8);
+  expect(scale).toBeLessThan(1);
+  svg.dispatchEvent(
+    new WheelEvent("wheel", {
+      deltaX: 20,
+      deltaY: 0,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await fixture.whenStable();
+  expect(fixture.componentInstance.scale()).toBe(scale);
+});
+
+it("zooms by scroll distance rather than wheel event count and normalizes line units", async () => {
+  const first = await open();
+  const svg = first.element.querySelector<SVGSVGElement>(".board-surface")!;
+  for (let i = 0; i < 8; i++)
+    svg.dispatchEvent(
+      new WheelEvent("wheel", { deltaY: 2, bubbles: true, cancelable: true }),
+    );
+  await first.fixture.whenStable();
+  const scale = first.fixture.componentInstance.scale();
+  first.fixture.destroy();
+  const second = await open();
+  second.element.querySelector<SVGSVGElement>(".board-surface")!.dispatchEvent(
+    new WheelEvent("wheel", {
+      deltaY: 1,
+      deltaMode: 1,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  await second.fixture.whenStable();
+  expect(second.fixture.componentInstance.scale()).toBeCloseTo(scale, 10);
+});
