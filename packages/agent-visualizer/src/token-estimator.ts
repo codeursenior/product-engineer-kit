@@ -81,6 +81,7 @@ export function contextInventory(
   entries: FileEntry[],
   data: ScanData,
   env: ScanEnvironment,
+  skillCatalogClients: ReadonlyMap<string, ReadonlySet<Client>>,
 ): Record<Client, TokenEntry[]> {
   const byAlias = new Map(
     entries.flatMap((entry) =>
@@ -202,7 +203,7 @@ export function contextInventory(
         // Identical copies and symlink aliases represent one discovered skill.
         const catalog = `${skill.name}\n${skill.description}`;
         const startup =
-          skill.descriptionClients.includes(client) &&
+          skillCatalogClients.get(entry.id)?.has(client) === true &&
           (entry.scope === "user" ||
             entry.aliases.some((alias) => {
               const relative = slash(path.relative(env.root, alias));

@@ -32,8 +32,6 @@ export interface Rule extends Asset {
 }
 export interface Skill extends Asset {
   description: string;
-  /** Agents that include this skill's description in their automatic catalog. */
-  descriptionClients: Client[];
   paths: string[];
   editTargets: EditTarget[];
   invocation: Partial<Record<Client, string>>;

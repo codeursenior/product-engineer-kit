@@ -52,8 +52,15 @@ export async function scanProject(
   };
   const { entries, projectConfigs, inspected, capped } =
     await collectFiles(env);
-  const { context, rules, skills, content, editable, addContext } =
-    await discoverAssets(entries, env);
+  const {
+    context,
+    rules,
+    skills,
+    skillCatalogClients,
+    content,
+    editable,
+    addContext,
+  } = await discoverAssets(entries, env);
   const edges = buildGraph(entries, context, addContext, env);
   const mcp = await discoverMcp(projectConfigs, env);
   const data: ScanData = {
@@ -71,7 +78,7 @@ export async function scanProject(
   };
   return {
     data,
-    tokenInventory: contextInventory(entries, data, env),
+    tokenInventory: contextInventory(entries, data, env, skillCatalogClients),
     content,
     editable,
   };

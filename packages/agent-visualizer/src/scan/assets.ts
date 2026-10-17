@@ -28,6 +28,7 @@ export async function discoverAssets(
   const context = new Map<string, ContextNode>();
   const rules = new Map<string, Rule>();
   const skills = new Map<string, Skill>();
+  const skillCatalogClients = new Map<string, Set<Client>>();
   const content = new Map<string, string>();
   const editable = new Map<string, EditableFile>();
   function addContext(entry: FileEntry): void {
@@ -94,7 +95,6 @@ export async function discoverAssets(
           paths: [],
           editTargets: [],
           clients: [],
-          descriptionClients: [],
           invocation: {},
           legacy: false,
           mode: "Not discovered",
@@ -122,6 +122,8 @@ export async function discoverAssets(
       } catch {
         /* Optional metadata. */
       }
+      const descriptionClients = new Set<Client>();
+      skillCatalogClients.set(entry.id, descriptionClients);
       for (const alias of entry.aliases) {
         const p = display(alias, entry.scope);
         skill.paths.push(p);
@@ -135,13 +137,11 @@ export async function discoverAssets(
           discovered.push("codex");
         for (const client of discovered) {
           if (!skill.clients.includes(client)) skill.clients.push(client);
-          // Native Codex keeps descriptions even with implicit invocation disabled.
-          // Claude, Cursor and Copilot hide manual-only skills from their catalog.
-          if (
-            (client === "codex" || !truth(meta["disable-model-invocation"])) &&
-            !skill.descriptionClients.includes(client)
-          )
-            skill.descriptionClients.push(client);
+          const descriptionVisible =
+            client === "codex"
+              ? !falsehood(policy.allow_implicit_invocation)
+              : !truth(meta["disable-model-invocation"]);
+          if (descriptionVisible) descriptionClients.add(client);
           const invocation =
             client === "codex"
               ? falsehood(policy.allow_implicit_invocation)
@@ -226,5 +226,13 @@ export async function discoverAssets(
     }
   }
 
-  return { context, rules, skills, content, editable, addContext };
+  return {
+    context,
+    rules,
+    skills,
+    skillCatalogClients,
+    content,
+    editable,
+    addContext,
+  };
 }
