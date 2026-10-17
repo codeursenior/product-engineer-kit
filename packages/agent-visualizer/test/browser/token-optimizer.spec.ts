@@ -58,7 +58,16 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     "Claude Sonnet 5.5",
     "Claude Haiku 5.5",
   ]);
-  await expect(page.locator(".startup .cost")).toContainText(/\$\d+\.\d{3}\s/);
+  await expect(page.locator(".startup .cost")).toContainText(/\$\d+\.\d{4}\s/);
+  await expect(page.locator(".portions")).not.toContainText("bytes");
+  await expect(page.locator(".startup .cost")).toHaveAttribute(
+    "title",
+    /\$\d+\.\d+/,
+  );
+  await expect(page.locator(".on-demand .cost")).toHaveAttribute(
+    "title",
+    /\$\d+\.\d+/,
+  );
   await expect(page.locator("tbody")).not.toContainText("On demand");
   const nav = page.getByRole("navigation", { name: "Views" });
   await expect(nav.getByRole("button")).toHaveText([

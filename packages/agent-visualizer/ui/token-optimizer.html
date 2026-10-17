@@ -54,12 +54,9 @@
           >{{ data.startup.tokens | number }}
           <span>estimated tokens</span></strong
         >
-        <p>
-          {{ data.startup.words | number }} words · {{ data.startup.bytes |
-          number }} bytes
-        </p>
-        <strong class="cost"
-          >${{ data.startup.inputCost | number:'1.3-3' }}
+        <p>{{ data.startup.words | number }} words</p>
+        <strong class="cost" [title]="'$' + data.startup.inputCost"
+          >${{ data.startup.inputCost | number:'1.4-4' }}
           <span>one-load input cost</span></strong
         >
       </article>
@@ -71,12 +68,9 @@
           >{{ data.onDemand.tokens | number }}
           <span>estimated tokens</span></strong
         >
-        <p>
-          {{ data.onDemand.words | number }} words · {{ data.onDemand.bytes |
-          number }} bytes
-        </p>
-        <strong class="cost"
-          >${{ data.onDemand.inputCost | number:'1.3-3' }}
+        <p>{{ data.onDemand.words | number }} words</p>
+        <strong class="cost" [title]="'$' + data.onDemand.inputCost"
+          >${{ data.onDemand.inputCost | number:'1.4-4' }}
           <span>hypothetical one-load input cost</span></strong
         >
       </article>

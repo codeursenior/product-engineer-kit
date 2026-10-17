@@ -97,15 +97,24 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     ),
   ).toEqual(["File or skill", "Tokens ≈", "Words"]);
   expect(root.querySelectorAll("tbody tr")[0]?.children).toHaveLength(3);
-  expect(root.querySelector(".startup .cost")?.textContent).toContain("$0.000");
+  expect(root.querySelector(".startup .cost")?.textContent).toContain(
+    "$0.0002",
+  );
   expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
-    "$0.002",
+    "$0.0020",
   );
   expect(root.textContent).not.toContain("Optimization checklist");
   expect(root.textContent).not.toContain("not to scale");
   expect(root.textContent).not.toContain("Discoverable local context");
   expect(root.textContent).not.toContain("USD input prices");
   expect(root.querySelector("#optimizer-agent")).toBeNull();
+  expect(root.querySelector(".portions")?.textContent).not.toContain("bytes");
+  expect(root.querySelector(".startup .cost")?.getAttribute("title")).toBe(
+    "$0.0002",
+  );
+  expect(root.querySelector(".on-demand .cost")?.getAttribute("title")).toBe(
+    "$0.002",
+  );
   state.toggleClient("claude");
   await fixture.whenStable();
   http
@@ -120,15 +129,21 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     .expectOne("/api/token-estimate?client=claude&model=claude-sonnet-5-5")
     .flush({
       ...estimate,
-      startup: { ...estimate.startup, inputCost: 0.0126 },
+      startup: { ...estimate.startup, inputCost: 0.01234567 },
       onDemand: { ...estimate.onDemand, inputCost: 1.23456 },
     });
   await fixture.whenStable();
   await expect
     .poll(() => root.querySelector(".startup .cost")?.textContent)
-    .toContain("$0.013");
+    .toContain("$0.0123");
   expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
-    "$1.235",
+    "$1.2346",
+  );
+  expect(root.querySelector(".startup .cost")?.getAttribute("title")).toBe(
+    "$0.01234567",
+  );
+  expect(root.querySelector(".on-demand .cost")?.getAttribute("title")).toBe(
+    "$1.23456",
   );
   fixture.componentInstance.estimate.set({
     ...estimate,
