@@ -19,25 +19,57 @@ import { inside, slash } from "./scan/values.js";
 
 export const modelPrices: ModelPrice[] = [
   {
-    id: "gpt-5.3-codex",
-    name: "GPT-5.3 Codex",
-    inputPerMillion: 1.75,
+    id: "gpt-6-astra",
+    name: "GPT-6 Astra",
+    inputPerMillion: 10,
+    longContext: { aboveTokens: 272000, inputPerMillion: 20 },
     source: "https://developers.openai.com/api/docs/pricing",
-    verifiedAt: "2026-10-10",
+    verifiedAt: "2026-10-17",
   },
   {
-    id: "claude-sonnet-5.5",
-    name: "Claude Sonnet 5.5",
+    id: "gpt-6.1-sol",
+    name: "GPT-6.1 Sol",
     inputPerMillion: 2,
-    source: "https://platform.claude.com/docs/en/about-claude/pricing",
-    verifiedAt: "2026-10-10",
+    longContext: { aboveTokens: 272000, inputPerMillion: 4 },
+    source: "https://developers.openai.com/api/docs/pricing",
+    verifiedAt: "2026-10-17",
   },
   {
-    id: "claude-opus-5.5",
+    id: "gpt-6-luna",
+    name: "GPT-6 Luna",
+    inputPerMillion: 0.1,
+    longContext: { aboveTokens: 272000, inputPerMillion: 0.2 },
+    source: "https://developers.openai.com/api/docs/pricing",
+    verifiedAt: "2026-10-17",
+  },
+  {
+    id: "claude-fable-5-1",
+    name: "Claude Fable 5.1",
+    inputPerMillion: 10,
+    source: "https://platform.claude.com/docs/en/about-claude/pricing",
+    verifiedAt: "2026-10-17",
+  },
+  {
+    id: "claude-opus-5-5",
     name: "Claude Opus 5.5",
     inputPerMillion: 4,
     source: "https://platform.claude.com/docs/en/about-claude/pricing",
-    verifiedAt: "2026-10-10",
+    verifiedAt: "2026-10-17",
+  },
+  {
+    id: "claude-sonnet-5-5",
+    name: "Claude Sonnet 5.5",
+    inputPerMillion: 2,
+    source: "https://platform.claude.com/docs/en/about-claude/pricing",
+    verifiedAt: "2026-10-17",
+  },
+  {
+    id: "claude-haiku-5-5",
+    name: "Claude Haiku 5.5",
+    inputPerMillion: 0.1,
+    longContext: { aboveTokens: 100000, inputPerMillion: 0.5 },
+    source: "https://platform.claude.com/docs/en/about-claude/pricing",
+    verifiedAt: "2026-10-17",
   },
 ];
 const clients: Client[] = ["codex", "claude", "cursor", "copilot"];
@@ -238,11 +270,18 @@ export function estimateTokens(
         inventory.set(entry.id, entry);
     }
   }
+  const portionTokens = { startup: 0, "on-demand": 0 };
+  for (const entry of inventory.values())
+    portionTokens[entry.portion] += entry.tokens;
+  const inputRate = (portion: TokenEntry["portion"]): number =>
+    model.longContext && portionTokens[portion] > model.longContext.aboveTokens
+      ? model.longContext.inputPerMillion
+      : model.inputPerMillion;
   const entries = [...inventory.values()]
     .sort((a, b) => b.tokens - a.tokens || a.path.localeCompare(b.path))
     .map((entry) => ({
       ...entry,
-      inputCost: (entry.tokens * model.inputPerMillion) / 1_000_000,
+      inputCost: (entry.tokens * inputRate(entry.portion)) / 1_000_000,
     }));
   const total = (portion: TokenEntry["portion"]): ContextMetrics =>
     entries

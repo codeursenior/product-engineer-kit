@@ -114,6 +114,7 @@ export interface ModelPrice {
   id: string;
   name: string;
   inputPerMillion: number;
+  longContext?: { aboveTokens: number; inputPerMillion: number };
   source: string;
   verifiedAt: string;
 }

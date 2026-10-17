@@ -24,7 +24,7 @@ export class TokenOptimizer {
   private readonly state = inject(WorkspaceState);
   readonly labels = { ...labels, all: "all agents" };
   readonly client = this.state.client;
-  readonly model = signal("gpt-5.3-codex");
+  readonly model = signal("gpt-6.1-sol");
   readonly estimate = signal<TokenEstimate | null>(null);
   readonly startupEntries = computed(() =>
     (this.estimate()?.entries ?? []).filter(

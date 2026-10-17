@@ -1,7 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { expect, test } from "vitest";
-import type { TokenEstimate } from "../src/contracts.js";
+import type { TokenEntry, TokenEstimate } from "../src/contracts.js";
+import { scanProject } from "../src/scanner.js";
+import { estimateTokens } from "../src/token-estimator.js";
 import { startServer } from "../src/server.js";
 
 test("estimates one agent's startup and on-demand context through the authenticated API", async (t) => {
@@ -28,7 +30,7 @@ test("estimates one agent's startup and on-demand context through the authentica
     await fs.rm(root, { recursive: true, force: true });
   });
   const endpoint = new URL(
-    "/api/token-estimate?client=codex&model=gpt-5.3-codex",
+    "/api/token-estimate?client=codex&model=gpt-6.1-sol",
     url,
   );
   expect((await fetch(endpoint)).status).toBe(401);
@@ -50,7 +52,7 @@ test("estimates one agent's startup and on-demand context through the authentica
   );
   expect(data.entries).toHaveLength(5);
   expect(data.entries.find((entry) => entry.path === "guide.md")).toMatchObject(
-    { tokens: 2, words: 1, bytes: 8, inputCost: 0.0000035 },
+    { tokens: 2, words: 1, bytes: 8, inputCost: 0.000004 },
   );
   expect(data.startup).toMatchObject({ tokens: 10, words: 5, bytes: 36 });
   expect(data.onDemand).toMatchObject({ tokens: 9, words: 5, bytes: 32 });
@@ -117,7 +119,7 @@ test("keeps user context, conditional rules and duplicate skills scoped to the s
   });
   const get = async (
     client: string,
-    model = "claude-sonnet-5.5",
+    model = "claude-sonnet-5-5",
   ): Promise<TokenEstimate> =>
     (
       await fetch(
@@ -186,7 +188,7 @@ test("keeps user context, conditional rules and duplicate skills scoped to the s
       ?.portion,
   ).toBe("startup");
   expect(
-    (await get("claude", "claude-opus-5.5")).startup.inputCost,
+    (await get("claude", "claude-opus-5-5")).startup.inputCost,
   ).toBeCloseTo(claude.startup.inputCost * 2);
 });
 
@@ -218,7 +220,7 @@ test("counts physical aliases once and promotes a duplicated skill catalog when 
     await fs.rm(root, { recursive: true, force: true });
   });
   const response = await fetch(
-    new URL("/api/token-estimate?client=cursor&model=gpt-5.3-codex", url),
+    new URL("/api/token-estimate?client=cursor&model=gpt-6.1-sol", url),
     { headers: { Authorization: `Bearer ${token}` } },
   );
   const data: TokenEstimate = await response.json();
@@ -233,3 +235,64 @@ test("counts physical aliases once and promotes a duplicated skill catalog when 
   expect(data.startup.tokens).toBe(9);
   expect(data.onDemand.tokens).toBe(4);
 });
+
+test.each([
+  ["gpt-6-astra", 272000, 10, 20],
+  ["gpt-6.1-sol", 272000, 2, 4],
+  ["gpt-6-luna", 272000, 0.1, 0.2],
+  ["claude-haiku-5-5", 100000, 0.1, 0.5],
+] as const)(
+  "prices %s by the full portion's prompt length",
+  async (model, threshold, baseRate, longRate) => {
+    await fs.mkdir(".local/test", { recursive: true });
+    const root = await fs.mkdtemp(path.resolve(".local/test/pricing-"));
+    try {
+      const snapshot = await scanProject(root, { includeUser: false });
+      const entry = (
+        id: string,
+        tokens: number,
+        portion: TokenEntry["portion"],
+      ): TokenEntry => ({
+        id,
+        name: id,
+        path: id,
+        scope: "project",
+        kind: "instruction",
+        portion,
+        tokens,
+        words: tokens,
+        bytes: tokens * 4,
+        inputCost: 0,
+      });
+      snapshot.tokenInventory.codex = [
+        entry("first", threshold / 2, "startup"),
+        entry("second", threshold / 2, "startup"),
+        entry("on-demand", 1000, "on-demand"),
+      ];
+      const atThreshold = estimateTokens(snapshot, "all", model);
+      expect(atThreshold.startup.inputCost).toBeCloseTo(
+        (threshold * baseRate) / 1_000_000,
+        10,
+      );
+      snapshot.tokenInventory.codex[1] = entry(
+        "second",
+        threshold / 2 + 1,
+        "startup",
+      );
+      const aboveThreshold = estimateTokens(snapshot, "all", model);
+      expect(aboveThreshold.startup.inputCost).toBeCloseTo(
+        ((threshold + 1) * longRate) / 1_000_000,
+        10,
+      );
+      expect(aboveThreshold.onDemand.inputCost).toBeCloseTo(
+        (1000 * baseRate) / 1_000_000,
+        10,
+      );
+      expect(
+        aboveThreshold.entries.find((item) => item.id === "first")?.inputCost,
+      ).toBeCloseTo(((threshold / 2) * longRate) / 1_000_000, 10);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  },
+);

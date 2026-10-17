@@ -16,7 +16,7 @@ Status: implemented. The implementation request approved the confirmed decisions
 - Include an extensible checklist starting with "Install RTK". Its checkbox reflects detected installation status, not a user's manual declaration.
 - When RTK is detected, show the checkbox checked and disabled.
 - When RTK is missing, show the checkbox unchecked and provide installation instructions with a "Check again" button. Do not install RTK from the application. Check and disable the checkbox only after detection succeeds.
-- Show only above-water (startup) entries in the breakdown by file or skill, sorted by token count from largest to smallest, with word count and estimated input cost. Omit the byte-size column.
+- Show only above-water (startup) entries in the breakdown by file or skill, sorted by token count from largest to smallest, with token and word counts. Omit the redundant context, input-cost and byte-size columns. Display the two total prices in USD rounded to three decimal places; keep full precision in the API and calculations.
 - Show context metrics and price estimates for both iceberg portions. Keep the visualization free of the illustration caption and repeated context/pricing caveats; retain the estimation method and official pricing in the expandable details.
 - Exclude quality scores and rewrite suggestions from V1.
 
@@ -39,13 +39,21 @@ Startup means a session at the scanned project root. Root instructions, supporte
 
 ### Maintained pricing
 
-Prices verified on 2026-10-10, USD per million standard uncached input tokens:
+Prices verified on 2026-10-17, USD per million standard uncached input tokens:
 
-| Preset            | Input price | Official source                                                            |
-| ----------------- | ----------: | -------------------------------------------------------------------------- |
-| GPT-5.3 Codex     |       $1.75 | [OpenAI API pricing](https://developers.openai.com/api/docs/pricing)       |
-| Claude Sonnet 5.5 |       $2.00 | [Claude pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
-| Claude Opus 5.5   |       $4.00 | [Claude pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
+| Preset            | Input price | Long-context input price    | Official source                                                            |
+| ----------------- | ----------: | --------------------------- | -------------------------------------------------------------------------- |
+| GPT-6 Astra       |      $10.00 | $20.00 above 272,000 tokens | [OpenAI API pricing](https://developers.openai.com/api/docs/pricing)       |
+| GPT-6.1 Sol       |       $2.00 | $4.00 above 272,000 tokens  | [OpenAI API pricing](https://developers.openai.com/api/docs/pricing)       |
+| GPT-6 Luna        |       $0.10 | $0.20 above 272,000 tokens  | [OpenAI API pricing](https://developers.openai.com/api/docs/pricing)       |
+| Claude Fable 5.1  |      $10.00 | Same rate                   | [Claude pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
+| Claude Opus 5.5   |       $4.00 | Same rate                   | [Claude pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
+| Claude Sonnet 5.5 |       $2.00 | Same rate                   | [Claude pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
+| Claude Haiku 5.5  |       $0.10 | $0.50 above 100,000 tokens  | [Claude pricing](https://platform.claude.com/docs/en/about-claude/pricing) |
+
+GPT-6.1 Sol is selected by default. Use the official API IDs: `gpt-6-astra`, `gpt-6.1-sol`, `gpt-6-luna`, `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, and `claude-haiku-5-5`. These are the latest verified versions in the requested model families.
+
+Each iceberg portion is priced as a separate hypothetical request. When its total tokens exceed a model's threshold, apply the higher rate to every token in that portion, including entries smaller than the threshold. Exactly at the threshold, use the base rate. The other portion retains its own applicable rate. See [OpenAI's long-context rule](https://developers.openai.com/api/docs/models/gpt-6.1-sol) and [Anthropic's prompt-length rule](https://platform.claude.com/docs/en/about-claude/pricing#long-context-pricing).
 
 Presets are pricing scenarios, not a promise that each client exposes each model. Maintainers update `src/token-estimator.ts` and this table together when prices change. Calculations exclude output tokens, caching, batch discounts, regional surcharges, subscription pricing and repeated session loads.
 

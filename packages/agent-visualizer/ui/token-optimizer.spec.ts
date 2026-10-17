@@ -21,9 +21,9 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   const fixture = TestBed.createComponent(TokenOptimizer);
   const root: HTMLElement = fixture.nativeElement;
   const model = {
-    id: "gpt-5.3-codex",
-    name: "GPT-5.3 Codex",
-    inputPerMillion: 1.75,
+    id: "gpt-6.1-sol",
+    name: "GPT-6.1 Sol",
+    inputPerMillion: 2,
     source: "https://example.com/pricing",
     verifiedAt: "2026-10-10",
   };
@@ -31,10 +31,11 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     client: "codex",
     model,
     models: [
+      { ...model, id: "gpt-6-astra", name: "GPT-6 Astra", inputPerMillion: 10 },
       model,
       {
         ...model,
-        id: "claude-sonnet-5.5",
+        id: "claude-sonnet-5-5",
         name: "Claude Sonnet 5.5",
         inputPerMillion: 2,
       },
@@ -51,7 +52,7 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
         tokens: 100,
         words: 50,
         bytes: 400,
-        inputCost: 0.000175,
+        inputCost: 0.0002,
       },
       {
         id: "on-demand",
@@ -63,17 +64,17 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
         tokens: 1000,
         words: 500,
         bytes: 4000,
-        inputCost: 0.00175,
+        inputCost: 0.002,
       },
     ],
-    startup: { tokens: 100, words: 50, bytes: 400, inputCost: 0.000175 },
-    onDemand: { tokens: 1000, words: 500, bytes: 4000, inputCost: 0.00175 },
+    startup: { tokens: 100, words: 50, bytes: 400, inputCost: 0.0002 },
+    onDemand: { tokens: 1000, words: 500, bytes: 4000, inputCost: 0.002 },
     includeUser: true,
     warnings: [],
   };
   await fixture.whenStable();
   http
-    .expectOne("/api/token-estimate?client=codex&model=gpt-5.3-codex")
+    .expectOne("/api/token-estimate?client=codex&model=gpt-6.1-sol")
     .flush(estimate);
   http.expectNone("/api/optimization-checks");
   await fixture.whenStable();
@@ -82,12 +83,24 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     .toContain("Estimated startup context");
   expect(root.textContent).toContain("On-demand context");
   expect(root.querySelector("svg")).not.toBeNull();
+  expect(root.querySelector<HTMLSelectElement>("#optimizer-model")?.value).toBe(
+    "gpt-6.1-sol",
+  );
   expect(root.querySelector("tbody")?.textContent).toContain("AGENTS.md");
   expect(root.querySelector("tbody")?.textContent).not.toContain(
     "linked-guide.md",
   );
-  expect(root.querySelectorAll("thead th").length).toBe(5);
-  expect(root.querySelector("thead")?.textContent).not.toContain("Bytes");
+  expect(root.querySelectorAll("thead th").length).toBe(3);
+  expect(
+    [...root.querySelectorAll("thead th")].map((cell) =>
+      cell.textContent?.trim(),
+    ),
+  ).toEqual(["File or skill", "Tokens ≈", "Words"]);
+  expect(root.querySelectorAll("tbody tr")[0]?.children).toHaveLength(3);
+  expect(root.querySelector(".startup .cost")?.textContent).toContain("$0.000");
+  expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
+    "$0.002",
+  );
   expect(root.textContent).not.toContain("Optimization checklist");
   expect(root.textContent).not.toContain("not to scale");
   expect(root.textContent).not.toContain("Discoverable local context");
@@ -100,17 +113,23 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     .flush({ ...estimate, client: "claude" });
   await fixture.whenStable();
   const select = root.querySelector<HTMLSelectElement>("#optimizer-model")!;
-  select.value = "claude-sonnet-5.5";
+  select.value = "claude-sonnet-5-5";
   select.dispatchEvent(new Event("change"));
   await fixture.whenStable();
   http
-    .expectOne("/api/token-estimate?client=claude&model=claude-sonnet-5.5")
+    .expectOne("/api/token-estimate?client=claude&model=claude-sonnet-5-5")
     .flush({
       ...estimate,
-      startup: { ...estimate.startup, inputCost: 0.0002 },
+      startup: { ...estimate.startup, inputCost: 0.0126 },
+      onDemand: { ...estimate.onDemand, inputCost: 1.23456 },
     });
   await fixture.whenStable();
-  await expect.poll(() => root.textContent).toContain("0.000200");
+  await expect
+    .poll(() => root.querySelector(".startup .cost")?.textContent)
+    .toContain("$0.013");
+  expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
+    "$1.235",
+  );
   fixture.componentInstance.estimate.set({
     ...estimate,
     entries: [estimate.entries[1]!],
@@ -125,7 +144,7 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   state.toggleClient("claude");
   await fixture.whenStable();
   http
-    .expectOne("/api/token-estimate?client=all&model=claude-sonnet-5.5")
+    .expectOne("/api/token-estimate?client=all&model=claude-sonnet-5-5")
     .flush({ ...estimate, client: "all" });
   await fixture.whenStable();
   expect(root.textContent).not.toContain("Select an agent");
@@ -143,7 +162,7 @@ it("requests all agents immediately on startup", async () => {
   const root: HTMLElement = fixture.nativeElement;
   expect(root.textContent).not.toContain("Select an agent");
   http
-    .expectOne("/api/token-estimate?client=all&model=gpt-5.3-codex")
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
     .flush(
       { error: "Unavailable" },
       { status: 500, statusText: "Server error" },

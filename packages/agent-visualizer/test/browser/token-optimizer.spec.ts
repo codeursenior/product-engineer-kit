@@ -40,11 +40,25 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await expect(
     page.getByRole("button", { name: "Codex", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("#optimizer-model")).toHaveValue("gpt-5.3-codex");
+  await expect(page.locator("#optimizer-model")).toHaveValue("gpt-6.1-sol");
   await expect(page.getByRole("checkbox", { name: "Install RTK" })).toHaveCount(
     0,
   );
-  await expect(page.locator("thead")).not.toContainText("Bytes");
+  await expect(page.locator("thead th")).toHaveText([
+    "File or skill",
+    "Tokens ≈",
+    "Words",
+  ]);
+  await expect(page.locator("#optimizer-model option")).toHaveText([
+    "GPT-6 Astra",
+    "GPT-6.1 Sol",
+    "GPT-6 Luna",
+    "Claude Fable 5.1",
+    "Claude Opus 5.5",
+    "Claude Sonnet 5.5",
+    "Claude Haiku 5.5",
+  ]);
+  await expect(page.locator(".startup .cost")).toContainText(/\$\d+\.\d{3}\s/);
   await expect(page.locator("tbody")).not.toContainText("On demand");
   const nav = page.getByRole("navigation", { name: "Views" });
   await expect(nav.getByRole("button")).toHaveText([
@@ -63,7 +77,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await expect(page.locator("tbody")).toContainText("review");
   await expect(page.locator("tbody")).not.toContainText("style.md");
   await expect(page.locator("tbody")).not.toContainText("AGENTS.md");
-  await page.locator("#optimizer-model").selectOption("claude-opus-5.5");
+  await page.locator("#optimizer-model").selectOption("claude-opus-5-5");
   await page
     .getByText("Estimation method and pricing", { exact: true })
     .click();
