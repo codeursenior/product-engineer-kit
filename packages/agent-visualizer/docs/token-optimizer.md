@@ -17,7 +17,8 @@ Status: implemented. The implementation request approved the confirmed decisions
 - When RTK is detected, show the checkbox checked and disabled.
 - When RTK is missing, show the checkbox unchecked and provide installation instructions with a "Check again" button. Do not install RTK from the application. Check and disable the checkbox only after detection succeeds.
 - Show only above-water (startup) entries in the breakdown by file or skill, sorted by token count from largest to smallest, with token and word counts. Omit the redundant context, input-cost and byte-size columns. Display the two total prices in USD rounded to four decimal places, with the full unrounded amount in the native browser tooltip. Keep full precision in the API and calculations. Show token and word counts in both portions, without bytes.
-- Show context metrics and price estimates for both iceberg portions. Keep the visualization free of the illustration caption and repeated context/pricing caveats; retain the estimation method and official pricing in the expandable details.
+- Show context metrics and price estimates for both iceberg portions. Keep the visualization free of the illustration caption and repeated context/pricing caveats. Keep the estimation method and official pricing documented here; omit the expandable details from the dashboard.
+- Label the startup-only table "Startup context breakdown". Keep the existing iceberg and table rendered while repricing so that changing the model preserves the page height and scroll position. On refresh failure, retain the previous estimate with an explicit error.
 - Exclude quality scores and rewrite suggestions from V1.
 
 ## Implementation research

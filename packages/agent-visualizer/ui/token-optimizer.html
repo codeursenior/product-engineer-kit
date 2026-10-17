@@ -1,4 +1,8 @@
-<section class="optimizer" aria-label="Token Optimizer">
+<section
+  class="optimizer"
+  aria-label="Token Optimizer"
+  [attr.aria-busy]="loading()"
+>
   <div class="optimizer-controls">
     <label for="optimizer-model"
       >Model for price estimate
@@ -16,11 +20,9 @@
       </select>
     </label>
   </div>
-  @if (loading()) {
+  @if (loading() && !estimate()) {
   <p role="status">Estimating context…</p>
-  } @else if (error()) {
-  <p role="alert">{{ error() }}</p>
-  } @else if (estimate(); as data) { @if (!data.includeUser) {
+  } @if (estimate(); as data) { @if (!data.includeUser) {
   <p class="notice">
     User context is excluded because this server was started with user discovery
     disabled.
@@ -76,33 +78,7 @@
       </article>
     </div>
   </div>
-  <details class="method">
-    <summary>Estimation method and pricing</summary>
-    @if (data.client === 'all') {
-    <p>
-      All agents: shared entries count once. An entry belongs to startup when at
-      least one agent loads it at startup.
-    </p>
-    }
-    <p>{{ data.method }}</p>
-    <p>
-      References count as text in their containing file. Their targets are
-      counted separately on demand. Skill catalog estimates use names and
-      descriptions; body estimates exclude frontmatter. Client-generated prompts
-      and remote content are excluded.
-    </p>
-    <p>
-      {{ data.model.name }}: ${{ data.model.inputPerMillion }} / million input
-      tokens. @if (data.model.longContext; as tier) { Above {{ tier.aboveTokens
-      | number }} input tokens: ${{ tier.inputPerMillion }} / million. Each
-      iceberg portion is priced as a separate load. }
-      <a [href]="data.model.source" target="_blank" rel="noreferrer"
-        >Official pricing</a
-      >, verified {{ data.model.verifiedAt }}. Presets are maintained by the
-      application and do not assert availability in every client.
-    </p>
-  </details>
-  <h2 class="section-title">Context breakdown</h2>
+  <h2 class="section-title">Startup context breakdown</h2>
   <div class="breakdown">
     <table>
       <caption>
@@ -135,5 +111,9 @@
       </tbody>
     </table>
   </div>
+  } @if (error()) {
+  <p role="alert">
+    {{ error() }} @if (estimate()) { Previous estimate shown. }
+  </p>
   }
 </section>

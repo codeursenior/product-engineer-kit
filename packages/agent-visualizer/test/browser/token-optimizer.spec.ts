@@ -2,6 +2,38 @@ import { expect, test } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+test("changing the pricing model keeps the dashboard scroll position", async ({
+  page,
+}) => {
+  const session: { url: string } = JSON.parse(
+    await fs.readFile(".local/browser/session.json", "utf8"),
+  );
+  await page.setViewportSize({ width: 1000, height: 600 });
+  await page.goto(session.url);
+  const select = page.locator("#optimizer-model");
+  await expect(select).toBeEnabled();
+  await page.mouse.move(900, 400);
+  await page.mouse.wheel(0, 80);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(0);
+  const before = await page.evaluate(() => scrollY);
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/api/token-estimate?**", async (route) => {
+    const response = await route.fetch();
+    await pending;
+    await route.fulfill({ response });
+  });
+  try {
+    await select.selectOption("claude-opus-5-5");
+    await expect(select).toBeDisabled();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(before);
+  } finally {
+    release();
+  }
+  await expect(select).toBeEnabled();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(before);
+});
+
 test("Token Optimizer navigates, selects one agent, refreshes and fits both themes", async ({
   page,
 }) => {
@@ -90,10 +122,10 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await expect(page.locator("tbody")).not.toContainText("style.md");
   await expect(page.locator("tbody")).not.toContainText("AGENTS.md");
   await page.locator("#optimizer-model").selectOption("claude-opus-5-5");
-  await page
-    .getByText("Estimation method and pricing", { exact: true })
-    .click();
-  await expect(page.locator(".method")).toContainText("$4 / million");
+  await expect(page.locator("#optimizer-model")).toBeEnabled();
+  await expect(page.locator(".on-demand .cost")).toContainText(
+    /\$\d+\.\d{4}\s/,
+  );
   const added = path.join(session.root, "CLAUDE.md");
   try {
     await fs.writeFile(added, "Additional instructions");

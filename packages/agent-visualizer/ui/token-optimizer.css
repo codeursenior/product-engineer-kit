@@ -28,10 +28,6 @@ p {
   line-height: 1.6;
   font-size: 13px;
 }
-.method {
-  color: var(--muted);
-  max-width: 900px;
-}
 .iceberg-panel {
   display: grid;
   grid-template-columns: minmax(200px, 1fr) 2fr;
@@ -98,11 +94,6 @@ h2 {
 .cost {
   font-size: 18px;
   font-variant-numeric: tabular-nums;
-}
-summary {
-  cursor: pointer;
-  font-size: 13px;
-  padding: 8px 0;
 }
 .section-title {
   margin: 32px 0 14px;
