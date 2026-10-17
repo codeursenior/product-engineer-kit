@@ -5,7 +5,7 @@ Agent Visualizer describes the local context available to coding agents. Token O
 ## Language
 
 **Selected agent**:
-The single coding client whose context Token Optimizer estimates: Codex, Claude Code, Cursor, or GitHub Copilot. Context totals belong to this client alone, never to a combined inventory across clients.
+The coding client whose context Token Optimizer estimates: Codex, Claude Code, Cursor, or GitHub Copilot. All agents are selected by default. In that mode, the estimate combines their inventories and counts shared content once; content belongs to startup when any discovering client loads it at startup.
 
 **Estimated startup context**:
 The instructions applicable at the start of a session and the skill catalog entries, including skill names and descriptions, estimated from local files. This is the part of the iceberg above water, not a measurement of a running agent's actual context.
