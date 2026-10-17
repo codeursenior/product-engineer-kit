@@ -83,7 +83,10 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     fullPage: true,
   });
   await page.getByRole("button", { name: "Claude Code", exact: true }).click();
-  await expect(page.locator("tbody")).toContainText("review");
+  await expect(page.locator("tbody")).not.toContainText("review");
+  await expect(page.locator("tbody")).toContainText(
+    "No startup context discovered",
+  );
   await expect(page.locator("tbody")).not.toContainText("style.md");
   await expect(page.locator("tbody")).not.toContainText("AGENTS.md");
   await page.locator("#optimizer-model").selectOption("claude-opus-5-5");

@@ -94,6 +94,7 @@ export async function discoverAssets(
           paths: [],
           editTargets: [],
           clients: [],
+          descriptionClients: [],
           invocation: {},
           legacy: false,
           mode: "Not discovered",
@@ -134,6 +135,13 @@ export async function discoverAssets(
           discovered.push("codex");
         for (const client of discovered) {
           if (!skill.clients.includes(client)) skill.clients.push(client);
+          // Native Codex keeps descriptions even with implicit invocation disabled.
+          // Claude, Cursor and Copilot hide manual-only skills from their catalog.
+          if (
+            (client === "codex" || !truth(meta["disable-model-invocation"])) &&
+            !skill.descriptionClients.includes(client)
+          )
+            skill.descriptionClients.push(client);
           const invocation =
             client === "codex"
               ? falsehood(policy.allow_implicit_invocation)

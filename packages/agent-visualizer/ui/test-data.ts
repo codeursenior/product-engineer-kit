@@ -20,6 +20,7 @@ export const skill: Skill = {
   scope: "project",
   paths: [".agents/skills/review/SKILL.md", ".claude/skills/review/SKILL.md"],
   clients: ["codex"],
+  descriptionClients: ["codex"],
   invocation: { codex: "User only" },
   legacy: false,
   mode: "User only",

@@ -296,3 +296,116 @@ test.each([
     }
   },
 );
+
+test.each(["project", "user"] as const)(
+  "respects per-agent description loading for %s skills and keeps manual bodies on demand",
+  async (scope) => {
+    await fs.mkdir(".local/test", { recursive: true });
+    const base = await fs.mkdtemp(path.resolve(".local/test/skill-policy-"));
+    const root = path.join(base, "project"),
+      home = path.join(base, "home");
+    try {
+      await fs.mkdir(root);
+      await fs.mkdir(home);
+      const location = scope === "project" ? root : home;
+      for (const [name, flags] of Object.entries({
+        automatic: "",
+        manual: "disable-model-invocation: true\n",
+        background: "user-invocable: false\n",
+        disabled: "disable-model-invocation: true\nuser-invocable: false\n",
+        "codex-manual": "",
+      })) {
+        for (const folder of [".agents", ".claude"]) {
+          const directory = path.join(location, folder, "skills", name);
+          await fs.mkdir(directory, { recursive: true });
+          await fs.writeFile(
+            path.join(directory, "SKILL.md"),
+            `---\nname: ${name}\ndescription: ${name} workflow\n${flags}---\nDetailed instructions for ${name}.`,
+          );
+          if (name === "codex-manual") {
+            await fs.mkdir(path.join(directory, "agents"));
+            await fs.writeFile(
+              path.join(directory, "agents/openai.yaml"),
+              "policy:\n  allow_implicit_invocation: false\n",
+            );
+          }
+        }
+      }
+      // No Codex discovery path: no agent should promote this manual catalog.
+      const manualDirectory = path.join(
+        location,
+        ".claude/skills/claude-manual",
+      );
+      await fs.mkdir(manualDirectory, { recursive: true });
+      await fs.writeFile(
+        path.join(manualDirectory, "SKILL.md"),
+        "---\nname: claude-manual\ndescription: Manual workflow\ndisable-model-invocation: true\n---\nManual instructions.",
+      );
+      const snapshot = await scanProject(root, {
+        home,
+        codexHome: path.join(home, ".codex"),
+      });
+      expect(snapshot.data.skills).toHaveLength(6);
+      expect(
+        snapshot.data.skills.find((skill) => skill.name === "manual")
+          ?.descriptionClients,
+      ).toEqual(["codex"]);
+      expect(
+        snapshot.data.skills.find((skill) => skill.name === "codex-manual")
+          ?.invocation.codex,
+      ).toBe("User only");
+      const codex = estimateTokens(snapshot, "codex", "gpt-6.1-sol");
+      const startupNames = (data: TokenEstimate) =>
+        data.entries
+          .filter(
+            (entry) =>
+              entry.portion === "startup" && entry.kind === "skill-catalog",
+          )
+          .map((entry) => entry.name)
+          .sort();
+      expect(startupNames(codex)).toEqual([
+        "automatic",
+        "background",
+        "codex-manual",
+        "disabled",
+        "manual",
+      ]);
+      for (const client of ["claude", "cursor", "copilot"] as const) {
+        const data = estimateTokens(snapshot, client, "gpt-6.1-sol");
+        expect(startupNames(data)).toEqual([
+          "automatic",
+          "background",
+          "codex-manual",
+        ]);
+        for (const name of ["manual", "disabled", "claude-manual"]) {
+          const entries = data.entries.filter((entry) => entry.name === name);
+          expect(entries).toHaveLength(2);
+          expect(entries.every((entry) => entry.portion === "on-demand")).toBe(
+            true,
+          );
+          expect(
+            entries.find((entry) => entry.kind === "skill-body")?.tokens,
+          ).toBeGreaterThan(0);
+        }
+        expect(data.startup.tokens).toBeLessThan(codex.startup.tokens);
+      }
+      const all = estimateTokens(snapshot, "all", "gpt-6.1-sol");
+      expect(all.startup.tokens).toBe(codex.startup.tokens);
+      expect(
+        all.entries.filter((entry) => entry.name === "manual"),
+      ).toHaveLength(2);
+      expect(
+        all.entries.find(
+          (entry) => entry.name === "manual" && entry.kind === "skill-catalog",
+        )?.portion,
+      ).toBe("startup");
+      expect(
+        all.entries
+          .filter((entry) => entry.name === "claude-manual")
+          .every((entry) => entry.portion === "on-demand"),
+      ).toBe(true);
+    } finally {
+      await fs.rm(base, { recursive: true, force: true });
+    }
+  },
+);

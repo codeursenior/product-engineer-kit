@@ -202,15 +202,16 @@ export function contextInventory(
         // Identical copies and symlink aliases represent one discovered skill.
         const catalog = `${skill.name}\n${skill.description}`;
         const startup =
-          entry.scope === "user" ||
-          entry.aliases.some((alias) => {
-            const relative = slash(path.relative(env.root, alias));
-            return (
-              /^\.(?:agents|codex|claude|cursor|github)\/skills\//.test(
-                relative,
-              ) && toolsForSkill(relative).includes(client)
-            );
-          });
+          skill.descriptionClients.includes(client) &&
+          (entry.scope === "user" ||
+            entry.aliases.some((alias) => {
+              const relative = slash(path.relative(env.root, alias));
+              return (
+                /^\.(?:agents|codex|claude|cursor|github)\/skills\//.test(
+                  relative,
+                ) && toolsForSkill(relative).includes(client)
+              );
+            }));
         add(
           entry,
           "skill-catalog",
