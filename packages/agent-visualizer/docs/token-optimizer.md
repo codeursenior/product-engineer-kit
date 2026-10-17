@@ -8,7 +8,7 @@ Status: implemented. The implementation request approved the confirmed decisions
 - Above water: applicable startup instruction contents and skill catalog entries, including names and descriptions.
 - Below water: linked documents, skill bodies, and instructions applicable only in specific subfolders.
 - Count a reference's text in its containing instruction file. Do not automatically include the referenced document's contents in the startup estimate.
-- Require one selected agent: Codex, Claude Code, Cursor, or GitHub Copilot. Include its project and user context. Do not offer an aggregate "All clients" estimate.
+- Select all agents at startup: Codex, Claude Code, Cursor, and GitHub Copilot. Include their project and user context, counting shared entries once. A shared entry belongs to startup if any agent loads it at startup. Selecting one agent narrows the estimate; clicking it again restores all agents. Reloading starts with all agents regardless of the previous filter.
 - These estimates describe discoverable local context, not observed usage in a running conversation.
 - Estimate the input cost of loading each iceberg portion once, using the selected model's input price without caching discounts.
 - The on-demand price is hypothetical: it assumes all available on-demand content is loaded once. Neither price predicts session spending.
@@ -27,7 +27,7 @@ Status: implemented. The implementation request approved the confirmed decisions
 
 ## V1 implementation
 
-The authenticated `/api/token-estimate` endpoint requires exactly one supported `client` and `model`. It uses the latest scan snapshot, including a refreshed snapshot after Rescan. `/api/optimization-checks` runs bounded, fixed RTK identity probes on demand. Neither endpoint installs anything or contacts a model provider.
+The authenticated `/api/token-estimate` endpoint accepts a supported `client` (including `all`) and `model`. It uses the latest scan snapshot, including a refreshed snapshot after Rescan. `/api/optimization-checks` runs bounded, fixed RTK identity probes on demand. Neither endpoint installs anything or contacts a model provider.
 
 ### Estimation method
 

@@ -66,6 +66,9 @@ it("renders an avatar alone, falls back on image failure, and refreshes the iden
 it("uses named agent toggles and links the author below the sidebar controls", async () => {
   const root: HTMLElement = fixture.nativeElement;
   expect(root.querySelectorAll(".agent-filter .dimmed")).toHaveLength(0);
+  expect(
+    root.querySelectorAll('.agent-filter [aria-pressed="true"]'),
+  ).toHaveLength(4);
   const codex = element<HTMLButtonElement>('[aria-label="Codex"]');
   const claude = element<HTMLButtonElement>('[aria-label="Claude Code"]');
   codex.click();
@@ -84,6 +87,9 @@ it("uses named agent toggles and links the author below the sidebar controls", a
   await fixture.whenStable();
   expect(state.client()).toBe("all");
   expect(root.querySelectorAll(".agent-filter .dimmed")).toHaveLength(0);
+  expect(
+    root.querySelectorAll('.agent-filter [aria-pressed="true"]'),
+  ).toHaveLength(4);
   expect(root.querySelector(".agent-filter-label")).toBeNull();
   expect(root.querySelector('[data-tab="rules"]')).toBeNull();
   expect(root.querySelector('[data-tab="checklist"]')).toBeNull();

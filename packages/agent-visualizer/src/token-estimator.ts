@@ -222,14 +222,28 @@ export function estimateTokens(
   clientId: string | null,
   modelId: string | null,
 ): TokenEstimate {
-  const client = clients.find((client) => client === clientId);
+  const client =
+    clientId === "all" ? "all" : clients.find((client) => client === clientId);
   const model = modelPrices.find((model) => model.id === modelId);
   if (!client || !model)
-    throw new HttpError(400, "Select one supported agent and model.");
-  const entries = snapshot.tokenInventory[client].map((entry) => ({
-    ...entry,
-    inputCost: (entry.tokens * model.inputPerMillion) / 1_000_000,
-  }));
+    throw new HttpError(400, "Select supported agents and a model.");
+  const inventory = new Map<string, TokenEntry>();
+  for (const selected of client === "all" ? clients : [client]) {
+    for (const entry of snapshot.tokenInventory[selected]) {
+      const existing = inventory.get(entry.id);
+      if (
+        !existing ||
+        (existing.portion !== "startup" && entry.portion === "startup")
+      )
+        inventory.set(entry.id, entry);
+    }
+  }
+  const entries = [...inventory.values()]
+    .sort((a, b) => b.tokens - a.tokens || a.path.localeCompare(b.path))
+    .map((entry) => ({
+      ...entry,
+      inputCost: (entry.tokens * model.inputPerMillion) / 1_000_000,
+    }));
   const total = (portion: TokenEntry["portion"]): ContextMetrics =>
     entries
       .filter((entry) => entry.portion === portion)

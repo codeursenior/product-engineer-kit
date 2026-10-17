@@ -47,16 +47,6 @@ export class App {
       document.getElementById("search")?.focus();
     }
   }
-  updated(): string {
-    const data = this.state.data();
-    return data
-      ? "Scanned " +
-          new Date(data.scannedAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-      : "";
-  }
   empty(): string {
     if (
       this.state.search() ||

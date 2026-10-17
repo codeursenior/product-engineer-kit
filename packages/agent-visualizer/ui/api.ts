@@ -53,7 +53,7 @@ export class WorkspaceApi {
   scan(refresh = false): Promise<ScanData> {
     return this.request("GET", `/api/scan${refresh ? "?refresh=1" : ""}`);
   }
-  estimate(client: Client, model: string): Promise<TokenEstimate> {
+  estimate(client: Client | "all", model: string): Promise<TokenEstimate> {
     return this.request(
       "GET",
       `/api/token-estimate?client=${client}&model=${encodeURIComponent(model)}`,

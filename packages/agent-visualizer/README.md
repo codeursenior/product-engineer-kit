@@ -22,7 +22,7 @@ Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek aud
 
 Token Optimizer is the home page. Return to it by clicking the avatar, agent name, or factory path. Rules and Optimization checklist are temporarily hidden from navigation.
 
-- **Agent filter:** select one client using the icons below the avatar. The same selection applies to Context, Rules, Skills (including Whiteboard), MCP servers, and Token Optimizer. Click the selected icon again to show all agents. Agent and project/user scope filters are restored from localStorage in this browser.
+- **Agent filter:** select one client using the icons below the avatar. The same selection applies to Context, Rules, Skills (including Whiteboard), MCP servers, and Token Optimizer. Click the selected icon again to show all agents. All agents are selected at startup. The project/user scope filter is restored from localStorage in this browser.
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.
 - **Rules:** searchable list of dedicated Cursor, Claude Code, and GitHub Copilot instruction files, with source paths, declared file conditions, client discovery, and previews. Metadata does not prove a rule loaded in a session.
 - **Skills:** names, descriptions, invocation policy, source paths, and discovery indicators for Cursor, Claude Code, Codex, and GitHub Copilot in VS Code. Identical copies in the same scope are grouped, retaining their paths.
@@ -132,4 +132,4 @@ MIT © Simon Dieny. Independent project, not affiliated with Cursor, Anthropic, 
 
 ## Token Optimizer
 
-Select an agent below the avatar, then return to the home page to estimate that agent’s startup and on-demand context, compare one-load input costs using maintained model presets, and inspect the largest files and skills. The RTK checklist detects installation and provides manual installation instructions. These are static local estimates, not session usage or spending. See [the estimation method and limits](docs/token-optimizer.md).
+All agents are selected at startup. The home page estimates their combined startup and on-demand context, counting shared entries once. Select an agent below the avatar to narrow the estimate, compare one-load input costs using maintained model presets, and inspect the largest files and skills. The RTK checklist detects installation and provides manual installation instructions. These are static local estimates, not session usage or spending. See [the estimation method and limits](docs/token-optimizer.md).

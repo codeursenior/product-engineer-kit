@@ -114,13 +114,11 @@
       ></div>
       }
     </section>
-    }
+    } @if (state.tab() !== 'context' && state.tab() !== 'optimizer') {
     <footer class="main-footer">
-      @if (state.tab() !== 'context') {
       <span id="summary" aria-live="polite">{{ state.summary() }}</span>
-      }
-      <span id="updated">{{ updated() }}</span>
     </footer>
+    }
   </main>
   <aside
     appDetail

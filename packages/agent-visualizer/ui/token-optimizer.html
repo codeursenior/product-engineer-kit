@@ -1,5 +1,4 @@
 <section class="optimizer" aria-label="Token Optimizer">
-  @if (client() !== 'all') {
   <div class="optimizer-controls">
     <label for="optimizer-model"
       >Model for price estimate
@@ -16,9 +15,7 @@
       </select>
     </label>
   </div>
-  } @if (client() === 'all') {
-  <p role="status">Select an agent below the avatar to estimate its context.</p>
-  } @else if (loading()) {
+  @if (loading()) {
   <p role="status">Estimating context…</p>
   } @else if (error()) {
   <p role="alert">{{ error() }}</p>
@@ -86,6 +83,12 @@
   </div>
   <details class="method">
     <summary>Estimation method and pricing</summary>
+    @if (data.client === 'all') {
+    <p>
+      All agents: shared entries count once. An entry belongs to startup when at
+      least one agent loads it at startup.
+    </p>
+    }
     <p>{{ data.method }}</p>
     <p>
       References count as text in their containing file. Their targets are

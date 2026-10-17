@@ -25,6 +25,13 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     "opacity",
     "1",
   );
+  await expect(page.locator('.agent-filter [aria-pressed="true"]')).toHaveCount(
+    4,
+  );
+  await expect(
+    page.getByRole("heading", { name: "Estimated startup context" }),
+  ).toBeVisible();
+  await expect(page.locator("#summary, #updated")).toHaveCount(0);
   await page.getByRole("button", { name: "Codex", exact: true }).click();
   await page.locator(".agent-portrait").click();
   await expect(
@@ -100,6 +107,10 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   const claude = page.getByRole("button", { name: "Claude Code", exact: true });
   await expect(claude).toHaveAttribute("aria-pressed", "true");
   await page.reload();
+  await expect(page.locator('.agent-filter [aria-pressed="true"]')).toHaveCount(
+    4,
+  );
+  await claude.click();
   await expect(claude).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Skills", exact: false }).click();
   await expect(
@@ -126,17 +137,17 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     await expect(claude).toHaveAttribute("aria-pressed", "true");
   }
   await claude.click();
-  await expect(claude).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator('.agent-filter [aria-pressed="true"]')).toHaveCount(
+    4,
+  );
   await expect(page.locator(".agent-filter .dimmed")).toHaveCount(0);
   await expect(page.locator(".agent-filter .client-icon").first()).toHaveCSS(
     "opacity",
     "1",
   );
-  await expect(page.getByRole("status")).toContainText(
-    "Select an agent below the avatar",
-  );
+  await expect(page.locator("main")).not.toContainText("Select an agent");
   await expect(
     page.getByRole("heading", { name: "Estimated startup context" }),
-  ).toHaveCount(0);
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });

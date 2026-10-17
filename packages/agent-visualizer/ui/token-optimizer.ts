@@ -22,7 +22,7 @@ import { WorkspaceState } from "./workspace-state";
 export class TokenOptimizer {
   private readonly api = inject(WorkspaceApi);
   private readonly state = inject(WorkspaceState);
-  readonly labels = labels;
+  readonly labels = { ...labels, all: "all agents" };
   readonly client = this.state.client;
   readonly model = signal("gpt-5.3-codex");
   readonly estimate = signal<TokenEstimate | null>(null);
@@ -42,12 +42,6 @@ export class TokenOptimizer {
       onCleanup(() => {
         current = false;
       });
-      if (client === "all") {
-        this.estimate.set(null);
-        this.loading.set(false);
-        this.error.set("");
-        return;
-      }
       this.loading.set(true);
       this.error.set("");
       void this.api

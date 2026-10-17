@@ -118,7 +118,7 @@ export interface ModelPrice {
   verifiedAt: string;
 }
 export interface TokenEstimate {
-  client: Client;
+  client: Client | "all";
   model: ModelPrice;
   models: ModelPrice[];
   method: string;

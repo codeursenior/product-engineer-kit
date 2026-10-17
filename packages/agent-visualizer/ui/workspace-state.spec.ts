@@ -66,7 +66,7 @@ it("persists the theme and restores it in a new state service", () => {
   expect(TestBed.inject(WorkspaceState).theme()).toBe("dark");
 });
 
-it("persists agent and scope across reloads and allows returning to all agents", () => {
+it("starts with all agents on reload, retains scope and allows filtering one agent", () => {
   const state = TestBed.inject(WorkspaceState);
   state.toggleClient("codex");
   state.scope.set("user");
@@ -76,16 +76,16 @@ it("persists agent and scope across reloads and allows returning to all agents",
     providers: [{ provide: WorkspaceApi, useValue: { scan } }],
   });
   const restored = TestBed.inject(WorkspaceState);
-  expect(restored.client()).toBe("codex");
+  expect(restored.client()).toBe("all");
   expect(restored.scope()).toBe("user");
   restored.toggleClient("claude");
   expect(restored.client()).toBe("claude");
   restored.toggleClient("claude");
   expect(restored.client()).toBe("all");
   TestBed.tick();
-  expect(JSON.parse(localStorage.getItem("pek:filters:v1")!).client).toBe(
-    "all",
-  );
+  expect(JSON.parse(localStorage.getItem("pek:filters:v1")!)).toEqual({
+    scope: "user",
+  });
 });
 it("falls back to all for corrupt or unsupported saved filters", () => {
   localStorage.setItem("pek:filters:v1", "{broken");
@@ -111,4 +111,14 @@ it("filters the whiteboard summary by the global agent", async () => {
   expect(state.summary()).toBe("0 skills · 0 project · 0 user");
   state.toggleClient("codex");
   expect(state.summary()).toBe("1 skills · 1 project · 0 user");
+});
+
+it("ignores a previously saved agent on startup", () => {
+  localStorage.setItem(
+    "pek:filters:v1",
+    JSON.stringify({ client: "codex", scope: "project" }),
+  );
+  const state = TestBed.inject(WorkspaceState);
+  expect(state.client()).toBe("all");
+  expect(state.scope()).toBe("project");
 });

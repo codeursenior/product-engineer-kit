@@ -124,12 +124,16 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   );
   state.toggleClient("claude");
   await fixture.whenStable();
-  expect(root.textContent).toContain("Select an agent below the avatar");
-  expect(root.querySelector("tbody")).toBeNull();
+  http
+    .expectOne("/api/token-estimate?client=all&model=claude-sonnet-5.5")
+    .flush({ ...estimate, client: "all" });
+  await fixture.whenStable();
+  expect(root.textContent).not.toContain("Select an agent");
+  await expect.poll(() => root.querySelector("tbody")).not.toBeNull();
   http.verify();
 });
 
-it("asks for an agent without requesting a combined estimate in all mode", async () => {
+it("requests all agents immediately on startup", async () => {
   TestBed.configureTestingModule({
     providers: [provideHttpClient(), provideHttpClientTesting()],
   });
@@ -137,7 +141,16 @@ it("asks for an agent without requesting a combined estimate in all mode", async
   const fixture = TestBed.createComponent(TokenOptimizer);
   await fixture.whenStable();
   const root: HTMLElement = fixture.nativeElement;
-  expect(root.textContent).toContain("Select an agent below the avatar");
-  http.expectNone((request) => request.url.includes("token-estimate"));
+  expect(root.textContent).not.toContain("Select an agent");
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-5.3-codex")
+    .flush(
+      { error: "Unavailable" },
+      { status: 500, statusText: "Server error" },
+    );
+  await fixture.whenStable();
+  await expect
+    .poll(() => root.querySelector('[role="alert"]')?.textContent)
+    .toContain("Unavailable");
   http.verify();
 });

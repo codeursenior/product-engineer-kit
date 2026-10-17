@@ -2,7 +2,6 @@ import { Injectable, computed, effect, inject, signal } from "@angular/core";
 import type { Client, ScanData, Scope } from "../src/contracts";
 import { WorkspaceApi } from "./api";
 import {
-  clientNames,
   filterRows,
   message,
   type Row,
@@ -11,7 +10,7 @@ import {
 } from "./models";
 
 const filterStorageKey = "pek:filters:v1";
-function savedFilters(): { client: Client | "all"; scope: Scope | "all" } {
+function savedFilters(): { scope: Scope | "all" } {
   try {
     const saved: unknown = JSON.parse(
       localStorage.getItem(filterStorageKey) ?? "null",
@@ -19,8 +18,6 @@ function savedFilters(): { client: Client | "all"; scope: Scope | "all" } {
     if (saved && typeof saved === "object") {
       const value = saved as Record<string, unknown>;
       return {
-        client:
-          clientNames.find((client) => client === value["client"]) ?? "all",
         scope:
           value["scope"] === "project" || value["scope"] === "user"
             ? value["scope"]
@@ -30,7 +27,7 @@ function savedFilters(): { client: Client | "all"; scope: Scope | "all" } {
   } catch {
     /* Ignore unavailable or invalid browser preferences. */
   }
-  return { client: "all", scope: "all" };
+  return { scope: "all" };
 }
 
 @Injectable({ providedIn: "root" })
@@ -44,7 +41,7 @@ export class WorkspaceState {
   });
   private readonly savedFilters = savedFilters();
   readonly scope = signal<Scope | "all">(this.savedFilters.scope);
-  readonly client = signal<Client | "all">(this.savedFilters.client);
+  readonly client = signal<Client | "all">("all");
   readonly filterStorageError = signal("");
   readonly boardSkills = computed(() =>
     filterRows(this.data()?.skills ?? [], "all", this.client(), ""),
@@ -84,10 +81,6 @@ export class WorkspaceState {
     if (this.error()) return "Session unavailable";
     if (!this.data()) return "Reading local assets";
     if (this.tab() === "checklist") return "Local installation checks";
-    if (this.tab() === "optimizer")
-      return this.client() === "all"
-        ? "Select an agent to estimate context"
-        : "Static local estimates · One selected agent";
     const rows = this.whiteboard() ? this.boardSkills() : this.rows();
     const project = rows.filter((row) => row.scope === "project").length;
     const noun =
@@ -101,7 +94,7 @@ export class WorkspaceState {
   constructor() {
     document.documentElement.dataset["theme"] = this.theme();
     effect(() => {
-      const filters = { client: this.client(), scope: this.scope() };
+      const filters = { scope: this.scope() };
       try {
         localStorage.setItem(filterStorageKey, JSON.stringify(filters));
         this.filterStorageError.set("");

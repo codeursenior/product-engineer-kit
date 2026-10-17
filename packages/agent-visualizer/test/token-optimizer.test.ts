@@ -56,6 +56,18 @@ test("estimates one agent's startup and on-demand context through the authentica
   expect(data.onDemand).toMatchObject({ tokens: 9, words: 5, bytes: 32 });
   expect(data.entries.map((entry) => entry.tokens)).toEqual([6, 4, 4, 3, 2]);
   endpoint.searchParams.set("client", "all");
+  const combined: TokenEstimate = await (
+    await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` } })
+  ).json();
+  expect(combined.client).toBe("all");
+  expect(combined.entries).toHaveLength(6);
+  expect(new Set(combined.entries.map((entry) => entry.id)).size).toBe(6);
+  expect(combined.startup.tokens).toBe(13);
+  expect(combined.onDemand).toEqual(data.onDemand);
+  expect(combined.entries.some((entry) => entry.path === "CLAUDE.md")).toBe(
+    true,
+  );
+  endpoint.searchParams.set("client", "unsupported");
   expect(
     (await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` } }))
       .status,
@@ -71,7 +83,8 @@ test("keeps user context, conditional rules and duplicate skills scoped to the s
     "---\nname: shared\ndescription: Shared workflow\n---\nSee [notes](notes.md)";
   for (const [name, text] of Object.entries({
     "project/AGENTS.md": "Fallback instructions",
-    "project/AGENTS.override.md": "Override instructions",
+    "project/AGENTS.override.md":
+      "Override instructions [Claude](.claude/CLAUDE.md)",
     "project/.claude/CLAUDE.md": "Claude project instructions [[Guidelines]]",
     "project/docs/guidelines.md": "Shared guidelines",
     "project/.claude/rules/global.md": "Global rule",
@@ -122,6 +135,22 @@ test("keeps user context, conditional rules and duplicate skills scoped to the s
   expect(codex.entries.filter((entry) => entry.scope === "user")).toHaveLength(
     1,
   );
+  const combined = await get("all");
+  expect(
+    codex.entries.find(
+      (entry) => entry.name === "CLAUDE.md" && entry.scope === "project",
+    )?.portion,
+  ).toBe("on-demand");
+  expect(
+    combined.entries.filter(
+      (entry) => entry.name === "CLAUDE.md" && entry.scope === "project",
+    ),
+  ).toHaveLength(1);
+  expect(
+    combined.entries.find(
+      (entry) => entry.name === "CLAUDE.md" && entry.scope === "project",
+    )?.portion,
+  ).toBe("startup");
   const claude = await get("claude");
   expect(
     claude.entries.find((entry) => entry.name === "guidelines.md")?.portion,
