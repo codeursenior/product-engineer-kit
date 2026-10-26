@@ -1598,6 +1598,9 @@ tbody tr:hover {
   width: 22px;
   height: 22px;
 }
+[data-theme="dark"] .agent-filter .client-icon--copilot img {
+  filter: none;
+}
 .sidebar-rescan {
   margin-bottom: 10px;
 }
