@@ -4,8 +4,8 @@ import {
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
 import { TestBed } from "@angular/core/testing";
-import { beforeEach, expect, it } from "vitest";
-import type { TokenEstimate } from "../src/contracts";
+import { beforeEach, expect, it, vi } from "vitest";
+import type { ScanData, TokenEstimate } from "../src/contracts";
 import { WorkspaceState } from "./workspace-state";
 import { TokenOptimizer } from "./token-optimizer";
 
@@ -95,7 +95,7 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     [...root.querySelectorAll("thead th")].map((cell) =>
       cell.textContent?.trim(),
     ),
-  ).toEqual(["File or skill", "Tokens ≈", "Words"]);
+  ).toEqual(["Context source", "Tokens ≈", "Words"]);
   expect(root.querySelectorAll("tbody tr")[0]?.children).toHaveLength(3);
   expect(root.querySelector(".startup .cost")?.textContent).toContain(
     "$0.0002",
@@ -186,5 +186,300 @@ it("requests all agents immediately on startup", async () => {
   await expect
     .poll(() => root.querySelector('[role="alert"]')?.textContent)
     .toContain("Unavailable");
+  http.verify();
+});
+
+function workspace(path = "/project"): ScanData {
+  return {
+    project: { name: "project", path },
+    scannedAt: "2026-10-26T10:00:00.000Z",
+    nodes: [],
+    rules: [],
+    edges: [],
+    skills: [],
+    skillEdges: [],
+    mcp: [],
+    warnings: [],
+    limits: { includeUser: false, scannedFiles: 0, truncated: false },
+  };
+}
+
+function mcpEstimate(pending: boolean): TokenEstimate {
+  const model = {
+    id: "gpt-6.1-sol",
+    name: "GPT-6.1 Sol",
+    inputPerMillion: 2,
+    source: "https://example.com/pricing",
+    verifiedAt: "2026-10-26",
+  };
+  return {
+    client: "all",
+    model,
+    models: [model],
+    method: "Local heuristic",
+    entries: [],
+    startup: { tokens: 120, words: 40, bytes: 480, inputCost: 0.00024 },
+    onDemand: { tokens: 240, words: 80, bytes: 960, inputCost: 0.00048 },
+    includeUser: false,
+    warnings: [],
+    mcp: {
+      enabled: true,
+      pending,
+      complete: !pending,
+      profiles: [
+        {
+          client: "codex",
+          choice: "documented",
+          label: "Native Codex",
+          source: "https://example.com/codex",
+          verifiedAt: "2026-10-26",
+          assumption: "Documented default; actual runtime not verified.",
+        },
+      ],
+      servers: [
+        {
+          id: "docs",
+          name: "Documentation",
+          path: ".codex/config.toml",
+          clients: ["codex"],
+          status: pending ? "pending" : "ready",
+          detail: pending ? "Reading tool catalog" : "Tool catalog collected",
+          toolCount: pending ? null : 2,
+          partial: pending,
+          collectedAt: pending ? undefined : "2026-10-26T10:00:00.000Z",
+          startup: pending
+            ? null
+            : { tokens: 10, words: 4, bytes: 40, inputCost: 0.00002 },
+          onDemand: pending
+            ? null
+            : { tokens: 100, words: 20, bytes: 400, inputCost: 0.0002 },
+        },
+      ],
+    },
+  };
+}
+
+it("updates automatic MCP progress without disabling pricing and stops polling when complete", async () => {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  const http = TestBed.inject(HttpTestingController);
+  TestBed.inject(WorkspaceState).data.set(workspace());
+  const fixture = TestBed.createComponent(TokenOptimizer);
+  const root: HTMLElement = fixture.nativeElement;
+  await fixture.whenStable();
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(mcpEstimate(true));
+  await fixture.whenStable();
+  await expect
+    .poll(() => root.querySelector('[aria-label="MCP context"]')?.textContent)
+    .toContain("Analyzing MCP servers");
+  expect(
+    root.querySelector<HTMLSelectElement>("#optimizer-model")?.disabled,
+  ).toBe(false);
+  expect(root.querySelector(".mcp-servers tbody")?.textContent).not.toContain(
+    "0 tokens",
+  );
+  const iceberg = root.querySelector(".iceberg-panel");
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(mcpEstimate(false));
+  await fixture.whenStable();
+  await expect
+    .poll(() => root.querySelector(".mcp-servers tbody")?.textContent)
+    .toContain("100");
+  expect(root.querySelector(".iceberg-panel")).toBe(iceberg);
+  expect(
+    root.querySelector('[aria-label="MCP context"]')?.textContent,
+  ).toContain("2026-10-26");
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  http.expectNone("/api/token-estimate?client=all&model=gpt-6.1-sol");
+  http.verify();
+  fixture.destroy();
+});
+
+it("persists loading assumptions per project without changing the selected price model", async () => {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  const http = TestBed.inject(HttpTestingController);
+  const state = TestBed.inject(WorkspaceState);
+  state.data.set(workspace());
+  let fixture = TestBed.createComponent(TokenOptimizer);
+  await fixture.whenStable();
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(mcpEstimate(false));
+  await fixture.whenStable();
+  const root: HTMLElement = fixture.nativeElement;
+  await expect
+    .poll(() => root.querySelector('[data-mcp-client="codex"]'))
+    .not.toBeNull();
+  const select = root.querySelector<HTMLSelectElement>(
+    '[data-mcp-client="codex"]',
+  );
+  expect(select).not.toBeNull();
+  select!.value = "eager";
+  select!.dispatchEvent(new Event("change"));
+  await fixture.whenStable();
+  http
+    .expectOne(
+      "/api/token-estimate?client=all&model=gpt-6.1-sol&mcp_codex=eager",
+    )
+    .flush(mcpEstimate(false));
+  await fixture.whenStable();
+  expect(root.querySelector<HTMLSelectElement>("#optimizer-model")?.value).toBe(
+    "gpt-6.1-sol",
+  );
+  fixture.destroy();
+  fixture = TestBed.createComponent(TokenOptimizer);
+  await fixture.whenStable();
+  http
+    .expectOne(
+      "/api/token-estimate?client=all&model=gpt-6.1-sol&mcp_codex=eager",
+    )
+    .flush(mcpEstimate(false));
+  await fixture.whenStable();
+  fixture.destroy();
+  state.data.set(workspace("/other-project"));
+  fixture = TestBed.createComponent(TokenOptimizer);
+  await fixture.whenStable();
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(mcpEstimate(false));
+  await fixture.whenStable();
+  fixture.destroy();
+  http.verify();
+});
+
+it("cancels pending MCP polling when destroyed and reports unavailable browser storage", async () => {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  const http = TestBed.inject(HttpTestingController);
+  const state = TestBed.inject(WorkspaceState);
+  const getItem = vi
+    .spyOn(Storage.prototype, "getItem")
+    .mockImplementation(() => {
+      throw new Error("Unavailable");
+    });
+  state.data.set(workspace());
+  const fixture = TestBed.createComponent(TokenOptimizer);
+  await fixture.whenStable();
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(mcpEstimate(true));
+  await fixture.whenStable();
+  const root: HTMLElement = fixture.nativeElement;
+  await expect
+    .poll(() => root.textContent)
+    .toContain("MCP profiles could not be restored");
+  fixture.destroy();
+  getItem.mockRestore();
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  http.expectNone("/api/token-estimate?client=all&model=gpt-6.1-sol");
+  http.verify();
+});
+
+it("ignores an old MCP poll after switching agents", async () => {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  const http = TestBed.inject(HttpTestingController);
+  const state = TestBed.inject(WorkspaceState);
+  state.data.set(workspace());
+  const fixture = TestBed.createComponent(TokenOptimizer);
+  const root: HTMLElement = fixture.nativeElement;
+  await fixture.whenStable();
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(mcpEstimate(true));
+  await fixture.whenStable();
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  const old = http.expectOne(
+    "/api/token-estimate?client=all&model=gpt-6.1-sol",
+  );
+  expect(
+    root.querySelector<HTMLSelectElement>("#optimizer-model")?.disabled,
+  ).toBe(false);
+  state.toggleClient("codex");
+  await fixture.whenStable();
+  http
+    .expectOne("/api/token-estimate?client=codex&model=gpt-6.1-sol")
+    .flush({ ...mcpEstimate(false), client: "codex" });
+  await fixture.whenStable();
+  old.flush({
+    ...mcpEstimate(true),
+    onDemand: { tokens: 999, words: 99, bytes: 999, inputCost: 9 },
+  });
+  await fixture.whenStable();
+  await expect
+    .poll(() => root.querySelector(".on-demand .token-total")?.textContent)
+    .toContain("240");
+  expect(
+    root.querySelector(".on-demand .token-total")?.textContent,
+  ).not.toContain("999");
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  http.expectNone("/api/token-estimate?client=all&model=gpt-6.1-sol");
+  http.expectNone("/api/token-estimate?client=codex&model=gpt-6.1-sol");
+  fixture.destroy();
+  http.verify();
+});
+
+it("shows one startup breakdown row per MCP server while summing its components", async () => {
+  TestBed.configureTestingModule({
+    providers: [provideHttpClient(), provideHttpClientTesting()],
+  });
+  const http = TestBed.inject(HttpTestingController);
+  const fixture = TestBed.createComponent(TokenOptimizer);
+  await fixture.whenStable();
+  const estimate = mcpEstimate(false);
+  estimate.entries = [
+    {
+      id: "docs:name",
+      mcpServerId: "docs",
+      name: "Documentation",
+      path: ".codex/config.toml",
+      scope: "project",
+      portion: "startup",
+      kind: "mcp",
+      tokens: 7,
+      words: 2,
+      bytes: 28,
+      inputCost: 0.000014,
+    },
+    {
+      id: "docs:schema",
+      mcpServerId: "docs",
+      name: "Documentation",
+      path: ".codex/config.toml",
+      scope: "project",
+      portion: "startup",
+      kind: "mcp",
+      tokens: 8,
+      words: 4,
+      bytes: 32,
+      inputCost: 0.000016,
+    },
+  ];
+  http
+    .expectOne("/api/token-estimate?client=all&model=gpt-6.1-sol")
+    .flush(estimate);
+  await fixture.whenStable();
+  const root: HTMLElement = fixture.nativeElement;
+  await expect
+    .poll(
+      () =>
+        root.querySelectorAll(".breakdown:not(.mcp-servers) tbody tr").length,
+    )
+    .toBe(1);
+  const row = root.querySelector(".breakdown:not(.mcp-servers) tbody tr")!;
+  expect(row.querySelector("th strong")?.textContent).toBe("Documentation");
+  expect(
+    [...row.querySelectorAll("td")].map((cell) => cell.textContent?.trim()),
+  ).toEqual(["15", "6"]);
+  fixture.destroy();
   http.verify();
 });

@@ -51,7 +51,7 @@
       <article class="portion startup">
         <span class="eyebrow">Above water</span>
         <h2>Estimated startup context</h2>
-        <p>Applicable instructions and skill catalog entries.</p>
+        <p>Applicable instructions, skill catalog entries and MCP metadata.</p>
         <strong class="token-total"
           >{{ data.startup.tokens | number }}
           <span>estimated tokens</span></strong
@@ -65,7 +65,10 @@
       <article class="portion on-demand">
         <span class="eyebrow">Below water</span>
         <h2>On-demand context</h2>
-        <p>Linked documents, skill bodies and scoped instructions.</p>
+        <p>
+          Linked documents, skill bodies, scoped instructions and MCP
+          definitions.
+        </p>
         <strong class="token-total"
           >{{ data.onDemand.tokens | number }}
           <span>estimated tokens</span></strong
@@ -78,6 +81,108 @@
       </article>
     </div>
   </div>
+  @if (data.mcp; as mcp) {
+  <section class="mcp-context" aria-label="MCP context">
+    <div class="mcp-heading">
+      <h2>MCP context</h2>
+      <p role="status">
+        @if (!mcp.enabled) { Automatic MCP analysis is disabled. } @else if
+        (mcp.pending) { Analyzing MCP servers… } @else if (!mcp.complete) {
+        Partial MCP coverage. Totals include known components only. } @else {
+        MCP analysis complete. }
+      </p>
+    </div>
+    @if (profileNotice()) {
+    <p class="notice" role="status">{{ profileNotice() }}</p>
+    }
+    <div class="mcp-profiles">
+      @for (profile of mcpProfiles(); track profile.client) {
+      <div class="mcp-profile">
+        <label [for]="'mcp-profile-' + profile.client">
+          MCP loading profile for {{ labels[profile.client] }}
+          <select
+            [id]="'mcp-profile-' + profile.client"
+            [attr.data-mcp-client]="profile.client"
+            #profileSelect
+            [value]="profiles()[profile.client] ?? 'documented'"
+            (change)="setProfile(profile.client, profileSelect.value)"
+          >
+            <option value="documented">Documented default</option>
+            <option value="eager">Load upfront</option>
+            <option value="deferred">Load on demand</option>
+          </select>
+        </label>
+        <small>{{ profile.label }}. {{ profile.assumption }}</small>
+        <small
+          ><a [href]="profile.source" target="_blank" rel="noreferrer"
+            >Source</a
+          >
+          · verified {{ profile.verifiedAt }}</small
+        >
+      </div>
+      }
+    </div>
+    @if (mcp.servers.length) {
+    <div class="breakdown mcp-servers">
+      <table>
+        <caption>
+          Observed tool catalogs. Estimates exclude tool results and service
+          fees.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">MCP server</th>
+            <th scope="col">Tools</th>
+            <th scope="col">Startup tokens ≈</th>
+            <th scope="col">On-demand tokens ≈</th>
+            <th scope="col">Analysis</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (server of mcp.servers; track server.id) {
+          <tr>
+            <th scope="row">
+              <strong>{{ server.name }}</strong><small>{{ server.path }}</small>
+            </th>
+            <td>
+              @if (server.toolCount !== null) { {{ server.toolCount | number }}
+              } @else { Unknown }
+            </td>
+            <td>
+              @if (server.startup; as startup) { {{ startup.tokens | number
+              }}<small
+                >${{ startup.inputCost | number:'1.4-4' }} one-load input</small
+              >
+              } @else { Unknown }
+            </td>
+            <td>
+              @if (server.onDemand; as onDemand) { {{ onDemand.tokens | number
+              }}<small
+                >${{ onDemand.inputCost | number:'1.4-4' }} one-load
+                input</small
+              >
+              } @else { Unknown }
+            </td>
+            <td class="mcp-status">
+              <strong
+                >{{ server.status }}@if (server.partial) { · partial }</strong
+              ><small>{{ server.detail }}</small>@if (server.collectedAt) {
+              <small
+                >Collected {{ server.collectedAt | date:'yyyy-MM-dd HH:mm'
+                }}</small
+              >
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    } @else {
+    <p>No MCP servers configured for {{ labels[data.client] }}.</p>
+    }
+  </section>
+  }
   <h2 class="section-title">Startup context breakdown</h2>
   <div class="breakdown">
     <table>
@@ -86,7 +191,7 @@
       </caption>
       <thead>
         <tr>
-          <th scope="col">File or skill</th>
+          <th scope="col">Context source</th>
           <th scope="col">Tokens ≈</th>
           <th scope="col">Words</th>
         </tr>

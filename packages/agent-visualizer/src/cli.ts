@@ -15,6 +15,7 @@ Explore context, skills and MCP configuration in your default browser.
   --port <number>   Choose a port (default: 4242; 0 for an available port)
   --no-open         Print the URL without opening a browser
   --project-only    Skip user-level assets
+  --no-mcp-analysis Skip MCP connections and server startup
   --help, -h        Show this help
   --version, -v     Show the installed version
 
@@ -27,6 +28,7 @@ try {
       port: { type: "string" },
       "no-open": { type: "boolean" },
       "project-only": { type: "boolean" },
+      "no-mcp-analysis": { type: "boolean" },
       help: { type: "boolean", short: "h" },
       version: { type: "boolean", short: "v" },
     },
@@ -59,6 +61,7 @@ try {
       root,
       port,
       includeUser: !values["project-only"],
+      analyzeMcp: !values["no-mcp-analysis"],
     });
     console.log(`\n  ${url}\n\n  Local workspace · Ctrl+C to stop\n`);
     if (!values["no-open"]) {

@@ -14,10 +14,13 @@ import type { ScanOptions } from "./scan/types.js";
 import { scanProject } from "./scanner.js";
 import { optimizationChecks } from "./optimization-checks.js";
 import { estimateTokens } from "./token-estimator.js";
+import { startMcpAnalysis } from "./mcp/collector.js";
+import { parseMcpProfiles } from "./mcp/estimate.js";
 
 export interface ServerOptions extends ScanOptions {
   root: string;
   port?: number;
+  analyzeMcp?: boolean;
 }
 export interface LocalServer {
   server: http.Server;
@@ -28,9 +31,11 @@ export interface LocalServer {
 export async function startServer({
   root,
   port = 0,
+  analyzeMcp = true,
   ...options
 }: ServerOptions): Promise<LocalServer> {
   let snapshot = await scanProject(root, options);
+  let mcpRun: ReturnType<typeof startMcpAnalysis> | undefined;
   let refresh: Promise<void> | undefined;
   let checking: ReturnType<typeof optimizationChecks> | undefined;
   const files = new FileOperations();
@@ -93,20 +98,42 @@ export async function startServer({
           );
           return send(200, await checking);
         }
-        if (url.pathname === "/api/token-estimate")
+        if (url.pathname === "/api/token-estimate") {
+          let profiles;
+          try {
+            profiles = parseMcpProfiles(url.searchParams);
+          } catch {
+            return send(400, {
+              error: "Select a supported MCP loading profile.",
+            });
+          }
           return send(
             200,
             estimateTokens(
               snapshot,
               url.searchParams.get("client"),
               url.searchParams.get("model"),
+              profiles,
             ),
           );
+        }
         if (url.pathname === "/api/scan") {
           if (url.searchParams.has("refresh")) {
-            refresh ??= scanProject(root, options)
+            refresh ??= Promise.resolve()
+              .then(async () => {
+                const stopped = mcpRun?.done;
+                mcpRun?.cancel();
+                const result = await scanProject(root, options);
+                await stopped;
+                return result;
+              })
               .then((result) => {
+                if (!server.listening) return;
                 snapshot = result;
+                mcpRun = startMcpAnalysis(snapshot.mcpTargets ?? [], {
+                  enabled: analyzeMcp,
+                });
+                snapshot.mcpAnalysis = mcpRun.state;
               })
               .finally(() => {
                 refresh = undefined;
@@ -154,6 +181,7 @@ export async function startServer({
       send(500, { error: "UI assets missing. Run npm run build." });
     }
   });
+  server.once("close", () => mcpRun?.cancel());
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(port, "127.0.0.1", resolve);
@@ -161,6 +189,8 @@ export async function startServer({
   const address = server.address();
   if (!address || typeof address === "string")
     throw new Error("Server did not bind to a local port.");
+  mcpRun = startMcpAnalysis(snapshot.mcpTargets ?? [], { enabled: analyzeMcp });
+  snapshot.mcpAnalysis = mcpRun.state;
   return {
     server,
     token,

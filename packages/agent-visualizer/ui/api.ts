@@ -3,6 +3,7 @@ import { Injectable, inject } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 import type {
   Client,
+  McpProfiles,
   TokenEstimate,
   OptimizationChecks,
   ContentResponse,
@@ -53,11 +54,18 @@ export class WorkspaceApi {
   scan(refresh = false): Promise<ScanData> {
     return this.request("GET", `/api/scan${refresh ? "?refresh=1" : ""}`);
   }
-  estimate(client: Client | "all", model: string): Promise<TokenEstimate> {
-    return this.request(
-      "GET",
-      `/api/token-estimate?client=${client}&model=${encodeURIComponent(model)}`,
-    );
+  estimate(
+    client: Client | "all",
+    model: string,
+    profiles: McpProfiles = {},
+  ): Promise<TokenEstimate> {
+    const params = new URLSearchParams({ client, model });
+    for (const selected of ["codex", "claude", "cursor", "copilot"] as const) {
+      const choice = profiles[selected];
+      if (choice && choice !== "documented")
+        params.set(`mcp_${selected}`, choice);
+    }
+    return this.request("GET", `/api/token-estimate?${params}`);
   }
   optimizationChecks(): Promise<OptimizationChecks> {
     return this.request("GET", "/api/optimization-checks");

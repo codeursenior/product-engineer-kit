@@ -103,12 +103,19 @@ export interface ContextMetrics {
   inputCost: number;
 }
 export interface TokenEntry extends ContextMetrics {
+  mcpServerId?: string;
   id: string;
   name: string;
   path: string;
   scope: Scope;
   portion: ContextPortion;
-  kind: "instruction" | "rule" | "document" | "skill-catalog" | "skill-body";
+  kind:
+    | "instruction"
+    | "rule"
+    | "document"
+    | "skill-catalog"
+    | "skill-body"
+    | "mcp";
 }
 export interface ModelPrice {
   id: string;
@@ -128,6 +135,39 @@ export interface TokenEstimate {
   onDemand: ContextMetrics;
   includeUser: boolean;
   warnings: string[];
+  mcp?: McpEstimate;
+}
+export type McpLoading = "documented" | "eager" | "deferred";
+export type McpProfiles = Partial<Record<Client, McpLoading>>;
+export type McpAnalysisStatus =
+  "pending" | "ready" | "disabled" | "excluded" | "unavailable";
+export interface McpProfile {
+  client: Client;
+  choice: McpLoading;
+  label: string;
+  source: string;
+  verifiedAt: string;
+  assumption: string;
+}
+export interface McpEstimateServer {
+  id: string;
+  name: string;
+  path: string;
+  clients: Client[];
+  status: McpAnalysisStatus;
+  detail: string;
+  toolCount: number | null;
+  collectedAt?: string;
+  partial: boolean;
+  startup: ContextMetrics | null;
+  onDemand: ContextMetrics | null;
+}
+export interface McpEstimate {
+  enabled: boolean;
+  pending: boolean;
+  complete: boolean;
+  profiles: McpProfile[];
+  servers: McpEstimateServer[];
 }
 export interface OptimizationCheck {
   id: string;

@@ -2,6 +2,8 @@
 
 Status: implemented. The implementation request approved the confirmed decisions below.
 
+MCP catalogs now contribute known startup and deferred components through automatic background analysis. Loading profiles are independent of the selected pricing model, and incomplete coverage is explicit. See [MCP context estimates](mcp-context.md) for the collection contract, dated official sources, component counting and exclusions.
+
 ## Confirmed decisions
 
 - Place Token Optimizer after MCP servers in the navigation, with a static context estimate represented as an iceberg. Keep the optimization checklist in its own following tab.

@@ -6,7 +6,9 @@ import type {
   ScanData,
   TokenEntry,
   TokenEstimate,
+  McpProfiles,
 } from "./contracts.js";
+import { mcpInventory } from "./mcp/estimate.js";
 import { HttpError } from "./http/errors.js";
 import {
   clientsForContextEntry,
@@ -255,6 +257,7 @@ export function estimateTokens(
   snapshot: Snapshot,
   clientId: string | null,
   modelId: string | null,
+  profiles: McpProfiles = {},
 ): TokenEstimate {
   const client =
     clientId === "all" ? "all" : clients.find((client) => client === clientId);
@@ -262,6 +265,9 @@ export function estimateTokens(
   if (!client || !model)
     throw new HttpError(400, "Select supported agents and a model.");
   const inventory = new Map<string, TokenEntry>();
+  const selectedClients = client === "all" ? clients : [client];
+  const mcp = mcpInventory(snapshot, selectedClients, profiles);
+  for (const entry of mcp.entries) inventory.set(entry.id, entry);
   for (const selected of client === "all" ? clients : [client]) {
     for (const entry of snapshot.tokenInventory[selected]) {
       const existing = inventory.get(entry.id);
@@ -297,6 +303,26 @@ export function estimateTokens(
         }),
         { tokens: 0, words: 0, bytes: 0, inputCost: 0 },
       );
+  for (const server of mcp.coverage.servers) {
+    if (server.status !== "ready") continue;
+    const ids = mcp.membership.get(server.id);
+    if (server.partial && !ids?.size) continue;
+    for (const [key, portion] of [
+      ["startup", "startup"],
+      ["onDemand", "on-demand"],
+    ] as const)
+      server[key] = entries
+        .filter((entry) => ids?.has(entry.id) && entry.portion === portion)
+        .reduce(
+          (sum, entry) => ({
+            tokens: sum.tokens + entry.tokens,
+            words: sum.words + entry.words,
+            bytes: sum.bytes + entry.bytes,
+            inputCost: sum.inputCost + entry.inputCost,
+          }),
+          { tokens: 0, words: 0, bytes: 0, inputCost: 0 },
+        );
+  }
   return {
     client,
     model,
@@ -307,5 +333,6 @@ export function estimateTokens(
     onDemand: total("on-demand"),
     includeUser: snapshot.data.limits.includeUser,
     warnings: snapshot.data.warnings,
+    mcp: mcp.coverage,
   };
 }

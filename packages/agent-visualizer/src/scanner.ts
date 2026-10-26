@@ -62,7 +62,10 @@ export async function scanProject(
     addContext,
   } = await discoverAssets(entries, env);
   const edges = buildGraph(entries, context, addContext, env);
-  const mcp = await discoverMcp(projectConfigs, env);
+  const { servers: mcp, targets: mcpTargets } = await discoverMcp(
+    projectConfigs,
+    env,
+  );
   const data: ScanData = {
     project: { name: path.basename(root), path: root },
     agent: await discoverIdentity(root),
@@ -77,6 +80,7 @@ export async function scanProject(
     limits: { includeUser, scannedFiles: inspected, truncated: capped },
   };
   return {
+    mcpTargets,
     data,
     tokenInventory: contextInventory(entries, data, env, skillCatalogClients),
     content,

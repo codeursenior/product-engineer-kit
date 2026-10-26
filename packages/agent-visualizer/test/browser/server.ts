@@ -1,5 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import http from "node:http";
+import { once } from "node:events";
 // Exercise the built server with the same type contract as its source.
 import type * as Server from "../../src/server.js";
 const { startServer }: typeof Server = await import(
@@ -13,6 +15,57 @@ await fs.mkdir(base, { recursive: true });
 // Only this synthetic fixture directory is ever reset.
 await fs.rm(root, { recursive: true, force: true });
 await fs.rm(home, { recursive: true, force: true });
+const mcpFixture = http.createServer(async (req, res) => {
+  let body = "";
+  for await (const chunk of req) body += chunk;
+  if (!body) {
+    res.writeHead(405).end();
+    return;
+  }
+  const request = JSON.parse(body);
+  if (request.id === undefined) {
+    res.writeHead(202).end();
+    return;
+  }
+  const result =
+    request.method === "initialize"
+      ? {
+          protocolVersion: "2025-11-25",
+          capabilities: { tools: {} },
+          serverInfo: { name: "fixture", version: "1" },
+        }
+      : request.method === "tools/list"
+        ? {
+            tools: [
+              {
+                name: "lookup",
+                description: "Synthetic documentation tool. ".repeat(80),
+                inputSchema: {
+                  type: "object",
+                  properties: { query: { type: "string" } },
+                },
+              },
+            ],
+          }
+        : undefined;
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(
+    JSON.stringify(
+      result === undefined
+        ? {
+            jsonrpc: "2.0",
+            id: request.id,
+            error: { code: -32601, message: "Unavailable" },
+          }
+        : { jsonrpc: "2.0", id: request.id, result },
+    ),
+  );
+});
+mcpFixture.listen(0, "127.0.0.1");
+await once(mcpFixture, "listening");
+const mcpAddress = mcpFixture.address();
+if (!mcpAddress || typeof mcpAddress === "string")
+  throw new Error("No MCP fixture port");
 const files: Record<string, string> = {
   "project/AGENTS.md":
     "# Project guidance\n[Architecture](docs/architecture.md)\n",
@@ -27,8 +80,14 @@ const files: Record<string, string> = {
     "---\nname: review\ndescription: Review changes\ndisable-model-invocation: true\n---\nReview behavior and tests.",
   "project/.claude/skills/review/SKILL.md":
     "---\nname: review\ndescription: Review changes\ndisable-model-invocation: true\n---\nReview behavior and tests.",
-  "project/.cursor/mcp.json":
-    '{"mcpServers":{"docs":{"url":"https://example.invalid/SECRET","headers":{"Authorization":"SECRET"}}}}',
+  "project/.cursor/mcp.json": JSON.stringify({
+    mcpServers: {
+      docs: {
+        url: `http://127.0.0.1:${mcpAddress.port}/mcp`,
+        headers: { Authorization: "SECRET" },
+      },
+    },
+  }),
   "home/.codex/AGENTS.md": "# Personal guidance\n",
 };
 for (const [relative, text] of Object.entries(files)) {
@@ -51,5 +110,7 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
     session.server.closeAllConnections();
     session.server.close();
+    mcpFixture.closeAllConnections();
+    mcpFixture.close();
   });
 }
