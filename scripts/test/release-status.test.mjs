@@ -60,7 +60,7 @@ test("the real npm archive excludes tests and includes the built UI", () => {
   assert.ok(
     !paths.some(
       (filePath) =>
-        /^(test|ui|src|scripts|\.local)\//.test(filePath) ||
+        /^(test|ui|src|scripts|skills|\.local)\//.test(filePath) ||
         filePath.endsWith(".map"),
     ),
   );

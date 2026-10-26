@@ -2,11 +2,9 @@
 
 **Des outils et des skills pour comprendre ton code et mieux travailler avec tes agents IA.**
 
-Les instructions, les skills et la configuration de tes agents se dispersent dans ton projet et sur ta machine. Ce kit rassemble des utilitaires pour y voir plus clair, avec une commande de démarrage et une documentation par outil.
+Les instructions, les skills et la configuration de tes agents se dispersent dans ton projet et sur ta machine. Ce kit rassemble des utilitaires pour y voir plus clair, avec deux points d’entrée : lancer Agent Visualizer pour explorer un projet, ou installer un skill pour guider ton agent.
 
-## Lancer un outil
-
-### Agent Visualizer
+## Lancer Agent Visualizer
 
 Explore les fichiers de contexte de ton projet sous forme de graphe. Retrouve tes skills et tes serveurs MCP, et distingue les ressources du projet de celles de ton compte utilisateur.
 
@@ -34,7 +32,33 @@ npx --yes --prefer-online @codeursenior/pek@latest audit agent
 
 [Documentation et limites d’Agent Visualizer](packages/agent-visualizer/README.md)
 
-## Installer un skill
+## Installer des skills
+
+Les skills sont des instructions installées depuis GitHub avec le [CLI skills](https://github.com/vercel-labs/skills). Ils se découvrent aussi sur [skills.sh](https://skills.sh). Leur installation est indépendante de la commande npm d’Agent Visualizer.
+
+### PEK Ingest
+
+Une décision utile se perd dans une discussion ? Demande à l’agent de la ranger dans le contexte du projet. Il cherche d’abord une note existante, conserve les sources et ajoute les liens qui permettront de retrouver l’information.
+
+```bash
+npx skills add codeursenior/product-engineer-kit --skill pek-ingest -g -a codex
+```
+
+Lance ensuite `$pek-ingest` avec le document ou les décisions à conserver. Les conventions Obsidian sont prises en compte sans autre skill à installer.
+
+[Installation, invocation et limites](skills/pek-ingest/README.md)
+
+### PEK Root Cause
+
+Quand un bug revient après une correction, fais retracer la chaîne qui le rend possible. Le skill distingue les preuves des hypothèses, puis propose un plan de correction avec sa vérification. Si la cause reste inconnue, il indique la prochaine étape de diagnostic.
+
+```bash
+npx skills add codeursenior/product-engineer-kit --skill pek-root-cause -g -a codex
+```
+
+Lance explicitement `$pek-root-cause` avec le problème dans Codex. Le diagnostic est embarqué ; l’analyse ne lance pas la correction sans demande de ta part.
+
+[Installation, invocation et limites](skills/pek-root-cause/README.md)
 
 ### PEK Grill Me
 
@@ -59,6 +83,8 @@ npx skills add codeursenior/product-engineer-kit --skill pek-auto-improve -g -a 
 Lance ensuite `$pek-auto-improve` dans Codex. Le skill utilise la conversation et les fichiers accessibles à ton agent, sans dépendance aux autres outils du kit.
 
 [Voir PEK Auto Improve sur skills.sh](https://skills.sh/codeursenior/product-engineer-kit/pek-auto-improve) · [Installation et limites](skills/pek-auto-improve/README.md)
+
+Les commandes ci-dessus installent les skills pour ton compte Codex. Retire `-g` pour une installation limitée au projet. Les fichiers deviennent disponibles après synchronisation du miroir GitHub ; leur référencement sur skills.sh peut suivre avec un délai.
 
 ## Explorer la suite
 
