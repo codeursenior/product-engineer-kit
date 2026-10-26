@@ -97,11 +97,15 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
     ),
   ).toEqual(["Context source", "Tokens ≈", "Words"]);
   expect(root.querySelectorAll("tbody tr")[0]?.children).toHaveLength(3);
+  expect(root.querySelector(".startup .cost")?.textContent).toContain("$0.02");
+  expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
+    "$0.20",
+  );
   expect(root.querySelector(".startup .cost")?.textContent).toContain(
-    "$0.0002",
+    "estimated input cost per 100 startups",
   );
   expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
-    "$0.0020",
+    "estimated input cost per 100 startups if fully loaded",
   );
   expect(root.textContent).not.toContain("Optimization checklist");
   expect(root.textContent).not.toContain("not to scale");
@@ -110,10 +114,10 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   expect(root.querySelector("#optimizer-agent")).toBeNull();
   expect(root.querySelector(".portions")?.textContent).not.toContain("bytes");
   expect(root.querySelector(".startup .cost")?.getAttribute("title")).toBe(
-    "$0.0002",
+    "Estimated input cost per startup: $0.0002",
   );
   expect(root.querySelector(".on-demand .cost")?.getAttribute("title")).toBe(
-    "$0.002",
+    "Estimated input cost per full load: $0.002",
   );
   state.toggleClient("claude");
   await fixture.whenStable();
@@ -135,15 +139,15 @@ it("shows startup entries only and reprices the selected agent iceberg", async (
   await fixture.whenStable();
   await expect
     .poll(() => root.querySelector(".startup .cost")?.textContent)
-    .toContain("$0.0123");
+    .toContain("$1.23");
   expect(root.querySelector(".on-demand .cost")?.textContent).toContain(
-    "$1.2346",
+    "$123.46",
   );
   expect(root.querySelector(".startup .cost")?.getAttribute("title")).toBe(
-    "$0.01234567",
+    "Estimated input cost per startup: $0.01234567",
   );
   expect(root.querySelector(".on-demand .cost")?.getAttribute("title")).toBe(
-    "$1.23456",
+    "Estimated input cost per full load: $1.23456",
   );
   fixture.componentInstance.estimate.set({
     ...estimate,

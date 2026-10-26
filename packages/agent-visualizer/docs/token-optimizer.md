@@ -10,13 +10,13 @@ Status: implemented. The implementation request approved the confirmed decisions
 - Count a reference's text in its containing instruction file. Do not automatically include the referenced document's contents in the startup estimate.
 - Select all agents at startup: Codex, Claude Code, Cursor, and GitHub Copilot. Include their project and user context, counting shared entries once. A shared entry belongs to startup if any agent loads it at startup. Selecting one agent narrows the estimate; clicking it again restores all agents. Reloading starts with all agents regardless of the previous filter.
 - These estimates describe discoverable local context, not observed usage in a running conversation.
-- Estimate the input cost of loading each iceberg portion once, using the selected model's input price without caching discounts.
+- Estimate the input cost of loading each iceberg portion once, using the selected model's input price without caching discounts. Display 100 times that amount so the UI compares costs across 100 startups.
 - The on-demand price is hypothetical: it assumes all available on-demand content is loaded once. Neither price predicts session spending.
 - Provide model presets with input prices maintained by the application. V1 has no custom model or manual price entry; users are not responsible for supplying pricing data.
 - Include an extensible checklist starting with "Install RTK". Its checkbox reflects detected installation status, not a user's manual declaration.
 - When RTK is detected, show the checkbox checked and disabled.
 - When RTK is missing, show the checkbox unchecked and provide installation instructions with a "Check again" button. Do not install RTK from the application. Check and disable the checkbox only after detection succeeds.
-- Show only above-water (startup) entries in the breakdown by file or skill, sorted by token count from largest to smallest, with token and word counts. Omit the redundant context, input-cost and byte-size columns. Display the two total prices in USD rounded to four decimal places, with the full unrounded amount in the native browser tooltip. Keep full precision in the API and calculations. Show token and word counts in both portions, without bytes.
+- Show only above-water (startup) entries in the breakdown by file or skill, sorted by token count from largest to smallest, with token and word counts. Omit the redundant context, input-cost and byte-size columns. Display the two prices in USD for 100 startups with two decimal places. Label the on-demand price as conditional on loading all available content at each startup. The native browser tooltip retains the full unrounded cost per startup or per full on-demand load, with that unit explicit. Keep full precision and the single-load unit in the API and calculations. Show token and word counts in both portions, without bytes.
 - Show context metrics and price estimates for both iceberg portions. Keep the visualization free of the illustration caption and repeated context/pricing caveats. Keep the estimation method and official pricing documented here; omit the expandable details from the dashboard.
 - Label the startup-only table "Startup context breakdown". Keep the existing iceberg and table rendered while repricing so that changing the model preserves the page height and scroll position. On refresh failure, retain the previous estimate with an explicit error.
 - Exclude quality scores and rewrite suggestions from V1.
@@ -71,7 +71,7 @@ GPT-6.1 Sol is selected by default. Use the official API IDs: `gpt-6-astra`, `gp
 
 Each iceberg portion is priced as a separate hypothetical request. When its total tokens exceed a model's threshold, apply the higher rate to every token in that portion, including entries smaller than the threshold. Exactly at the threshold, use the base rate. The other portion retains its own applicable rate. See [OpenAI's long-context rule](https://developers.openai.com/api/docs/models/gpt-6.1-sol) and [Anthropic's prompt-length rule](https://platform.claude.com/docs/en/about-claude/pricing#long-context-pricing).
 
-Presets are pricing scenarios, not a promise that each client exposes each model. Maintainers update `src/token-estimator.ts` and this table together when prices change. Calculations exclude output tokens, caching, batch discounts, regional surcharges, subscription pricing and repeated session loads.
+Presets are pricing scenarios, not a promise that each client exposes each model. Maintainers update `src/token-estimator.ts` and this table together when prices change. Single-load calculations exclude output tokens, caching, batch discounts, regional surcharges and subscription pricing. The UI multiplies each single-load amount by 100 for its startup comparison; it does not simulate a running conversation.
 
 ### RTK detection
 

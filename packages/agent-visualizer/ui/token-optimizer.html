@@ -57,9 +57,11 @@
           <span>estimated tokens</span></strong
         >
         <p>{{ data.startup.words | number }} words</p>
-        <strong class="cost" [title]="'$' + data.startup.inputCost"
-          >${{ data.startup.inputCost | number:'1.4-4' }}
-          <span>one-load input cost</span></strong
+        <strong
+          class="cost"
+          [title]="'Estimated input cost per startup: $' + data.startup.inputCost"
+          >${{ data.startup.inputCost * 100 | number:'1.2-2' }}
+          <span>estimated input cost per 100 startups</span></strong
         >
       </article>
       <article class="portion on-demand">
@@ -71,9 +73,13 @@
           <span>estimated tokens</span></strong
         >
         <p>{{ data.onDemand.words | number }} words</p>
-        <strong class="cost" [title]="'$' + data.onDemand.inputCost"
-          >${{ data.onDemand.inputCost | number:'1.4-4' }}
-          <span>hypothetical one-load input cost</span></strong
+        <strong
+          class="cost"
+          [title]="'Estimated input cost per full load: $' + data.onDemand.inputCost"
+          >${{ data.onDemand.inputCost * 100 | number:'1.2-2' }}
+          <span
+            >estimated input cost per 100 startups if fully loaded</span
+          ></strong
         >
       </article>
     </div>

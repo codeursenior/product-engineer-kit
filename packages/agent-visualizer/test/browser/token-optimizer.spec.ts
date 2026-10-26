@@ -93,7 +93,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     "Claude Sonnet 5.5",
     "Claude Haiku 5.5",
   ]);
-  await expect(page.locator(".startup .cost")).toContainText(/\$\d+\.\d{4}\s/);
+  await expect(page.locator(".startup .cost")).toContainText(/\$\d+\.\d{2}\s/);
   await expect(page.locator(".portions")).not.toContainText("bytes");
   await expect(page.locator(".startup .cost")).toHaveAttribute(
     "title",
@@ -123,7 +123,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await page.locator("#optimizer-model").selectOption("claude-opus-5-5");
   await expect(page.locator("#optimizer-model")).toBeEnabled();
   await expect(page.locator(".on-demand .cost")).toContainText(
-    /\$\d+\.\d{4}\s/,
+    /\$\d+\.\d{2}\s/,
   );
   const added = path.join(session.root, "CLAUDE.md");
   try {

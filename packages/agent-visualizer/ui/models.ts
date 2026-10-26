@@ -22,7 +22,7 @@ export const icons: Record<Client, string> = {
 export const titles: Record<Tab, [string, string]> = {
   optimizer: [
     "See what your agent knows",
-    "Estimate local context and the input cost of loading it once.",
+    "Estimate local context and its input cost across 100 startups.",
   ],
   checklist: [
     "Optimize your workflow.",
