@@ -57,7 +57,7 @@ test("keeps runnable MCP settings private while normalizing environment referenc
     snapshot.mcpTargets?.find((entry) => entry.name === "local"),
   ).toMatchObject({
     command: "node",
-    args: [path.join(f.root, "server.mjs")],
+    args: [`${f.root}/server.mjs`],
     cwd: f.root,
     env: { TOKEN: "private-fixture-token" },
   });
