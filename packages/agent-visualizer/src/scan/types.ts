@@ -1,5 +1,4 @@
 import type { Client, ScanData, Scope, TokenEntry } from "../contracts.js";
-import type { McpAnalysis, McpTarget } from "../mcp/types.js";
 
 export interface ScanOptions {
   home?: string;
@@ -12,8 +11,6 @@ export interface EditableFile {
   deletable: boolean;
 }
 export interface Snapshot {
-  mcpAnalysis?: McpAnalysis;
-  mcpTargets?: McpTarget[];
   tokenInventory: Record<Client, TokenEntry[]>;
   data: ScanData;
   content: Map<string, string>;

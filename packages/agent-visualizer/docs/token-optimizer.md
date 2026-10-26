@@ -2,11 +2,9 @@
 
 Status: implemented. The implementation request approved the confirmed decisions below.
 
-MCP catalogs now contribute known startup and deferred components through automatic background analysis. Loading profiles are independent of the selected pricing model, and incomplete coverage is explicit. See [MCP context estimates](mcp-context.md) for the collection contract, dated official sources, component counting and exclusions.
-
 ## Confirmed decisions
 
-- Place Token Optimizer after MCP servers in the navigation, with a static context estimate represented as an iceberg. Keep the optimization checklist in its own following tab.
+- Make Token Optimizer the home page, with a static context estimate represented as an iceberg. Keep the optimization checklist in its own tab.
 - Above water: applicable startup instruction contents and skill catalog entries, including names and descriptions.
 - Below water: linked documents, skill bodies, and instructions applicable only in specific subfolders.
 - Count a reference's text in its containing instruction file. Do not automatically include the referenced document's contents in the startup estimate.

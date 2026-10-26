@@ -6,16 +6,12 @@ import { required } from "../src/scan/values.js";
 import * as scanner from "../src/scanner.js";
 import { startServer } from "../src/server.js";
 
-it("warns about oversized documents/configs and depth limits while retaining valid files", async (t) => {
+it("warns about oversized documents and depth limits while retaining valid files", async (t) => {
   await fs.mkdir(".local/test", { recursive: true });
   const root = await fs.mkdtemp(path.resolve(".local/test/limits-"));
   t.onTestFinished(() => fs.rm(root, { recursive: true, force: true }));
   await fs.writeFile(path.join(root, "AGENTS.md"), "# Valid");
   await fs.writeFile(path.join(root, "CLAUDE.md"), "x".repeat(512 * 1024 + 1));
-  await fs.writeFile(
-    path.join(root, ".mcp.json"),
-    " ".repeat(2 * 1024 * 1024 + 1),
-  );
   const deep = path.join(root, ...Array<string>(36).fill("a"));
   await fs.mkdir(deep, { recursive: true });
   await fs.writeFile(path.join(deep, "AGENTS.md"), "# Too deep");
@@ -23,7 +19,6 @@ it("warns about oversized documents/configs and depth limits while retaining val
   expect(data.nodes.map((node) => node.path)).toEqual(["AGENTS.md"]);
   expect(data.limits.truncated).toBe(true);
   expect(data.warnings.join(" ")).toContain("Skipped large context file");
-  expect(data.warnings.join(" ")).toContain("Skipped oversized config");
   expect(data.warnings.join(" ")).toContain("35 folder levels");
 });
 

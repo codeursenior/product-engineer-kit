@@ -65,8 +65,6 @@ export class App {
         return "Add .cursor/rules, .claude/rules, .github/instructions, or a legacy .cursorrules file to see rules here. General instructions stay in Context.";
       case "skills":
         return "Add a SKILL.md in an agent skills folder to see it here.";
-      case "mcp":
-        return "No MCP servers found in the supported configuration files.";
     }
   }
 }

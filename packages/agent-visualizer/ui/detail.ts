@@ -69,10 +69,7 @@ export class Detail {
     });
   }
   description(row: Row): string {
-    return (
-      description(row) ||
-      ("kind" in row ? row.path : "MCP server configuration")
-    );
+    return description(row) || paths(row)[0] || "";
   }
   ruleConditions(row: Row): string {
     if (!("globs" in row)) return "";
@@ -115,7 +112,7 @@ export class Detail {
     this.preview.set("Loading…");
     this.targetId.set(this.targets()[0]?.id ?? "");
     this.focus("#close-detail");
-    if (selection.tab !== "mcp") void this.loadPreview();
+    void this.loadPreview();
   }
   async loadPreview(): Promise<void> {
     const current = ++this.sequence;

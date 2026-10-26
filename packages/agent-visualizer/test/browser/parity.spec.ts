@@ -26,7 +26,7 @@ async function open(page: Page) {
 }
 
 for (const theme of ["light", "dark"]) {
-  for (const view of ["Context", "Skills", "MCP servers"]) {
+  for (const view of ["Context", "Skills"]) {
     test(`${theme} ${view}`, async ({ page }) => {
       await open(page);
       if (theme === "dark")

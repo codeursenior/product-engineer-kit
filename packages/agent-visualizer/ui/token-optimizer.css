@@ -98,50 +98,6 @@ h2 {
 .section-title {
   margin: 32px 0 14px;
 }
-.mcp-context {
-  margin-top: 28px;
-}
-.mcp-heading {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  column-gap: 20px;
-}
-.mcp-heading p {
-  color: var(--muted);
-}
-.mcp-profiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: 16px;
-  margin: 12px 0 20px;
-}
-.mcp-profile {
-  display: grid;
-  align-content: start;
-  gap: 6px;
-  min-width: 0;
-}
-.mcp-profile label {
-  display: grid;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 500;
-}
-.mcp-profile select {
-  min-width: 0;
-  max-width: none;
-}
-.mcp-profile small {
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-.mcp-status {
-  min-width: 180px;
-  max-width: 320px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 .breakdown {
   overflow-x: auto;
   border: 1px solid var(--line);

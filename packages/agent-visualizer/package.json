@@ -1,7 +1,7 @@
 {
   "name": "@codeursenior/pek",
   "version": "0.1.13",
-  "description": "Agent Visualizer by Product Engineer Kit: explore local AI instructions, rules, skills and MCP configuration.",
+  "description": "Agent Visualizer by Product Engineer Kit: explore local AI instructions, rules and skills.",
   "type": "module",
   "bin": {
     "pek": "dist/cli.js"
@@ -41,7 +41,6 @@
     "copilot",
     "claude",
     "cursor",
-    "mcp",
     "skills",
     "visualizer"
   ],
@@ -58,9 +57,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@modelcontextprotocol/client": "2.4.0",
-    "jsonc-parser": "^3.3.1",
-    "smol-toml": "^1.4.2",
     "yaml": "^2.8.1"
   },
   "devDependencies": {

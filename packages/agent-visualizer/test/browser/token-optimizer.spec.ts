@@ -2,49 +2,6 @@ import { expect, test } from "@playwright/test";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-test("MCP catalogs update the iceberg and loading profiles survive a reload", async ({
-  page,
-}) => {
-  const session: { url: string } = JSON.parse(
-    await fs.readFile(".local/browser/session.json", "utf8"),
-  );
-  await page.goto(session.url);
-  await page.getByRole("button", { name: "Cursor", exact: true }).click();
-  const mcp = page.getByRole("region", { name: "MCP context", exact: true });
-  await expect(mcp).toContainText("MCP analysis complete.");
-  await expect(mcp.locator(".mcp-servers tbody")).toContainText("docs");
-  await expect(mcp.locator(".mcp-servers tbody")).toContainText("ready");
-  const initial = await page.locator(".startup .token-total").innerText();
-  const profile = mcp.locator('[data-mcp-client="cursor"]');
-  await profile.selectOption("eager");
-  await expect
-    .poll(() => page.locator(".startup .token-total").innerText())
-    .not.toBe(initial);
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) tbody"),
-  ).toContainText("docs");
-  await expect(
-    page
-      .locator(".breakdown:not(.mcp-servers) tbody tr")
-      .filter({ hasText: "docs" }),
-  ).toHaveCount(1);
-  await page.reload();
-  await expect(page.locator('[data-mcp-client="cursor"]')).toHaveValue("eager");
-  await page.getByRole("button", { name: "Switch to dark mode" }).click();
-  await page.setViewportSize({ width: 640, height: 1000 });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBe(true);
-  await page.screenshot({
-    path: ".local/mcp-dashboard-mobile.png",
-    fullPage: true,
-  });
-  await page.getByRole("button", { name: "Cursor", exact: true }).click();
-  await expect(page.locator('[data-mcp-client="cursor"]')).toHaveValue("eager");
-});
-
 test("changing the pricing model keeps the dashboard scroll position", async ({
   page,
 }) => {
@@ -122,9 +79,11 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await expect(page.getByRole("checkbox", { name: "Install RTK" })).toHaveCount(
     0,
   );
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) thead th"),
-  ).toHaveText(["Context source", "Tokens ≈", "Words"]);
+  await expect(page.locator(".breakdown thead th")).toHaveText([
+    "Context source",
+    "Tokens ≈",
+    "Words",
+  ]);
   await expect(page.locator("#optimizer-model option")).toHaveText([
     "GPT-6 Astra",
     "GPT-6.1 Sol",
@@ -144,15 +103,9 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     "title",
     /\$\d+\.\d+/,
   );
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) tbody"),
-  ).not.toContainText("On demand");
+  await expect(page.locator(".breakdown tbody")).not.toContainText("On demand");
   const nav = page.getByRole("navigation", { name: "Views" });
-  await expect(nav.getByRole("button")).toHaveText([
-    /Context/,
-    /Skills/,
-    /MCP servers/,
-  ]);
+  await expect(nav.getByRole("button")).toHaveText([/Context/, /Skills/]);
   await expect(
     page.getByRole("textbox", { name: "Search assets" }),
   ).toHaveCount(0);
@@ -161,18 +114,12 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     fullPage: true,
   });
   await page.getByRole("button", { name: "Claude Code", exact: true }).click();
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) tbody"),
-  ).not.toContainText("review");
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) tbody"),
-  ).toContainText("No startup context discovered");
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) tbody"),
-  ).not.toContainText("style.md");
-  await expect(
-    page.locator(".breakdown:not(.mcp-servers) tbody"),
-  ).not.toContainText("AGENTS.md");
+  await expect(page.locator(".breakdown tbody")).not.toContainText("review");
+  await expect(page.locator(".breakdown tbody")).toContainText(
+    "No startup context discovered",
+  );
+  await expect(page.locator(".breakdown tbody")).not.toContainText("style.md");
+  await expect(page.locator(".breakdown tbody")).not.toContainText("AGENTS.md");
   await page.locator("#optimizer-model").selectOption("claude-opus-5-5");
   await expect(page.locator("#optimizer-model")).toBeEnabled();
   await expect(page.locator(".on-demand .cost")).toContainText(
@@ -182,9 +129,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   try {
     await fs.writeFile(added, "Additional instructions");
     await page.getByRole("button", { name: "Rescan" }).click();
-    await expect(
-      page.locator(".breakdown:not(.mcp-servers) tbody"),
-    ).toContainText("CLAUDE.md");
+    await expect(page.locator(".breakdown tbody")).toContainText("CLAUDE.md");
   } finally {
     await fs.rm(added, { force: true });
   }
