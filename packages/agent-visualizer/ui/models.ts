@@ -28,7 +28,7 @@ export const icons: Record<Client, string> = {
 };
 export const titles: Record<Tab, [string, string]> = {
   optimizer: [
-    "Your context iceberg.",
+    "See what your agent knows",
     "Estimate local context and the input cost of loading it once.",
   ],
   checklist: [
@@ -36,7 +36,7 @@ export const titles: Record<Tab, [string, string]> = {
     "Check local tools and follow recommended installation steps.",
   ],
   context: [
-    "See what guides your agent",
+    "See what your agent knows",
     "Explore the files each coding agent can reach from its context.",
   ],
   rules: [

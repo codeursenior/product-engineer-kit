@@ -47,7 +47,10 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   });
   await page.goto(session.url);
   await expect(
-    page.getByRole("heading", { name: "Your context iceberg.", exact: true }),
+    page.getByRole("heading", {
+      name: "See what your agent knows",
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Token Optimizer", exact: true }),
@@ -190,7 +193,10 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     await page.getByRole("button", { name: /^Context/ }).click();
     await page.locator(selector).click();
     await expect(
-      page.getByRole("heading", { name: "Your context iceberg.", exact: true }),
+      page.getByRole("heading", {
+        name: "See what your agent knows",
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(claude).toHaveAttribute("aria-pressed", "true");
   }
