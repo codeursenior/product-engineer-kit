@@ -10,7 +10,8 @@
     "dist",
     "README.md",
     "LICENSE",
-    "docs"
+    "docs",
+    "assets/readme"
   ],
   "engines": {
     "node": ">=20"
