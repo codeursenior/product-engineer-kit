@@ -27,6 +27,14 @@ const files: Record<string, string> = {
     "---\nname: review\ndescription: Review changes\ndisable-model-invocation: true\n---\nReview behavior and tests.",
   "project/.claude/skills/review/SKILL.md":
     "---\nname: review\ndescription: Review changes\ndisable-model-invocation: true\n---\nReview behavior and tests.",
+  "project/.cursor/mcp.json": JSON.stringify({
+    mcpServers: {
+      docs: {
+        url: "https://example.invalid/mcp",
+        headers: { Authorization: "SECRET" },
+      },
+    },
+  }),
   "home/.codex/AGENTS.md": "# Personal guidance\n",
 };
 for (const [relative, text] of Object.entries(files)) {

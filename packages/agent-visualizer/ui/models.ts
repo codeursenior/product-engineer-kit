@@ -1,7 +1,14 @@
-import type { Client, ContextNode, Rule, Scope, Skill } from "../src/contracts";
-export type AssetTab = "context" | "rules" | "skills";
+import type {
+  Client,
+  ContextNode,
+  McpServer,
+  Rule,
+  Scope,
+  Skill,
+} from "../src/contracts";
+export type AssetTab = "context" | "rules" | "skills" | "mcp";
 export type Tab = AssetTab | "optimizer" | "checklist";
-export type Row = ContextNode | Rule | Skill;
+export type Row = ContextNode | Rule | Skill | McpServer;
 export interface Selection {
   tab: AssetTab;
   row: Row;
@@ -40,9 +47,13 @@ export const titles: Record<Tab, [string, string]> = {
     "See what your agent can do",
     "Find each workflow and see which clients discover it.",
   ],
+  mcp: [
+    "See what your agent can access",
+    "See where each server is configured and which clients can find it.",
+  ],
 };
 export const paths = (row: Row): string[] =>
-  "paths" in row ? row.paths : row.aliases;
+  "paths" in row ? row.paths : "aliases" in row ? row.aliases : [row.path];
 export const description = (row: Row): string =>
   "description" in row ? row.description : "";
 export const invocation = (row: Row, client: Client): string =>

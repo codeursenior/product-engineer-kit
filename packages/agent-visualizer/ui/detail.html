@@ -43,7 +43,18 @@
     File discovery does not confirm whether this rule loaded in an agent
     session.
   </p>
-  }
+  } @if ('status' in row) {
+  <h3>Connection status</h3>
+  <p>
+    {{ row.status }}. {{ row.status === 'Disabled' ? 'Disabled in this file.' :
+    'Check the client’s MCP panel to confirm its live connection.' }}
+  </p>
+  <p>{{ row.origin }}</p>
+  <p>
+    Commands, arguments, server URLs, headers, and credentials are intentionally
+    omitted.
+  </p>
+  } @else {
   <h3>File preview</h3>
   <pre [hidden]="mode() === 'edit'">{{ preview() }}</pre>
   @if (targets().length) { @if (targets().length > 1) {
@@ -100,5 +111,5 @@
     </div>
   </form>
   <p class="edit-status" role="status">{{ status() }}</p>
-  } }
+  } } }
 </div>

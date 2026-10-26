@@ -22,6 +22,16 @@
       <td>{{ conditions(row) }}</td>
       } @if ('mode' in row) {
       <td><span class="badge neutral">{{ row.mode }}</span></td>
+      } @if ('status' in row) {
+      <td>
+        <span
+          class="badge"
+          [class.neutral]="row.status === 'Disabled'"
+          [class.warn]="row.status !== 'Disabled'"
+          >○ {{ row.status }}</span
+        >
+      </td>
+      <td>{{ row.transport }}</td>
       } @if ('kind' in row) {
       <td>{{ row.kind }}</td>
       <td class="line-count">{{ row.lines.toLocaleString() }}</td>

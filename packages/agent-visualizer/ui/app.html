@@ -85,7 +85,7 @@
     } @else {
     <section
       id="canvas"
-      [attr.aria-label]="state.tab() === 'context' ? 'Context graph' : state.tab() === 'rules' ? 'Rules list' : 'Skills list'"
+      [attr.aria-label]="state.tab() === 'context' ? 'Context graph' : state.tab() === 'mcp' ? 'MCP servers list' : state.tab() === 'rules' ? 'Rules list' : 'Skills list'"
     >
       @if (state.error()) {
       <div class="empty">

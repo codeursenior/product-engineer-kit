@@ -5,6 +5,7 @@ import { test, type TestContext } from "vitest";
 import type { ScanOptions } from "../src/scan/types.js";
 import { required } from "../src/scan/values.js";
 import { scanProject } from "../src/scanner.js";
+import { estimateTokens } from "../src/token-estimator.js";
 test("discovers skills and context with a custom CODEX_HOME", async (t) => {
   const { home, write, scan } = await fixture(t);
   const custom = path.join(home, "custom-codex");
@@ -13,9 +14,14 @@ test("discovers skills and context with a custom CODEX_HOME", async (t) => {
     "---\nname: review\ndescription: Review code\n---\nReview",
   );
   await write(path.join(custom, "AGENTS.md"), "# User instructions");
+  await write(
+    path.join(custom, "config.toml"),
+    '[mcp_servers.docs]\nurl = "https://example.com/mcp"',
+  );
   const { data } = await scan({ codexHome: custom });
   assert.deepEqual(required(data.skills[0]).clients, ["codex"]);
   assert.equal(required(data.nodes[0]).scope, "user");
+  assert.equal(required(data.mcp[0]).scope, "user");
   const displayPath = (file: string) =>
     process.platform === "win32"
       ? file
@@ -31,6 +37,10 @@ test("discovers skills and context with a custom CODEX_HOME", async (t) => {
   assert.deepEqual(required(data.skills[0]).paths, [
     displayPath(path.join(custom, "skills/review/SKILL.md")),
   ]);
+  assert.equal(
+    required(data.mcp[0]).path,
+    displayPath(path.join(custom, "config.toml")),
+  );
 });
 test("counts visible lines in context files", async (t) => {
   const { root, write, scan } = await fixture(t);
@@ -170,7 +180,7 @@ test("leaves homonymous invocations unconnected until an explicit path resolves 
   assert.equal(target?.scope, "project");
 });
 
-test("discovers Copilot VS Code context, rules, and skills without agent or prompt files", async (t) => {
+test("discovers Copilot VS Code context, rules, skills, and MCP without agent or prompt files", async (t) => {
   const { root, home, write, scan } = await fixture(t);
   await write(
     path.join(root, ".github/copilot-instructions.md"),
@@ -202,6 +212,18 @@ test("discovers Copilot VS Code context, rules, and skills without agent or prom
     path.join(home, ".copilot/skills/explain/SKILL.md"),
     "---\nname: explain\ndescription: Explain code\n---\nExplain",
   );
+  await write(
+    path.join(root, ".vscode/mcp.json"),
+    '{"servers":{"editor":{"command":"node","args":["SECRET"]}}}',
+  );
+  await write(
+    path.join(root, ".mcp.json"),
+    '{"mcpServers":{"shared":{"url":"https://secret.example"}}}',
+  );
+  await write(
+    path.join(home, ".copilot/mcp-config.json"),
+    '{"mcpServers":{"personal":{"command":"node"}}}',
+  );
   await write(path.join(root, ".github/agents/reviewer.agent.md"), "Agent");
   await write(path.join(root, ".github/prompts/review.prompt.md"), "Prompt");
 
@@ -232,6 +254,15 @@ test("discovers Copilot VS Code context, rules, and skills without agent or prom
   assert.ok(
     data.skills.some((s) => s.name === "explain" && s.scope === "user"),
   );
+  assert.deepEqual(data.mcp.find((m) => m.name === "editor")?.clients, [
+    "copilot",
+  ]);
+  assert.deepEqual(
+    new Set(data.mcp.find((m) => m.name === "shared")?.clients),
+    new Set(["claude", "copilot"]),
+  );
+  assert.ok(data.mcp.some((m) => m.name === "personal" && m.scope === "user"));
+  assert.ok(!JSON.stringify(data).includes("SECRET"));
   assert.ok(!JSON.stringify(data).includes("reviewer.agent.md"));
   assert.ok(!JSON.stringify(data).includes("review.prompt.md"));
 });
@@ -330,20 +361,58 @@ test("does not read external symlinks or follow remote links", async (t) => {
     ![...content.values()].some((text) => text.includes("OUTSIDE_SECRET")),
   );
 });
-test("ignores external service configuration while retaining valid context", async (t) => {
-  const { root, write, scan } = await fixture(t);
-  await write(path.join(root, ".mcp.json"), "{broken");
+test("parses JSONC and TOML MCP configs while never exposing secrets or claiming connectivity", async (t) => {
+  const { root, home, write, scan } = await fixture(t);
+  await write(
+    path.join(root, ".cursor/mcp.json"),
+    '{//comment\n"mcpServers":{"remote":{"url":"https://secret.example?token=SECRET","headers":{"Authorization":"SECRET"}},},}',
+  );
   await write(
     path.join(root, ".codex/config.toml"),
-    '[mcp_servers.private]\ncommand = "never-execute"\nargs = ["SECRET"]',
+    '[mcp_servers.docs]\ncommand = "npx"\nargs = ["SECRET"]\nenabled = false\n[mcp_servers.docs.env]\nTOKEN = "SECRET"',
   );
-  await write(path.join(root, "AGENTS.md"), "Valid");
+  await write(
+    path.join(root, "app/.mcp.json"),
+    '{"mcpServers":{"nested":{"command":"node"}}}',
+  );
+  await write(
+    path.join(home, ".claude.json"),
+    JSON.stringify({
+      mcpServers: { global: { command: "node" } },
+      projects: {
+        [root]: { mcpServers: { local: { url: "https://private.example" } } },
+        "/other": { mcpServers: { other: {} } },
+      },
+    }),
+  );
   const { data, content } = await scan();
-  assert.equal(data.nodes.length, 1);
-  assert.equal(data.warnings.length, 0);
+  assert.equal(data.mcp.length, 5);
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "docs")).status,
+    "Disabled",
+  );
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "remote")).status,
+    "Not verified",
+  );
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "local")).scope,
+    "project",
+  );
+  assert.equal(
+    required(data.mcp.find((m) => m.name === "global")).scope,
+    "user",
+  );
   assert.ok(!JSON.stringify(data).includes("SECRET"));
-  assert.ok(!Object.hasOwn(data, "mcp"));
-  assert.deepEqual([...content.values()], ["Valid"]);
+  assert.equal(content.size, 0);
+});
+test("reports malformed configs and keeps valid context available", async (t) => {
+  const { root, write, scan } = await fixture(t);
+  await write(path.join(root, ".mcp.json"), "{broken");
+  await write(path.join(root, "AGENTS.md"), "Valid");
+  const { data } = await scan();
+  assert.equal(data.nodes.length, 1);
+  assert.equal(data.warnings.length, 1);
 });
 test("does not guess ambiguous wikilinks", async (t) => {
   const { root, write, scan } = await fixture(t);
@@ -381,4 +450,42 @@ test("attributes bundled Codex system skills only to Codex while keeping ordinar
     required(data.skills.find((skill) => skill.name === "shared")).clients,
     ["cursor", "codex"],
   );
+});
+
+test("MCP inventory changes leave startup and on-demand tokens and prices unchanged", async (t) => {
+  const { root, write, scan } = await fixture(t);
+  await write(path.join(root, "AGENTS.md"), "[Guide](docs/guide.md)");
+  await write(path.join(root, "docs/guide.md"), "On-demand guidance");
+  const before = estimateTokens(await scan(), "all", "gpt-6.1-sol");
+  const config = path.join(root, ".cursor/mcp.json");
+  await write(
+    config,
+    JSON.stringify({
+      mcpServers: { first: { command: "never-run", args: ["SECRET"] } },
+    }),
+  );
+  const added = await scan();
+  assert.deepEqual(
+    added.data.mcp.map((server) => server.name),
+    ["first"],
+  );
+  await write(
+    config,
+    JSON.stringify({
+      mcpServers: {
+        renamed: { url: "https://example.invalid/mcp", disabled: true },
+      },
+    }),
+  );
+  const modified = await scan();
+  assert.deepEqual(
+    modified.data.mcp.map((server) => [server.name, server.status]),
+    [["renamed", "Disabled"]],
+  );
+  for (const snapshot of [added, modified]) {
+    const after = estimateTokens(snapshot, "all", "gpt-6.1-sol");
+    assert.deepEqual(after.startup, before.startup);
+    assert.deepEqual(after.onDemand, before.onDemand);
+    assert.deepEqual(after.entries, before.entries);
+  }
 });

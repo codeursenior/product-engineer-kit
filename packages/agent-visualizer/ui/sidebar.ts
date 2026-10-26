@@ -42,6 +42,7 @@ export class Sidebar {
   readonly tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "context", label: "Context", icon: "⌘" },
     { id: "skills", label: "Skills", icon: "✧" },
+    { id: "mcp", label: "MCP servers", icon: "⎇" },
   ];
   count(tab: Tab): number {
     if (tab === "optimizer" || tab === "checklist") return 0;

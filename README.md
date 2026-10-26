@@ -6,7 +6,7 @@ Les instructions, les skills et la configuration de tes agents se dispersent dan
 
 ## Lancer Agent Visualizer
 
-Explore les fichiers de contexte de ton projet sous forme de graphe. Retrouve tes skills et distingue les ressources du projet de celles de ton compte utilisateur.
+Explore les fichiers de contexte de ton projet sous forme de graphe. Retrouve tes skills et tes configurations MCP, et distingue les ressources du projet de celles de ton compte utilisateur.
 
 ```bash
 npx @codeursenior/pek audit agent
@@ -27,6 +27,7 @@ npx --yes --prefer-online @codeursenior/pek@latest audit agent
 
 - Graphe des instructions et de leurs références, avec aperçu des fichiers.
 - Inventaire des skills et de leur découverte par Cursor, Claude Code et Codex.
+- Inventaire passif des configurations MCP, sans connexion aux serveurs ni lancement de leurs commandes.
 - Lecture seule, sans télémétrie ni envoi du contenu de tes fichiers.
 
 [Documentation et limites d’Agent Visualizer](packages/agent-visualizer/README.md)

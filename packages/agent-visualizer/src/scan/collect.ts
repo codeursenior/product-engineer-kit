@@ -36,6 +36,7 @@ export async function collectFiles(env: ScanEnvironment) {
     env;
   const userBases = allowed.slice(1);
   const files = new Map<string, FileEntry>();
+  const projectConfigs = new Set<string>();
   let inspected = 0;
   let capped = false;
   async function collect(
@@ -69,13 +70,21 @@ export async function collectFiles(env: ScanEnvironment) {
             (entry.name.startsWith(".") &&
               entry.isDirectory() &&
               !AGENT_DIRS.includes(entry.name) &&
-              entry.name !== ".system")
+              entry.name !== ".system" &&
+              entry.name !== ".vscode")
           )
             continue;
           await collect(path.join(file, entry.name), scope, next, depth + 1);
         }
       } else if (stat.isFile()) {
         inspected++;
+        if (
+          scope === "project" &&
+          /(?:^|[\\/])(?:\.mcp\.json|\.cursor[\\/]mcp\.json|\.codex[\\/]config\.toml|\.vscode[\\/]mcp\.json)$/.test(
+            file,
+          )
+        )
+          projectConfigs.add(file);
         if (!MARKDOWN.test(file) && !INSTRUCTION.test(path.basename(file)))
           return;
         if (stat.size > MAX_BYTES) {
@@ -123,5 +132,5 @@ export async function collectFiles(env: ScanEnvironment) {
       `Scan stopped at ${MAX_FILES} files or 35 folder levels. Some assets may be missing.`,
     );
 
-  return { entries: [...files.values()], inspected, capped };
+  return { entries: [...files.values()], projectConfigs, inspected, capped };
 }

@@ -2,7 +2,7 @@
 
 `src/cli.ts` parses arguments, starts the server for the requested folder and opens the default browser using OS launchers with argument arrays and no shell interpolation. TypeScript compiles it to `dist/cli.js`, retaining its executable shebang. The CLI resolves its version relative to the installed package, independently of the caller's working directory.
 
-`src/scanner.ts` orchestrates a fresh snapshot. Modules under `src/scan/` handle filesystem collection, metadata parsing, context/rule/skill discovery, reference resolution and graph construction. Parsing starts with unknown values and narrows them before normalization. Context client discovery propagates across explicit reference edges, never folder-scope edges. Documents remain data, never instructions to the application.
+`src/scanner.ts` orchestrates a fresh snapshot. Modules under `src/scan/` handle filesystem collection, metadata parsing, context/rule/skill discovery, reference resolution and graph construction, and passive MCP configuration discovery. Parsing starts with unknown values and narrows them before normalization. Context client discovery propagates across explicit reference edges, never folder-scope edges. Documents remain data, never instructions to the application. MCP output is an explicit metadata whitelist, never a serialized configuration: commands, arguments, URLs, environment values and headers stay out of browser-visible data. Discovery never connects to endpoints or launches configured commands. Configuration status is `Not verified` or `Disabled`; it does not indicate live connectivity.
 
 `src/server.ts` owns the in-memory snapshot, coalesced refresh promise, and random session credential. Modules under `src/http/` handle authentication/security headers, serialized file writes, request validation, and browser asset enumeration. Requests select static files from an allowlist built from `dist/browser`; they never resolve arbitrary paths. Previews and edits use indexed opaque IDs, size limits, and content revision checks. CSP blocks remote code, frames, plugins and inline scripts. Each HTML response receives a fresh nonce for Angular component styles; critical CSS inlining is disabled.
 
@@ -33,11 +33,15 @@ Client badges use local raster marks from [Cursor](https://cursor.com/brand), [C
 Behavior was checked against official documentation on 2026-09-30. Runtime behavior can differ by client release or configuration.
 
 - [Codex skills](https://developers.openai.com/codex/skills/): repository and user `.agents/skills` discovery and symlink support.
+- [Codex MCP](https://developers.openai.com/codex/mcp/): TOML server definitions and project/user configuration.
 - [Claude Code skills](https://code.claude.com/docs/en/skills): `.claude/skills`, invocation metadata, and nested discovery.
+- [Claude Code MCP](https://code.claude.com/docs/en/mcp): `.mcp.json` plus user and project-local entries in `~/.claude.json`.
 - [Cursor skills](https://cursor.com/docs/skills): `.agents/skills`, `.cursor/skills`, and compatibility with Claude/Codex directories. Exclude Codex internal `.codex/skills/.system/` skills from Cursor discovery; [Cursor identified this import as a bug](https://forum.cursor.com/t/i-installed-codex-and-cursor-is-adding-to-the-system-prompt-codex-specific-skills/155112).
 - [Cursor rules](https://cursor.com/docs/context/rules): `.cursor/rules` and legacy `.cursorrules`.
+- [Cursor MCP](https://cursor.com/docs/context/model-context-protocol): `.cursor/mcp.json` project/user configuration.
 - [Cursor rules help](https://prod.cursor.com/help/customization/rules): project-root `AGENTS.md` and `CLAUDE.md` are both read by Cursor.
 - [Claude Code rules](https://code.claude.com/docs/en/memory): `.claude/rules` and `paths` frontmatter.
 - [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md): `AGENTS.md` belongs in Context. [Codex command rules](https://learn.chatgpt.com/docs/agent-configuration/rules) are a separate execution policy.
 - [Copilot instructions in VS Code](https://code.visualstudio.com/docs/agent-customization/custom-instructions): repository and personal instructions, `AGENTS.md`, and targeted `.instructions.md` files with `applyTo` metadata.
 - [Copilot skills in VS Code](https://code.visualstudio.com/docs/agent-customization/agent-skills): project and personal skill locations and invocation metadata.
+- [MCP servers in VS Code](https://code.visualstudio.com/docs/agent-customization/mcp-servers): workspace `.vscode/mcp.json`, portable `.mcp.json`, and Agent Host `~/.copilot/mcp-config.json`.

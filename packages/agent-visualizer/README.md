@@ -2,7 +2,7 @@
 
 **See the context behind your coding agent.**
 
-Agent Visualizer, part of Product Engineer Kit, opens a local dashboard for the instructions, knowledge, and skills inside a folder. Inspired by the clarity of an Obsidian graph, with separate views for project and user assets.
+Agent Visualizer, part of Product Engineer Kit, opens a local dashboard for the instructions, knowledge, skills, and MCP configurations inside a folder. Inspired by the clarity of an Obsidian graph, with separate views for project and user assets.
 
 ```bash
 npx @codeursenior/pek audit agent
@@ -22,18 +22,19 @@ Replace `npx @codeursenior/boyscout ui [folder]` with `npx @codeursenior/pek aud
 
 Token Optimizer is the home page. Return to it by clicking the avatar, agent name, or factory path. Rules and Optimization checklist are temporarily hidden from navigation.
 
-- **Agent filter:** select one client using the icons below the avatar. The same selection applies to Context, Rules, Skills (including Whiteboard), and Token Optimizer. Click the selected icon again to show all agents. All agents are selected at startup. The project/user scope filter is restored from localStorage in this browser.
+- **Agent filter:** select one client using the icons below the avatar. The same selection applies to Context, Rules, Skills (including Whiteboard), MCP servers, and Token Optimizer. Click the selected icon again to show all agents. All agents are selected at startup. The project/user scope filter is restored from localStorage in this browser.
 - **Context:** interactive graph with pan, zoom, draggable nodes, and file previews. Solid lines are explicit references; dashed lines show nested instruction scopes. Switch to Files for a table with line counts and client discovery. Filter by coding agent in either view.
 - **Rules:** searchable list of dedicated Cursor, Claude Code, and GitHub Copilot instruction files, with source paths, declared file conditions, client discovery, and previews. Metadata does not prove a rule loaded in a session.
 - **Skills:** names, descriptions, invocation policy, source paths, and discovery indicators for Cursor, Claude Code, Codex, and GitHub Copilot in VS Code. Identical copies in the same scope are grouped, retaining their paths.
 - **Skills Whiteboard:** switch from Files to Whiteboard to arrange every skill as a draggable card, connect your workflow with arrows, and add movable text titles. Solid blue arrows show explicit references in SKILL.md and cannot be edited. Dashed amber arrows are your local drawings: select one to delete it, drag its endpoints onto other cards, or change its From and To menus. All skills discoverable by the selected agent stay visible, including unused ones. Select a card and choose Open skill to inspect it; arrow keys move focused cards and titles. Pan, zoom and Fit skills help navigate larger inventories. Wheel and trackpad zoom stays anchored under the pointer and scales gradually with scroll distance; the zoom buttons use the center of the canvas. Use Fullscreen to expand the board across the browser viewport; Exit fullscreen or Escape restores the page without changing the composition.
 - **Project and User:** green and purple distinguish assets in the selected folder from assets in supported home-directory locations. Scope filters work in all views.
+- **MCP servers:** names, configuration sources, transport, and client indicators from local configuration files. Discovery is passive: the visualizer never connects to MCP endpoints or starts configured server commands.
 
 On Windows, user asset paths are shown as full filesystem paths so you can copy them into Explorer. On other systems, paths under your home directory use `~/`.
 
 Search with `/`, close the preview with Escape, and use Rescan after changing files.
 
-Open a context file or skill to edit its text in the side panel. Choose a source file first when a skill groups identical copies. Save writes that existing file on your machine, then rescans the workspace. If the file changed on disk after you opened it, reopen it before saving. Rules remain view only.
+Open a context file or skill to edit its text in the side panel. Choose a source file first when a skill groups identical copies. Save writes that existing file on your machine, then rescans the workspace. If the file changed on disk after you opened it, reopen it before saving. Rules and MCP configurations remain view only.
 
 Use Delete file in the same panel to remove a context or skill file permanently. The confirmation shows the exact source path. Deletion is refused if the file changed after opening it, or if the scan found multiple paths to the same file. Symlinks cannot be deleted from the viewer. The workspace is rescanned after deletion.
 
@@ -67,12 +68,13 @@ This is an internal Agent Visualizer convention, not an ecosystem standard or a 
 
 ## What is discovered
 
-| Asset        | Project                                                                                                                                     | User                                                                                                               |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Instructions | `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, `.github/copilot-instructions.md`, including nested folders | `~/.codex/AGENTS.md`, override, `~/.claude/CLAUDE.md`, `~/.cursor/AGENTS.md`, `~/.copilot/copilot-instructions.md` |
-| Rules        | `.cursor/rules/`, `.claude/rules/`, `.github/instructions/**/*.instructions.md`, and legacy `.cursorrules`, including nested folders        | Supported Cursor and Claude Code rule directories; `~/.copilot/instructions/**/*.instructions.md`                  |
-| Knowledge    | Markdown under supported agent knowledge folders, other linked local documents                                                              | Supported agent knowledge directories                                                                              |
-| Skills       | `SKILL.md` files under supported agent directories, including `.github/skills` for Copilot                                                  | `~/.agents/skills`, `~/.claude/skills`, `~/.cursor/skills`, `~/.copilot/skills`, legacy `~/.codex/skills`          |
+| Asset        | Project                                                                                                                                     | User                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Instructions | `AGENTS.md`, `AGENTS.override.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, `.github/copilot-instructions.md`, including nested folders | `~/.codex/AGENTS.md`, override, `~/.claude/CLAUDE.md`, `~/.cursor/AGENTS.md`, `~/.copilot/copilot-instructions.md`                        |
+| Rules        | `.cursor/rules/`, `.claude/rules/`, `.github/instructions/**/*.instructions.md`, and legacy `.cursorrules`, including nested folders        | Supported Cursor and Claude Code rule directories; `~/.copilot/instructions/**/*.instructions.md`                                         |
+| Knowledge    | Markdown under supported agent knowledge folders, other linked local documents                                                              | Supported agent knowledge directories                                                                                                     |
+| Skills       | `SKILL.md` files under supported agent directories, including `.github/skills` for Copilot                                                  | `~/.agents/skills`, `~/.claude/skills`, `~/.cursor/skills`, `~/.copilot/skills`, legacy `~/.codex/skills`                                 |
+| MCP          | `.mcp.json`, `.cursor/mcp.json`, `.codex/config.toml`, `.vscode/mcp.json`, including nested folders                                         | `~/.cursor/mcp.json`, `~/.codex/config.toml`, `~/.copilot/mcp-config.json`, global and matching project-local entries in `~/.claude.json` |
 
 `CODEX_HOME` is respected. Markdown links, Obsidian wikilinks, backtick file paths and `@file.md` references connect context nodes. Unrelated Markdown stays out of the graph. Symlinks within the selected folder and supported agent home directories are resolved and deduplicated. External symlinks are excluded.
 
@@ -86,13 +88,15 @@ Claude/Cursor/Copilot `disable-model-invocation` and Claude/Copilot `user-invoca
 
 ## Honest limits
 
-This is an inventory of the selected subtree and supported user locations, not a reconstruction of a live agent prompt. It does not yet model parent-folder inheritance above the selected root, managed enterprise rules, remote account assets, plugin caches, client settings overrides, VS Code profile settings, or effective precedence. Copilot custom agents and prompt files are not shown. It does not interpret every Markdown construct; ambiguous wikilinks remain unconnected. Dependency/build folders and arbitrary hidden folders are skipped. Scans are limited to 20,000 files, 35 folder levels and 512 KiB per context document, with warnings when limits are reached.
+The MCP inventory status is **Not verified** for a configured server, or **Disabled** if its configuration disables it. These statuses describe configuration only. Check the coding client's MCP panel for live connection status.
+
+This is an inventory of the selected subtree and supported user locations, not a reconstruction of a live agent prompt. It does not yet model parent-folder inheritance above the selected root, managed enterprise rules, remote account assets, plugin caches, client settings overrides, VS Code profile settings, or effective precedence. Copilot custom agents and prompt files are not shown. It does not interpret every Markdown construct; ambiguous wikilinks remain unconnected. Dependency/build folders and arbitrary hidden folders are skipped. Scans are limited to 20,000 files, 35 folder levels and 512 KiB per context document, with warnings when limits are reached. JSON/TOML configs are limited to 2 MiB.
 
 ## Privacy
 
-The application binds to `127.0.0.1` only, checks Host and Origin, and requires a random session token for data requests, edits, and deletions. Scans and inventories stay in memory. Saving or deleting a context file or skill changes that file on disk. There is no telemetry, CDN, external font or AI API. File scanning is passive.
+The application binds to `127.0.0.1` only, checks Host and Origin, and requires a random session token for data requests, edits, and deletions. Scans and inventories stay in memory. Saving or deleting a context file or skill changes that file on disk. There is no telemetry, CDN, external font or AI API. File scanning and MCP discovery are passive: configured commands are not executed and endpoints are not contacted.
 
-Context and skill previews display their actual text locally. Treat the open dashboard like your editor: documents may contain private information.
+MCP output uses a metadata whitelist. Commands, arguments, URLs, environment values, and headers are excluded from the API and UI. Context and skill previews display their actual text locally. Treat the open dashboard like your editor: documents may contain private information.
 
 ## Development
 

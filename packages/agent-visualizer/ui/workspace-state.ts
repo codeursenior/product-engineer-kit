@@ -83,7 +83,12 @@ export class WorkspaceState {
     if (this.tab() === "checklist") return "Local installation checks";
     const rows = this.whiteboard() ? this.boardSkills() : this.rows();
     const project = rows.filter((row) => row.scope === "project").length;
-    const noun = this.tab() === "context" ? "files" : this.tab();
+    const noun =
+      this.tab() === "context"
+        ? "files"
+        : this.tab() === "mcp"
+          ? "servers"
+          : this.tab();
     return `${rows.length} ${noun} · ${project} project · ${rows.length - project} user`;
   });
   constructor() {

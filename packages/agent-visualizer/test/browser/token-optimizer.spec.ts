@@ -105,7 +105,11 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   );
   await expect(page.locator(".breakdown tbody")).not.toContainText("On demand");
   const nav = page.getByRole("navigation", { name: "Views" });
-  await expect(nav.getByRole("button")).toHaveText([/Context/, /Skills/]);
+  await expect(nav.getByRole("button")).toHaveText([
+    /Context/,
+    /Skills/,
+    /MCP servers/,
+  ]);
   await expect(
     page.getByRole("textbox", { name: "Search assets" }),
   ).toHaveCount(0);

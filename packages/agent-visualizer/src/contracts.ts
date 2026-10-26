@@ -38,6 +38,13 @@ export interface Skill extends Asset {
   legacy: boolean;
   mode: string;
 }
+export interface McpServer extends Asset {
+  path: string;
+  transport: "SSE" | "HTTP" | "stdio" | "Unknown";
+  status: "Disabled" | "Not verified";
+  configured: boolean;
+  origin: string;
+}
 export interface GraphEdge {
   source: string;
   target: string;
@@ -56,6 +63,7 @@ export interface ScanData {
   edges: GraphEdge[];
   skills: Skill[];
   skillEdges: SkillEdge[];
+  mcp: McpServer[];
   warnings: string[];
   limits: { includeUser: boolean; scannedFiles: number; truncated: boolean };
 }
