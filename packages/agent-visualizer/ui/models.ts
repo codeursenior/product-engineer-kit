@@ -36,7 +36,7 @@ export const titles: Record<Tab, [string, string]> = {
     "Check local tools and follow recommended installation steps.",
   ],
   context: [
-    "See what your agent can find.",
+    "See what guides your agent",
     "Explore the files each coding agent can reach from its context.",
   ],
   rules: [
@@ -44,11 +44,11 @@ export const titles: Record<Tab, [string, string]> = {
     "Browse the rule files discovered for Cursor, Claude Code, and GitHub Copilot.",
   ],
   skills: [
-    "Skills your agent can use.",
+    "See what your agent can do",
     "Find each workflow and see which clients discover it.",
   ],
   mcp: [
-    "Configured MCP servers.",
+    "See what your agent can access",
     "See where each server is configured and which clients can find it.",
   ],
 };
