@@ -28,7 +28,7 @@ export const icons: Record<Client, string> = {
 };
 export const titles: Record<Tab, [string, string]> = {
   optimizer: [
-    "See what your agent knows",
+    "See what your agent cost",
     "Estimate local context and its input cost across 100 startups.",
   ],
   checklist: [

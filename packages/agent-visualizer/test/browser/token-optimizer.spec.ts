@@ -48,7 +48,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
   await page.goto(session.url);
   await expect(
     page.getByRole("heading", {
-      name: "See what your agent knows",
+      name: "See what your agent cost",
       exact: true,
     }),
   ).toBeVisible();
@@ -194,7 +194,7 @@ test("Token Optimizer navigates, selects one agent, refreshes and fits both them
     await page.locator(selector).click();
     await expect(
       page.getByRole("heading", {
-        name: "See what your agent knows",
+        name: "See what your agent cost",
         exact: true,
       }),
     ).toBeVisible();
