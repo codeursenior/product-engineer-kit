@@ -61,8 +61,17 @@ test("compose, reconnect, rescan and restore a skill whiteboard without editing 
       name: "Skill zulu-output",
       exact: true,
     });
-    await page.getByRole("button", { name: "Add arrow", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Connect skills", exact: true })
+      .click();
+    await expect(page.locator(".board-actions")).toContainText(
+      "Click the starting skill. Escape cancels.",
+    );
     await source.click();
+    await expect(page.locator(".board-actions")).toContainText(
+      "Click the destination skill. Escape cancels.",
+    );
+    await expect(source).toContainText("Start");
     await output.click();
     await expect(page.locator(".board-drawing")).toHaveCount(1);
     const before = await page.locator(".board-drawing").getAttribute("d");

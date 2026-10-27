@@ -43,6 +43,20 @@ select {
 button.active {
   outline: 2px solid var(--board-drawing);
 }
+.board-connect-hint {
+  color: var(--board-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.board-source-label {
+  fill: var(--board-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+.board-surface.connecting,
+.board-surface.connecting .board-card {
+  cursor: crosshair;
+}
 .board-legend {
   font-size: 11px;
 }

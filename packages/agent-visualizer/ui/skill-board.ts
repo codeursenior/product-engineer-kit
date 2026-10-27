@@ -138,8 +138,8 @@ export class SkillBoard {
   readonly hint = computed(() =>
     this.connecting()
       ? this.source()
-        ? "Choose the destination skill. Escape cancels."
-        : "Choose the starting skill. Escape cancels."
+        ? "Click the destination skill. Escape cancels."
+        : "Click the starting skill. Escape cancels."
       : "Drag skills and titles. Drag the background to pan. Select a skill and use arrow keys to move it.",
   );
 

@@ -16,6 +16,53 @@ async function open(project = "/example") {
   return { fixture, element };
 }
 
+it("guides the user from the starting skill to the destination when connecting skills", async () => {
+  const { fixture, element } = await open();
+  fixture.componentRef.setInput("skills", [
+    structuredClone(skill),
+    {
+      ...structuredClone(skill),
+      id: "destination",
+      name: "publish",
+      editTargets: [
+        { id: "publish-file", path: "publish/SKILL.md", deletable: true },
+      ],
+    },
+  ]);
+  await fixture.whenStable();
+  const connect = [...element.querySelectorAll("button")].find(
+    (button) => button.textContent?.trim() === "Connect skills",
+  )!;
+  expect(connect).toBeDefined();
+  connect.click();
+  await fixture.whenStable();
+  expect(connect.getAttribute("aria-pressed")).toBe("true");
+  expect(element.querySelector(".board-actions")?.textContent).toContain(
+    "Click the starting skill. Escape cancels.",
+  );
+  element
+    .querySelector<SVGGElement>('[aria-label="Skill review"]')!
+    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  await fixture.whenStable();
+  expect(element.querySelector(".board-actions")?.textContent).toContain(
+    "Click the destination skill. Escape cancels.",
+  );
+  expect(element.querySelector(".connection-source")?.textContent).toContain(
+    "Start",
+  );
+  expect(element.querySelectorAll(".board-arrow")).toHaveLength(0);
+  element
+    .querySelector<SVGGElement>('[aria-label="Skill publish"]')!
+    .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  await fixture.whenStable();
+  expect(element.querySelectorAll(".board-arrow")).toHaveLength(1);
+  expect(connect.getAttribute("aria-pressed")).toBe("false");
+  expect(element.querySelector(".connection-source")).toBeNull();
+  expect(element.querySelector(".board-actions")?.textContent).not.toContain(
+    "Escape cancels.",
+  );
+});
+
 it("restores titles for the same project and keeps other projects separate", async () => {
   const first = await open();
   const input = first.element.querySelector<HTMLInputElement>(
